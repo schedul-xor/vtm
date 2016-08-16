@@ -1,5 +1,6 @@
 /*
  * Copyright 2014 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,11 +17,9 @@
  */
 package org.oscim.android.test;
 
-import static org.oscim.android.canvas.AndroidGraphics.drawableToBitmap;
-import static org.oscim.tiling.source.bitmap.DefaultSources.STAMEN_TONER;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.widget.Toast;
 
 import org.oscim.backend.canvas.Bitmap;
 import org.oscim.core.GeoPoint;
@@ -31,76 +30,84 @@ import org.oscim.layers.marker.MarkerItem;
 import org.oscim.layers.marker.MarkerItem.HotspotPlace;
 import org.oscim.layers.marker.MarkerSymbol;
 
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.oscim.android.canvas.AndroidGraphics.drawableToBitmap;
+import static org.oscim.tiling.source.bitmap.DefaultSources.STAMEN_TONER;
 
 public class MarkerOverlayActivity extends BitmapTileMapActivity
         implements OnItemGestureListener<MarkerItem> {
 
-	private static final boolean BILLBOARDS = true;
-	private MarkerSymbol mFocusMarker;
+    private static final boolean BILLBOARDS = false;
+    private MarkerSymbol mFocusMarker;
 
-	public MarkerOverlayActivity() {
-		super(STAMEN_TONER.build());
-	}
+    public MarkerOverlayActivity() {
+        super(STAMEN_TONER.build());
+    }
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mBitmapLayer.tileRenderer().setBitmapAlpha(0.5f);
 
-		/* directly load bitmap from resources */
-		Bitmap bitmap = drawableToBitmap(getResources(), R.drawable.marker_poi);
+        /* directly load bitmap from resources */
+        Bitmap bitmap = drawableToBitmap(getResources(), R.drawable.marker_poi);
 
-		MarkerSymbol symbol;
-		if (BILLBOARDS)
-			symbol = new MarkerSymbol(bitmap, HotspotPlace.CENTER);
-		else
-			symbol = new MarkerSymbol(bitmap, 0.5f, 0.5f, false);
+        MarkerSymbol symbol;
+        if (BILLBOARDS)
+            symbol = new MarkerSymbol(bitmap, HotspotPlace.BOTTOM_CENTER);
+        else
+            symbol = new MarkerSymbol(bitmap, HotspotPlace.CENTER, false);
 
-		/* another option: use some bitmap drawable */
-		Drawable d = getResources().getDrawable(R.drawable.ic_launcher);
-		if (BILLBOARDS)
-			mFocusMarker = new MarkerSymbol(drawableToBitmap(d),
-			                                HotspotPlace.BOTTOM_CENTER);
-		else
-			mFocusMarker = new MarkerSymbol(drawableToBitmap(d),
-			                                0.5f, 0.5f, false);
+        /* another option: use some bitmap drawable */
+        Drawable d = getResources().getDrawable(R.drawable.marker_focus);
+        if (BILLBOARDS)
+            mFocusMarker = new MarkerSymbol(drawableToBitmap(d), HotspotPlace.BOTTOM_CENTER);
+        else
+            mFocusMarker = new MarkerSymbol(drawableToBitmap(d), HotspotPlace.CENTER, false);
 
-		ItemizedLayer<MarkerItem> markerLayer =
-		        new ItemizedLayer<MarkerItem>(mMap, new ArrayList<MarkerItem>(),
-		                                      symbol, this);
+        ItemizedLayer<MarkerItem> markerLayer =
+                new ItemizedLayer<MarkerItem>(mMap, new ArrayList<MarkerItem>(),
+                        symbol, this);
 
-		mMap.layers().add(markerLayer);
+        mMap.layers().add(markerLayer);
 
-		List<MarkerItem> pts = new ArrayList<MarkerItem>();
+        List<MarkerItem> pts = new ArrayList<MarkerItem>();
 
-		for (double lat = -90; lat <= 90; lat += 5) {
-			for (double lon = -180; lon <= 180; lon += 5)
-				pts.add(new MarkerItem(lat + "/" + lon, "",
-				                       new GeoPoint(lat, lon)));
-		}
+        for (double lat = -90; lat <= 90; lat += 5) {
+            for (double lon = -180; lon <= 180; lon += 5)
+                pts.add(new MarkerItem(lat + "/" + lon, "",
+                        new GeoPoint(lat, lon)));
+        }
 
-		markerLayer.addItems(pts);
+        markerLayer.addItems(pts);
 
-		mMap.layers().add(new TileGridLayer(mMap));
-		mMap.setMapPosition(0, 0, 1);
-	}
+        mMap.layers().add(new TileGridLayer(mMap));
+    }
 
-	@Override
-	public boolean onItemSingleTapUp(int index, MarkerItem item) {
-		if (item.getMarker() == null)
-			item.setMarker(mFocusMarker);
-		else
-			item.setMarker(null);
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-		Toast toast = Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT);
-		toast.show();
-		return true;
-	}
+        /* ignore saved position */
+        mMap.setMapPosition(0, 0, 1 << 2);
+    }
 
-	@Override
-	public boolean onItemLongPress(int index, MarkerItem item) {
-		return false;
-	}
+    @Override
+    public boolean onItemSingleTapUp(int index, MarkerItem item) {
+        if (item.getMarker() == null)
+            item.setMarker(mFocusMarker);
+        else
+            item.setMarker(null);
+
+        Toast toast = Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT);
+        toast.show();
+        return true;
+    }
+
+    @Override
+    public boolean onItemLongPress(int index, MarkerItem item) {
+        return false;
+    }
 }

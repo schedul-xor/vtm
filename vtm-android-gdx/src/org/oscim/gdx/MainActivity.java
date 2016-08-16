@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,41 +17,47 @@
  */
 package org.oscim.gdx;
 
-import org.oscim.android.canvas.AndroidGraphics;
-import org.oscim.backend.GLAdapter;
-import org.oscim.core.Tile;
-import org.oscim.tiling.TileSource;
-import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
-
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.utils.SharedLibraryLoader;
 
+import org.oscim.android.canvas.AndroidGraphics;
+import org.oscim.backend.CanvasAdapter;
+import org.oscim.backend.GLAdapter;
+import org.oscim.core.Tile;
+import org.oscim.tiling.TileSource;
+import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
+
 public class MainActivity extends AndroidApplication {
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		AndroidGraphics.init();
-		GdxAssets.init("");
-		GLAdapter.init(new AndroidGL());
-		Tile.SIZE = 400;
+        AndroidGraphics.init();
+        GdxAssets.init("");
+        GLAdapter.init(new AndroidGL());
+        Tile.SIZE = 400;
 
-		AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        CanvasAdapter.dpi = (int) Math.max(metrics.xdpi, metrics.ydpi);
 
-		new SharedLibraryLoader().load("vtm-jni");
+        AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
+        cfg.stencil = 8;
 
-		initialize(new GdxMapAndroid(), cfg);
-	}
+        new SharedLibraryLoader().load("vtm-jni");
 
-	class GdxMapAndroid extends GdxMap {
-		@Override
-		public void createLayers() {
-			TileSource ts = new OSciMap4TileSource();
-			initDefaultLayers(ts, true, true, true);
-		}
-	}
+        initialize(new GdxMapAndroid(), cfg);
+    }
+
+    class GdxMapAndroid extends GdxMap {
+        @Override
+        public void createLayers() {
+            TileSource ts = new OSciMap4TileSource();
+            initDefaultLayers(ts, true, true, true);
+        }
+    }
 }

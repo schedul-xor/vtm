@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,36 +17,40 @@
  */
 package org.oscim.gdx;
 
-import java.io.InputStream;
-
-import org.oscim.backend.AssetAdapter;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
+import org.oscim.backend.AssetAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
+
 public class GdxAssets extends AssetAdapter {
-	static String pathPrefix = "";
+    private static final Logger log = LoggerFactory.getLogger(GdxAssets.class);
 
-	private GdxAssets(String path) {
-		pathPrefix = path;
-	}
+    static String pathPrefix = "";
 
-	@Override
-	public InputStream openFileAsStream(String fileName) {
-		FileHandle file = Gdx.files.internal(pathPrefix + fileName);
-		if (file == null)
-			throw new IllegalArgumentException("missing file " + fileName);
+    private GdxAssets(String path) {
+        pathPrefix = path;
+    }
 
-		try {
-			return file.read();
-		} catch (GdxRuntimeException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+    @Override
+    public InputStream openFileAsStream(String fileName) {
+        FileHandle file = Gdx.files.internal(pathPrefix + fileName);
+        if (file == null)
+            throw new IllegalArgumentException("missing file " + fileName);
 
-	public static void init(String path) {
-		AssetAdapter.init(new GdxAssets(path));
-	}
+        try {
+            return file.read();
+        } catch (GdxRuntimeException e) {
+            log.debug(e.getMessage());
+            return null;
+        }
+    }
+
+    public static void init(String path) {
+        AssetAdapter.init(new GdxAssets(path));
+    }
 }

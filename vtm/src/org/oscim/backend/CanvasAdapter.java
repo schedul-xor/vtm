@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,105 +17,180 @@
  */
 package org.oscim.backend;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.oscim.backend.canvas.Bitmap;
 import org.oscim.backend.canvas.Canvas;
 import org.oscim.backend.canvas.Paint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
 
 /**
  * The Class CanvasAdapter.
  */
 public abstract class CanvasAdapter {
+    private static final Logger log = LoggerFactory.getLogger(CanvasAdapter.class);
 
-	/** The instance provided by backend */
-	static CanvasAdapter g;
+    private static final String PREFIX_ASSETS = "assets:";
+    private static final String PREFIX_FILE = "file:";
 
-	/** The dpi. */
-	public static float dpi = 240;
+    /**
+     * The instance provided by backend
+     */
+    static CanvasAdapter g;
 
-	/** The text scale. */
-	public static float textScale = 1;
+    /**
+     * The dpi.
+     */
+    public static float dpi = 240;
 
-	/**
-	 * Create a Canvas.
-	 * 
-	 * @return the canvas
-	 */
-	protected abstract Canvas newCanvasImpl();
+    /**
+     * The text scale.
+     */
+    public static float textScale = 1;
 
-	public static Canvas newCanvas() {
-		return g.newCanvasImpl();
-	}
+    /**
+     * Create a Canvas.
+     *
+     * @return the canvas
+     */
+    protected abstract Canvas newCanvasImpl();
 
-	/**
-	 * Create Paint.
-	 * 
-	 * @return the paint
-	 */
-	protected abstract Paint newPaintImpl();
+    public static Canvas newCanvas() {
+        return g.newCanvasImpl();
+    }
 
-	public static Paint newPaint() {
-		return g.newPaintImpl();
-	}
+    /**
+     * Create Paint.
+     *
+     * @return the paint
+     */
+    protected abstract Paint newPaintImpl();
 
-	/**
-	 * Create {@link Bitmap} with given dimensions.
-	 * 
-	 * @param width the width
-	 * @param height the height
-	 * @param format the format
-	 * @return the bitmap
-	 */
-	protected abstract Bitmap newBitmapImpl(int width, int height, int format);
+    public static Paint newPaint() {
+        return g.newPaintImpl();
+    }
 
-	public static Bitmap newBitmap(int width, int height, int format) {
-		return g.newBitmapImpl(width, height, format);
-	}
+    /**
+     * Create {@link Bitmap} with given dimensions.
+     *
+     * @param width  the width
+     * @param height the height
+     * @param format the format
+     * @return the bitmap
+     */
+    protected abstract Bitmap newBitmapImpl(int width, int height, int format);
 
-	/**
-	 * Create {@link Bitmap} from InputStream.
-	 * 
-	 * @param inputStream the input stream
-	 * @return the bitmap
-	 */
-	protected abstract Bitmap decodeBitmapImpl(InputStream inputStream);
+    public static Bitmap newBitmap(int width, int height, int format) {
+        return g.newBitmapImpl(width, height, format);
+    }
 
-	public static Bitmap decodeBitmap(InputStream inputStream) {
-		return g.decodeBitmapImpl(inputStream);
-	}
+    /**
+     * Create {@link Bitmap} from InputStream.
+     *
+     * @param inputStream the input stream
+     * @return the bitmap
+     */
+    protected abstract Bitmap decodeBitmapImpl(InputStream inputStream);
 
-	/**
-	 * Create {@link Bitmap} from bundled assets.
-	 * 
-	 * @param fileName the file name
-	 * @return the bitmap
-	 */
-	protected abstract Bitmap loadBitmapAssetImpl(String fileName);
+    public static Bitmap decodeBitmap(InputStream inputStream) {
+        return g.decodeBitmapImpl(inputStream);
+    }
 
-	public static Bitmap getBitmapAsset(String fileName) {
-		return g.loadBitmapAssetImpl(fileName);
-	}
+    /**
+     * Create SVG {@link Bitmap} from InputStream.
+     *
+     * @param inputStream the input stream
+     * @return the SVG bitmap
+     */
+    protected abstract Bitmap decodeSvgBitmapImpl(InputStream inputStream);
 
-	protected static Bitmap createBitmap(String src) throws IOException {
-		if (src == null || src.length() == 0) {
-			// no image source defined
-			return null;
-		}
+    public static Bitmap decodeSvgBitmap(InputStream inputStream) {
+        return g.decodeSvgBitmapImpl(inputStream);
+    }
 
-		InputStream inputStream = AssetAdapter.g.openFileAsStream(src);
-		if (inputStream == null) {
-			//log.error("invalid bitmap source: " + src);
-			return null;
-		}
+    /**
+     * Create {@link Bitmap} from bundled assets.
+     *
+     * @param relativePathPrefix the prefix for relative resource path
+     * @param src                the resource
+     * @return the bitmap
+     */
+    protected abstract Bitmap loadBitmapAssetImpl(String relativePathPrefix, String src);
 
-		Bitmap bitmap = decodeBitmap(inputStream);
-		inputStream.close();
-		return bitmap;
-	}
+    public static Bitmap getBitmapAsset(String relativePathPrefix, String src) {
+        return g.loadBitmapAssetImpl(relativePathPrefix, src);
+    }
 
-	protected static void init(CanvasAdapter adapter) {
-		g = adapter;
-	}
+    protected static Bitmap createBitmap(String relativePathPrefix, String src) throws IOException {
+        if (src == null || src.length() == 0) {
+            // no image source defined
+            return null;
+        }
+
+        InputStream inputStream;
+        if (src.startsWith(PREFIX_ASSETS)) {
+            src = src.substring(PREFIX_ASSETS.length());
+            inputStream = inputStreamFromAssets(relativePathPrefix, src);
+        } else if (src.startsWith(PREFIX_FILE)) {
+            src = src.substring(PREFIX_FILE.length());
+            inputStream = inputStreamFromFile(relativePathPrefix, src);
+        } else {
+            inputStream = inputStreamFromFile(relativePathPrefix, src);
+
+            if (inputStream == null)
+                inputStream = inputStreamFromAssets(relativePathPrefix, src);
+        }
+
+        if (inputStream == null) {
+            log.error("invalid resource: " + src);
+            return null;
+        }
+
+        Bitmap bitmap;
+        if (src.toLowerCase(Locale.ENGLISH).endsWith(".svg"))
+            bitmap = decodeSvgBitmap(inputStream);
+        else
+            bitmap = decodeBitmap(inputStream);
+        inputStream.close();
+        return bitmap;
+    }
+
+    private static InputStream inputStreamFromAssets(String relativePathPrefix, String src) throws IOException {
+        String pathName = (relativePathPrefix == null || relativePathPrefix.length() == 0 ? "" : relativePathPrefix + File.separatorChar) + src;
+        return AssetAdapter.g.openFileAsStream(pathName);
+    }
+
+    private static InputStream inputStreamFromFile(String relativePathPrefix, String src) throws IOException {
+        File file = getFile(relativePathPrefix, src);
+        if (!file.exists()) {
+            if (src.length() > 0 && src.charAt(0) == File.separatorChar) {
+                file = getFile(relativePathPrefix, src.substring(1));
+            }
+            if (!file.exists()) {
+                file = null;
+            }
+        } else if (!file.isFile() || !file.canRead()) {
+            file = null;
+        }
+        if (file != null) {
+            return new FileInputStream(file);
+        }
+        return null;
+    }
+
+    private static File getFile(String parentPath, String pathName) {
+        if (pathName.charAt(0) == File.separatorChar) {
+            return new File(pathName);
+        }
+        return new File(parentPath, pathName);
+    }
+
+    protected static void init(CanvasAdapter adapter) {
+        g = adapter;
+    }
 }

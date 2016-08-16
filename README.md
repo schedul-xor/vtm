@@ -1,10 +1,14 @@
+[![Build Status](https://travis-ci.org/mapsforge/vtm.svg?branch=master)](https://travis-ci.org/mapsforge/vtm)
+[![GitHub license](https://img.shields.io/badge/license-LGPL3-blue.svg)](COPYING.LESSER)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.mapsforge/vtm/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.mapsforge/vtm)
+
 # V™
-<br/>
 
+VTM was developed within the [OpenScienceMap](http://opensciencemap.org) project.
 
-**Development continues at https://github.com/mapsforge/vtm**
-#<br/>
-VTM is developed within the [OpenScienceMap](http://opensciencemap.org) project.
+**This fork is for continue VTM development. And make it compatible with latest [Mapsforge](https://github.com/mapsforge/mapsforge).**
+
+See the [integration guide](docs/Integration.md) and [changelog](docs/Changelog.md). If you have any questions or problems, don't hesitate to ask our public [mailing list](https://groups.google.com/group/mapsforge-dev) for help. You can also report bugs and improvement requests via our [issue tracker](https://github.com/mapsforge/vtm/issues). And read through [how to contribute](.github/CONTRIBUTING.md) guidelines.
 
 ## Features
 - Java map library
@@ -16,64 +20,39 @@ VTM is developed within the [OpenScienceMap](http://opensciencemap.org) project.
   - GeoJSON tiles
   - bitmap: any quadtree-scheme tiles as texture
 - Backends:
-  - Android
-  - Desktop (using libgdx/LwjGL)
-  - HTML5/WebGL (using libgdx/GWT)
-  - iOS (using libgdx/robovm)
+  - Android (optional libGDX)
+  - iOS (using libGDX/RoboVM, [instructions](docs/ios.md))
+  - Desktop (using libGDX/LWJGL)
+  - HTML5/WebGL (using libGDX/GWT)
 
 ### Projects
 - **vtm** contains the core library
-- **vtm-android** Android backend  (no libgdx required)
+- **vtm-android** Android backend (no libGDX required)
 - **vtm-android-example** provides examples using **vtm-android**
-- **vtm-gdx** common libgdx backend code
-- **vtm-android-gdx** Android application
-- **vtm-desktop** Desktop application
+- **vtm-gdx** common libGDX backend
+- **vtm-android-gdx** Android backend (with libGDX)
+- **vtm-desktop** Desktop backend
+- **vtm-ios** iOS backend
 - **vtm-web** HTML5/GWT backend
 - **vtm-web-app** HTML5/GWT application
-- **vtm-ios** iOS application
 
-The libgdx backends for GWT and iOS are very experimental. 
+The libGDX backend for GWT is experimental.
 
-
-## Getting started
-
-`git clone --recursive https://github.com/opensciencemap/vtm`
-
-Install Android SDK and build-tools 20.0. From extras add
-'Android Support Library/Repository' and 'Google Repository'.
-The commands below should set things up correctly when Android
-SDK is already installed.
-```
-export ANDROID_HOME=/path/to/your/android-sdk
-./android-stuff.sh
-```
-
-### Eclipse
-`./gradlew eclipse`<br/>
-Import all 'vtm' sub-projects into Eclipse.
-
-
-### Android-Studio
-Just import build.gradle
-
-### Gradle
-You can run gradle tasks directly (see also `./gradlew -q tasks`):<br/>
-`./gradlew clean install` <br/> to build the libraries and add them to the local maven repository.<br/>
-`./gradlew :vtm-android-example:run` <br/> to run the android example<br/>
-`./gradlew :vtm-desktop:run` <br/>to run the desktop demo (only Linux64 and Win64 native libs are provided atm)<br/>
-`./gradlew :vtm-web-app:jettyDraftWar` <br/>to run the webgl demo<br/>
-
+## Master build downloads
+- [Latest jars and samples](http://ci.mapsforge.org/job/vtm/)
 
 ## WebGL Demo
 [OpenScienceMap](http://opensciencemap.org/s3db/#scale=17,rot=61,tilt=51,lat=53.075,lon=8.807) view of Bremen.
 - hold right mouse button to change view direction
 
-
 ## Credits
 This library contains code from several projects:
-- **mapsforge**: based on 0.2.4 (http://mapsforge.org)
-- **osmdroid**: some overlay classes (http://code.google.com/p/osmdroid/)
-- **libgdx**: AsyncTask, MathUtils and Interpolation classes (https://github.com/libgdx)
+- **mapsforge**: based on 0.2.4 (https://github.com/mapsforge/mapsforge)
+- **osmdroid**: some overlay classes (https://github.com/osmdroid/osmdroid)
+- **libGDX**: AsyncTask, MathUtils and Interpolation classes (https://github.com/libgdx)
 - **Android**: some Matrix code, TimSort (http://source.android.com)
 - **tessellate**: (https://github.com/cscheid/tessellate)
 
+## Screenshots
+![Screenshot Samples App Bremen 1](docs/images/screenshot-bremen-1.png)
+![Screenthot Samples App Bremen 2](docs/images/screenshot-bremen-2.png)

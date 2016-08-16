@@ -1,9 +1,8 @@
 package org.oscim.layers.vector;
 
-import org.oscim.core.BoundingBox;
+import org.oscim.core.Box;
 import org.oscim.core.GeometryBuffer;
 import org.oscim.core.MapPosition;
-import org.oscim.core.Tile;
 import org.oscim.event.Event;
 import org.oscim.layers.Layer;
 import org.oscim.map.Map;
@@ -18,109 +17,150 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractVectorLayer<T> extends Layer implements UpdateListener {
-	public static final Logger log = LoggerFactory.getLogger(AbstractVectorLayer.class);
+    public static final Logger log = LoggerFactory.getLogger(AbstractVectorLayer.class);
 
-	protected final static double UNSCALE_COORD = 4;
+    protected final static double UNSCALE_COORD = 4;
 
-	protected final GeometryBuffer mGeom = new GeometryBuffer(128, 4);
-	protected final TileClipper mClipper = new TileClipper(-1024, -1024, 1024, 1024);
+    protected final GeometryBuffer mGeom = new GeometryBuffer(128, 4);
+    protected final TileClipper mClipper = new TileClipper(-1024, -1024, 1024, 1024);
 
-	protected final Worker mWorker;
-	protected long mUpdateDelay = 100;
+    protected final Worker mWorker;
+    protected long mUpdateDelay = 50;
 
-	protected boolean mUpdate = true;
+    protected boolean mUpdate = true;
 
-	protected double mMinX;
-	protected double mMinY;
+    public AbstractVectorLayer(Map map) {
+        super(map);
+        mWorker = new Worker(mMap);
+        mRenderer = new Renderer();
+    }
 
-	public AbstractVectorLayer(Map map) {
-		super(map);
-		mWorker = new Worker(mMap);
-		mRenderer = new Renderer();
-	}
+    @Override
+    public void onDetach() {
+        super.onDetach();
 
-	@Override
-	public void onDetach() {
-		super.onDetach();
+        mWorker.cancel(true);
+    }
 
-		mWorker.cancel(true);
-	}
+    @Override
+    public void onMapEvent(Event e, MapPosition pos) {
+        if (mUpdate) {
+            mUpdate = false;
+            mWorker.submit(0);
+        } else if (e == Map.POSITION_EVENT || e == Map.CLEAR_EVENT) {
+            /* throttle worker */
+            mWorker.submit(mUpdateDelay);
+        }
+    }
 
-	@Override
-	public void onMapEvent(Event e, MapPosition pos) {
-		if (mUpdate) {
-			mUpdate = false;
-			mWorker.submit(0);
-		} else if (e == Map.POSITION_EVENT || e == Map.CLEAR_EVENT) {
-			// throttle worker
-			mWorker.submit(mUpdateDelay);
-		}
-	}
+    public void update() {
+        mWorker.submit(0);
+    }
 
-	public void update() {
-		mWorker.submit(0);
-	}
+    abstract protected void processFeatures(Task t, Box b);
 
-	abstract protected void processFeatures(Task t, BoundingBox b);
+    protected static class Task {
+        public final RenderBuckets buckets = new RenderBuckets();
+        public final MapPosition position = new MapPosition();
+    }
 
-	protected static class Task {
-		public final RenderBuckets buckets = new RenderBuckets();
-		public final MapPosition position = new MapPosition();
-	}
+    protected class Worker extends SimpleWorker<Task> {
 
-	protected class Worker extends SimpleWorker<Task> {
+        public Worker(Map map) {
+            super(map, 50, new Task(), new Task());
+        }
 
-		public Worker(Map map) {
-			super(map, 50, new Task(), new Task());
-		}
+        /**
+         * automatically in sync with worker thread
+         */
+        @Override
+        public void cleanup(Task t) {
+            if (t.buckets != null)
+                t.buckets.clear();
+        }
 
-		/** automatically in sync with worker thread */
-		@Override
-		public void cleanup(Task t) {
-			if (t.buckets != null)
-				t.buckets.clear();
-		}
+        /**
+         * running on worker thread
+         */
+        @Override
+        public boolean doWork(Task t) {
 
-		/** running on worker thread */
-		@Override
-		public boolean doWork(Task t) {
-			Viewport v = mMap.viewport();
-			BoundingBox bbox;
-			synchronized (v) {
-				bbox = v.getBBox();
-				v.getMapPosition(t.position);
-			}
+            Box bbox;
+            float[] box = new float[8];
 
-			double scale = t.position.scale * Tile.SIZE;
+            Viewport v = mMap.viewport().getSyncViewport();
+            synchronized (v) {
+                bbox = v.getBBox(null, 0);
+                v.getMapExtents(box, 0);
+                v.getMapPosition(t.position);
+            }
 
-			t.position.x = (long) (t.position.x * scale) / scale;
-			t.position.y = (long) (t.position.y * scale) / scale;
-			processFeatures(t, bbox);
+            /* Hmm what is this for? */
+            //    double scale = t.position.scale * Tile.SIZE;
+            //    t.position.x = (long) (t.position.x * scale) / scale;
+            //    t.position.y = (long) (t.position.y * scale) / scale;
 
-			mMap.render();
-			return true;
-		}
+            bbox.map2mercator();
 
-	}
+            //    double xmin = bbox.xmin;
+            //    double xmax = bbox.xmax;
+            //    Box lbox = null;
+            //    Box rbox = null;
+            //    if (bbox.xmin < -180) {
+            //        bbox.xmin = -180;
+            //        lbox = new Box(bbox);
+            //    }
+            //    if (bbox.xmax > 180) {
+            //        bbox.xmax = 180;
+            //        rbox = new Box(bbox);
+            //    }
 
-	public class Renderer extends BucketRenderer {
-		MapPosition mTmpPos = new MapPosition();
+            processFeatures(t, bbox);
 
-		@Override
-		public void update(GLViewport v) {
+            //if (lbox != null) {
+            //    t.position.x += 1;
+            //    lbox.xmax = 180;
+            //    lbox.xmin = xmin + 180;
+            //    processFeatures(t, lbox);
+            //    t.position.x -= 1;
+            //}
+            //
+            //if (rbox != null) {
+            //    t.position.x -= 1;
+            //    rbox.xmin = -180;
+            //    rbox.xmax = xmax - 180;
+            //    processFeatures(t, rbox);
+            //    t.position.x += 1;
+            //}
 
-			Task t = mWorker.poll();
+            t.buckets.prepare();
 
-			if (t == null)
-				return;
+            mMap.render();
+            return true;
+        }
+    }
 
-			mMapPosition.copy(t.position);
-			mMapPosition.setScale(mMapPosition.scale / UNSCALE_COORD);
+    public class Renderer extends BucketRenderer {
+        MapPosition mTmpPos = new MapPosition();
 
-			buckets.setFrom(t.buckets);
+        public Renderer() {
+            mFlipOnDateLine = true;
+        }
 
-			compile();
-			//log.debug("is ready " + isReady() + " " + layers.getSize());
-		}
-	}
+        @Override
+        public void update(GLViewport v) {
+
+            Task t = mWorker.poll();
+
+            if (t == null)
+                return;
+
+            mMapPosition.copy(t.position);
+            mMapPosition.setScale(mMapPosition.scale / UNSCALE_COORD);
+
+            buckets.setFrom(t.buckets);
+
+            compile();
+        }
+    }
 }

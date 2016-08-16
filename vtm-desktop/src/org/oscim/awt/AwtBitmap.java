@@ -1,5 +1,7 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
+ * Copyright 2016 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,7 +18,18 @@
  */
 package org.oscim.awt;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.BufferUtils;
+
+import org.oscim.backend.GL;
+import org.oscim.backend.canvas.Bitmap;
+import org.oscim.renderer.bucket.TextureBucket;
+import org.oscim.utils.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,121 +37,140 @@ import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
-import org.oscim.backend.GL;
-import org.oscim.backend.canvas.Bitmap;
-import org.oscim.renderer.bucket.TextureBucket;
-
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.BufferUtils;
-
 public class AwtBitmap implements Bitmap {
-	BufferedImage bitmap;
-	int width;
-	int height;
+    private static final Logger log = LoggerFactory.getLogger(AwtBitmap.class);
 
-	boolean internal;
+    BufferedImage bitmap;
+    int width;
+    int height;
 
-	public AwtBitmap(int width, int height, int format) {
-		bitmap = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		this.width = width;
-		this.height = height;
+    boolean internal;
 
-		internal = true;
-		// if (!this.bitmap.isAlphaPremultiplied())
-		// this.bitmap.coerceData(true);
-	}
+    public AwtBitmap(int width, int height, int format) {
+        bitmap = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        this.width = width;
+        this.height = height;
 
-	AwtBitmap(InputStream inputStream) throws IOException {
+        internal = true;
+        // if (!this.bitmap.isAlphaPremultiplied())
+        // this.bitmap.coerceData(true);
+    }
 
-		this.bitmap = ImageIO.read(inputStream);
-		this.width = this.bitmap.getWidth();
-		this.height = this.bitmap.getHeight();
-		if (!this.bitmap.isAlphaPremultiplied()
-		        && this.bitmap.getType() == BufferedImage.TYPE_INT_ARGB)
-			this.bitmap.coerceData(true);
-	}
+    AwtBitmap(InputStream inputStream) throws IOException {
 
-	@Override
-	public int getWidth() {
-		return width;
-	}
+        this.bitmap = ImageIO.read(inputStream);
+        this.width = this.bitmap.getWidth();
+        this.height = this.bitmap.getHeight();
+        if (!this.bitmap.isAlphaPremultiplied()
+                && this.bitmap.getType() == BufferedImage.TYPE_INT_ARGB)
+            this.bitmap.coerceData(true);
+    }
 
-	@Override
-	public int getHeight() {
-		return height;
-	}
+    public AwtBitmap(BufferedImage bitmap) {
+        this.bitmap = bitmap;
+        this.width = this.bitmap.getWidth();
+        this.height = this.bitmap.getHeight();
+        if (!this.bitmap.isAlphaPremultiplied()
+                && this.bitmap.getType() == BufferedImage.TYPE_INT_ARGB)
+            this.bitmap.coerceData(true);
+    }
 
-	@Override
-	public int[] getPixels() {
-		return null;
-	}
+    @Override
+    public int getWidth() {
+        return width;
+    }
 
-	@Override
-	public void eraseColor(int transparent) {
-	}
+    @Override
+    public int getHeight() {
+        return height;
+    }
 
-	private final static IntBuffer tmpBuffer = BufferUtils
-	    .newIntBuffer(TextureBucket.TEXTURE_HEIGHT
-	            * TextureBucket.TEXTURE_WIDTH);
-	private final static int[] tmpPixel = new int[TextureBucket.TEXTURE_HEIGHT
-	        * TextureBucket.TEXTURE_WIDTH];
+    @Override
+    public int[] getPixels() {
+        return null;
+    }
 
-	private final static boolean WRITE_TEX = false;
-	private int dbgCnt;
+    @Override
+    public void eraseColor(int transparent) {
+    }
 
-	@Override
-	public void uploadToTexture(boolean replace) {
-		int[] pixels;
-		IntBuffer buffer;
+    private final static IntBuffer tmpBuffer = BufferUtils
+            .newIntBuffer(TextureBucket.TEXTURE_HEIGHT
+                    * TextureBucket.TEXTURE_WIDTH);
+    private final static int[] tmpPixel = new int[TextureBucket.TEXTURE_HEIGHT
+            * TextureBucket.TEXTURE_WIDTH];
 
-		if (width * height < TextureBucket.TEXTURE_HEIGHT * TextureBucket.TEXTURE_WIDTH) {
-			pixels = tmpPixel;
-			buffer = tmpBuffer;
-			buffer.clear();
-		} else {
-			pixels = new int[width * height];
-			buffer = BufferUtils.newIntBuffer(width * height);
-		}
+    private final static boolean WRITE_TEX = false;
+    private int dbgCnt;
 
-		// FIXME dont convert to argb when there data is greyscale
-		bitmap.getRGB(0, 0, width, height, pixels, 0, width);
+    @Override
+    public void uploadToTexture(boolean replace) {
+        int[] pixels;
+        IntBuffer buffer;
 
-		if (WRITE_TEX) {
-			try {
-				boolean ok = ImageIO.write(bitmap, "png", new File("texture_" + dbgCnt + ".png"));
-				System.out.println("write tex " + ok + " " + dbgCnt);
-				dbgCnt++;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+        if (width * height < TextureBucket.TEXTURE_HEIGHT * TextureBucket.TEXTURE_WIDTH) {
+            pixels = tmpPixel;
+            buffer = tmpBuffer;
+            buffer.clear();
+        } else {
+            pixels = new int[width * height];
+            buffer = BufferUtils.newIntBuffer(width * height);
+        }
 
-		for (int i = 0, n = width * height; i < n; i++) {
-			int c = pixels[i];
-			if (c == 0)
-				continue;
+        // FIXME dont convert to argb when there data is greyscale
+        bitmap.getRGB(0, 0, width, height, pixels, 0, width);
 
-			float alpha = (c >>> 24) / 255f;
-			int r = (int) ((c & 0x000000ff) * alpha);
-			int b = (int) (((c & 0x00ff0000) >>> 16) * alpha);
-			int g = (int) (((c & 0x0000ff00) >>> 8) * alpha);
-			pixels[i] = (c & 0xff000000) | r << 16 | g << 8 | b;
-		}
+        if (WRITE_TEX) {
+            try {
+                boolean ok = ImageIO.write(bitmap, "png", new File("texture_" + dbgCnt + ".png"));
+                System.out.println("write tex " + ok + " " + dbgCnt);
+                dbgCnt++;
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
 
-		buffer.put(pixels, 0, width * height);
-		buffer.flip();
+        for (int i = 0, n = width * height; i < n; i++) {
+            int c = pixels[i];
+            if (c == 0)
+                continue;
 
-		Gdx.gl20.glTexImage2D(GL.TEXTURE_2D, 0, GL.RGBA, width,
-		                      height, 0, GL.RGBA, GL.UNSIGNED_BYTE, buffer);
-	}
+            float alpha = (c >>> 24) / 255f;
+            int r = (int) ((c & 0x000000ff) * alpha);
+            int b = (int) (((c & 0x00ff0000) >>> 16) * alpha);
+            int g = (int) (((c & 0x0000ff00) >>> 8) * alpha);
+            pixels[i] = (c & 0xff000000) | r << 16 | g << 8 | b;
+        }
 
-	@Override
-	public void recycle() {
-	}
+        buffer.put(pixels, 0, width * height);
+        buffer.flip();
 
-	@Override
-	public boolean isValid() {
-		return true;
-	}
+        Gdx.gl20.glTexImage2D(GL.TEXTURE_2D, 0, GL.RGBA, width,
+                height, 0, GL.RGBA, GL.UNSIGNED_BYTE, buffer);
+    }
+
+    @Override
+    public void recycle() {
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public byte[] getPngEncodedData() {
+        ByteArrayOutputStream outputStream = null;
+        try {
+            outputStream = new ByteArrayOutputStream();
+            ImageIO.write(this.bitmap, "png", outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            IOUtils.closeQuietly(outputStream);
+        }
+        return null;
+    }
 }

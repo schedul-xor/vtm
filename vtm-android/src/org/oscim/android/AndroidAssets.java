@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 Stephan Leuschner
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,31 +17,31 @@
  */
 package org.oscim.android;
 
-import java.io.IOException;
-import java.io.InputStream;
+import android.content.Context;
 
 import org.oscim.backend.AssetAdapter;
 
-import android.content.Context;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class AndroidAssets extends AssetAdapter {
-	Context mContext;
+    Context mContext;
 
-	public static void init(Context ctx) {
-		AssetAdapter.init(new AndroidAssets(ctx));
-	}
+    public static void init(Context ctx) {
+        AssetAdapter.init(new AndroidAssets(ctx));
+    }
 
-	private AndroidAssets(Context ctx) {
-		mContext = ctx;
-	}
+    private AndroidAssets(Context ctx) {
+        mContext = ctx.getApplicationContext();
+    }
 
-	@Override
-	public InputStream openFileAsStream(String fileName) {
-		try {
-			return mContext.getAssets().open(fileName);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+    @Override
+    public InputStream openFileAsStream(String fileName) {
+        try {
+            return mContext.getAssets().open(fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

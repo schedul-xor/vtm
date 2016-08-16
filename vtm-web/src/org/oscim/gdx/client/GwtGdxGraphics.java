@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,62 +17,70 @@
  */
 package org.oscim.gdx.client;
 
-import java.io.InputStream;
+import com.google.gwt.canvas.client.Canvas;
+import com.google.gwt.canvas.dom.client.Context2d;
+import com.google.gwt.canvas.dom.client.TextMetrics;
 
 import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.canvas.Bitmap;
 import org.oscim.backend.canvas.Paint;
 
-import com.google.gwt.canvas.client.Canvas;
-import com.google.gwt.canvas.dom.client.Context2d;
-import com.google.gwt.canvas.dom.client.TextMetrics;
+import java.io.File;
+import java.io.InputStream;
 
 public class GwtGdxGraphics extends CanvasAdapter {
 
-	public static boolean NO_STROKE_TEXT = false;
+    public static boolean NO_STROKE_TEXT = false;
 
-	static final Context2d ctx;
+    static final Context2d ctx;
 
-	static {
-		Canvas canvas = Canvas.createIfSupported();
-		canvas.setCoordinateSpaceWidth(1);
-		canvas.setCoordinateSpaceHeight(1);
-		ctx = canvas.getContext2d();
-	}
+    static {
+        Canvas canvas = Canvas.createIfSupported();
+        canvas.setCoordinateSpaceWidth(1);
+        canvas.setCoordinateSpaceHeight(1);
+        ctx = canvas.getContext2d();
+    }
 
-	public static synchronized float getTextWidth(String text, String font) {
-		ctx.setFont(font);
-		TextMetrics tm = ctx.measureText(text);
-		return (float) tm.getWidth();
-	}
+    public static synchronized float getTextWidth(String text, String font) {
+        ctx.setFont(font);
+        TextMetrics tm = ctx.measureText(text);
+        return (float) tm.getWidth();
+    }
 
-	@Override
-	public Bitmap decodeBitmapImpl(InputStream in) {
-		//ImageData data = new ImageData();
-		return null;
-	}
+    @Override
+    public Bitmap decodeBitmapImpl(InputStream in) {
+        //ImageData data = new ImageData();
+        return null;
+    }
 
-	@Override
-	public Bitmap loadBitmapAssetImpl(String fileName) {
-		return new GwtBitmap(fileName);
-	}
+    @Override
+    public Bitmap decodeSvgBitmapImpl(InputStream in) {
+        // TODO
+        return null;
+    }
 
-	@Override
-	public Paint newPaintImpl() {
-		return new GwtPaint();
-	}
+    @Override
+    public Bitmap loadBitmapAssetImpl(String relativePathPrefix, String src) {
+        String pathName = (relativePathPrefix == null || relativePathPrefix.length() == 0 ? "" : relativePathPrefix + File.separatorChar) + src;
+        return new GwtBitmap(pathName);
+    }
 
-	@Override
-	public Bitmap newBitmapImpl(int width, int height, int format) {
-		return new GwtBitmap(width, height, format);
-	}
+    @Override
+    public Paint newPaintImpl() {
+        return new GwtPaint();
+    }
 
-	@Override
-	public org.oscim.backend.canvas.Canvas newCanvasImpl() {
-		return new GwtCanvas();
-	}
+    @Override
+    public Bitmap newBitmapImpl(int width, int height, int format) {
+        return new GwtBitmap(width, height, format);
+    }
 
-	public static void init() {
-		CanvasAdapter.init(new GwtGdxGraphics());
-	}
+    @Override
+    public org.oscim.backend.canvas.Canvas newCanvasImpl() {
+        return new GwtCanvas();
+    }
+
+    public static void init() {
+        CanvasAdapter.init(new GwtGdxGraphics());
+    }
 }

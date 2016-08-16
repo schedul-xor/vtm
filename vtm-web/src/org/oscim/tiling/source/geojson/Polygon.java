@@ -18,19 +18,19 @@ package org.oscim.tiling.source.geojson;
 
 public class Polygon extends Geometry<LineString> {
 
-	protected Polygon() {
-	}
+    protected Polygon() {
+    }
 
-	public final native LineString getExteriorRing()/*-{
-		return this[0];
-	}-*/;
+    public final native LineString getExteriorRing()/*-{
+        return this[0];
+    }-*/;
 
-	public final native LineString getRing(int i) /*-{
-		return this[i];
-	}-*/;
+    public final native LineString getRing(int i) /*-{
+        return this[i];
+    }-*/;
 
-	public final native int getNumRings() /*-{
-		return this.length;
-	}-*/;
+    public final native int getNumRings() /*-{
+        return this.length;
+    }-*/;
 
 }

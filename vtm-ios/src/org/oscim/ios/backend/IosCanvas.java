@@ -1,78 +1,133 @@
+/*
+ * Copyright 2016 Longri
+ * Copyright 2016 devemux86
+ *
+ * This program is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.oscim.ios.backend;
 
 import org.oscim.backend.canvas.Bitmap;
 import org.oscim.backend.canvas.Canvas;
 import org.oscim.backend.canvas.Paint;
+import org.robovm.apple.coregraphics.CGBitmapContext;
+import org.robovm.apple.coregraphics.CGBlendMode;
+import org.robovm.apple.coregraphics.CGRect;
 
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.TextureData;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont.Glyph;
-
+/**
+ * iOS specific implementation of {@link Canvas}.
+ */
 public class IosCanvas implements Canvas {
 
-	IosBitmap bitmap;
-	static BitmapFont font = new BitmapFont();
+    static void setFillColor(CGBitmapContext bctx, int color) {
+        float blue = (color & 0xFF) / 255f;
+        color >>= 8;
+        float green = (color & 0xFF) / 255f;
+        color >>= 8;
+        float red = (color & 0xFF) / 255f;
+        color >>= 8;
+        float alpha = (color & 0xFF) / 255f;
+        bctx.setRGBFillColor(red, green, blue, alpha);
+    }
 
-	public IosCanvas() {
-		// canvas comes with gdx pixmap
-	}
+    static void setStrokeColor(CGBitmapContext bctx, int color) {
+        float blue = (color & 0xFF) / 255f;
+        color >>= 8;
+        float green = (color & 0xFF) / 255f;
+        color >>= 8;
+        float red = (color & 0xFF) / 255f;
+        color >>= 8;
+        float alpha = (color & 0xFF) / 255f;
+        bctx.setRGBStrokeColor(red, green, blue, alpha);
+    }
 
-	@Override
-	public void setBitmap(Bitmap bitmap) {
-		this.bitmap = (IosBitmap) bitmap;
-		this.bitmap.pixmap.setColor(0);
-		this.bitmap.pixmap.fill();
-	}
+    CGBitmapContext cgBitmapContext;
 
-	@Override
-	public void drawText(String string, float x, float y, Paint paint) {
-		if (bitmap == null) {
-			// log.debug("no bitmap set");
-			return;
-		}
+    @Override
+    public void setBitmap(Bitmap bitmap) {
+        cgBitmapContext = ((IosBitmap) bitmap).cgBitmapContext;
+    }
 
-		// IosPaint p = (IosPaint) paint;
+    @Override
+    public void drawText(String string, float x, float y, Paint paint) {
 
-		Pixmap pixmap = bitmap.pixmap;
+        //flip Y-axis
+        y = this.cgBitmapContext.getHeight() - y;
 
-		TextureData td = font.getRegion().getTexture().getTextureData();
-		if (!td.isPrepared())
-			td.prepare();
+        IosPaint iosPaint = (IosPaint) paint;
+        iosPaint.drawLine(this.cgBitmapContext, string, x, y);
+    }
 
-		Pixmap f = td.consumePixmap();
+    @Override
+    public void drawText(String string, float x, float y, Paint fill, Paint stroke) {
 
-		int adv = (int) x;
-		Glyph last = null;
+        //flip Y-axis
+        y = this.cgBitmapContext.getHeight() - y;
 
-		int ch = (int) font.getCapHeight();
-		int h = (int) font.getLineHeight();
-		int yy = (int) (y - font.getLineHeight());
-		if (y < 0)
-			y = 0;
+        IosPaint iosFill = (IosPaint) fill;
+        if (stroke != null) {
+            IosPaint iosStroke = (IosPaint) stroke;
+            iosFill.setStrokeWidth(iosStroke.strokeWidth);
+            iosFill.setStrokeColor(iosStroke.getColor());
+            iosStroke.drawLine(this.cgBitmapContext, string, x, y);
+        }
+        iosFill.drawLine(this.cgBitmapContext, string, x, y);
+    }
 
-		// pixmap.setColor(0xff0000ff);
-		// int w = (int) font.getBounds(string).width;
-		// pixmap.drawRectangle((int) x - 4, (int) y - 4, w + 8, h + 8);
+    @Override
+    public void drawBitmap(Bitmap bitmap, float x, float y) {
+        this.cgBitmapContext.saveGState();
+        this.cgBitmapContext.translateCTM(x, y);
+        this.cgBitmapContext.drawImage(new CGRect(0, 0, bitmap.getWidth(), bitmap.getHeight()),
+                ((IosBitmap) bitmap).cgBitmapContext.toImage());
+        this.cgBitmapContext.restoreGState();
+    }
 
-		for (int i = 0; i < string.length(); i++) {
-			char c = string.charAt(i);
-			Glyph g = font.getData().getGlyph(c);
-			if (g == null)
-				g = font.getData().getGlyph(' ');
+    @Override
+    public void drawLine(int x1, int y1, int x2, int y2, Paint paint) {
 
-			if (i > 0)
-				adv += last.getKerning(c);
-			pixmap.drawPixmap(f, adv, //- g.xoffset,
-			                  yy - (g.height + g.yoffset) - (h - ch),
-			                  g.srcX, g.srcY,
-			                  g.width, g.height);
-			adv += g.width;
-			last = g;
-		}
-	}
+        //flip Y-axis
+        y1 = (int) (this.cgBitmapContext.getHeight() - y1);
+        y2 = (int) (this.cgBitmapContext.getHeight() - y2);
 
-	@Override
-	public void drawBitmap(Bitmap bitmap, float x, float y) {
-	}
+        // set Stroke properties
+        this.cgBitmapContext.setLineWidth(((IosPaint) paint).strokeWidth);
+        this.cgBitmapContext.setLineCap(((IosPaint) paint).getIosStrokeCap());
+        this.cgBitmapContext.setLineJoin(((IosPaint) paint).getIosStrokeJoin());
+        setStrokeColor(this.cgBitmapContext, (paint.getColor()));
+
+        //draw line
+        this.cgBitmapContext.beginPath();
+        this.cgBitmapContext.moveToPoint(x1, y1);
+        this.cgBitmapContext.addLineToPoint(x2, y2);
+        this.cgBitmapContext.strokePath();
+    }
+
+    @Override
+    public void fillColor(int color) {
+        CGRect rect = new CGRect(0, 0, this.cgBitmapContext.getWidth(), this.cgBitmapContext.getHeight());
+        setFillColor(this.cgBitmapContext, (color));
+        this.cgBitmapContext.setBlendMode(CGBlendMode.Clear);
+        this.cgBitmapContext.fillRect(rect);
+        this.cgBitmapContext.setBlendMode(CGBlendMode.Normal);
+        this.cgBitmapContext.fillRect(rect);
+    }
+
+    @Override
+    public int getHeight() {
+        return this.cgBitmapContext != null ? (int) this.cgBitmapContext.getHeight() : 0;
+    }
+
+    @Override
+    public int getWidth() {
+        return this.cgBitmapContext != null ? (int) this.cgBitmapContext.getWidth() : 0;
+    }
 }

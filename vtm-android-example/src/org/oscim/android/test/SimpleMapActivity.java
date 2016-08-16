@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -13,77 +14,103 @@
  *
  * You should have received a copy of the GNU Lesser General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
- */package org.oscim.android.test;
+ */
+package org.oscim.android.test;
 
-import org.oscim.android.MapScaleBar;
+import android.os.Bundle;
+
+import org.oscim.backend.CanvasAdapter;
 import org.oscim.core.MapPosition;
 import org.oscim.core.MercatorProjection;
+import org.oscim.layers.GroupLayer;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
-import org.oscim.map.Layers;
-import org.oscim.map.Map;
+import org.oscim.renderer.BitmapRenderer;
+import org.oscim.renderer.GLViewport;
+import org.oscim.scalebar.DefaultMapScaleBar;
+import org.oscim.scalebar.ImperialUnitAdapter;
+import org.oscim.scalebar.MapScaleBar;
+import org.oscim.scalebar.MapScaleBarLayer;
+import org.oscim.scalebar.MetricUnitAdapter;
 import org.oscim.theme.IRenderTheme;
 import org.oscim.theme.ThemeLoader;
 import org.oscim.theme.VtmThemes;
 
-import android.os.Bundle;
-
 public class SimpleMapActivity extends BaseMapActivity {
+    private DefaultMapScaleBar mapScaleBar;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		Map m = this.map();
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		Layers layers = mMap.layers();
-		layers.add(new BuildingLayer(mMap, mBaseLayer));
-		layers.add(new LabelLayer(mMap, mBaseLayer));
-		layers.add(new MapScaleBar(mMapView));
+        GroupLayer groupLayer = new GroupLayer(mMap);
+        groupLayer.layers.add(new BuildingLayer(mMap, mBaseLayer));
+        groupLayer.layers.add(new LabelLayer(mMap, mBaseLayer));
+        mMap.layers().add(groupLayer);
 
-		m.setTheme(VtmThemes.DEFAULT);
-	}
+        mapScaleBar = new DefaultMapScaleBar(mMap, CanvasAdapter.dpi / 160);
+        mapScaleBar.setScaleBarMode(DefaultMapScaleBar.ScaleBarMode.BOTH);
+        mapScaleBar.setDistanceUnitAdapter(MetricUnitAdapter.INSTANCE);
+        mapScaleBar.setSecondaryDistanceUnitAdapter(ImperialUnitAdapter.INSTANCE);
+        mapScaleBar.setScaleBarPosition(MapScaleBar.ScaleBarPosition.BOTTOM_LEFT);
 
-	void runTheMonkey() {
-		themes[0] = ThemeLoader.load(VtmThemes.DEFAULT);
-		themes[1] = ThemeLoader.load(VtmThemes.OSMARENDER);
-		themes[2] = ThemeLoader.load(VtmThemes.TRONRENDER);
-		loooop(1);
-	}
+        MapScaleBarLayer mapScaleBarLayer = new MapScaleBarLayer(mMap, mapScaleBar);
+        BitmapRenderer renderer = mapScaleBarLayer.getRenderer();
+        renderer.setPosition(GLViewport.Position.BOTTOM_LEFT);
+        renderer.setOffset(5 * CanvasAdapter.dpi / 160, 0);
+        mMap.layers().add(mapScaleBarLayer);
 
-	IRenderTheme[] themes = new IRenderTheme[3];
+        mMap.setTheme(VtmThemes.DEFAULT);
+    }
 
-	// Stress testing
-	void loooop(final int i) {
-		final long time = (long) (500 + Math.random() * 1000);
-		mMapView.postDelayed(new Runnable() {
-			@Override
-			public void run() {
+    @Override
+    protected void onDestroy() {
+        mapScaleBar.destroy();
 
-				mMapView.map().setTheme(themes[i]);
+        super.onDestroy();
+    }
 
-				MapPosition p = new MapPosition();
-				if (i == 1) {
-					mMapView.map().getMapPosition(p);
-					p.setScale(4);
-					mMapView.map().animator().animateTo(time, p);
-				} else {
-					//mMapView.map().setMapPosition(p);
+    void runTheMonkey() {
+        themes[0] = ThemeLoader.load(VtmThemes.DEFAULT);
+        themes[1] = ThemeLoader.load(VtmThemes.OSMARENDER);
+        themes[2] = ThemeLoader.load(VtmThemes.TRONRENDER);
+        loooop(1);
+    }
 
-					p.setScale(2 + (1 << (int) (Math.random() * 13)));
-					//	p.setX((p.getX() + (Math.random() * 4 - 2) / p.getScale()));
-					//	p.setY((p.getY() + (Math.random() * 4 - 2) / p.getScale()));
-					p.setX(MercatorProjection.longitudeToX(Math.random() * 180));
-					p.setY(MercatorProjection.latitudeToY(Math.random() * 60));
+    IRenderTheme[] themes = new IRenderTheme[3];
 
-					p.setTilt((float) (Math.random() * 60));
-					p.setBearing((float) (Math.random() * 360));
-					//mMapView.map().setMapPosition(p);
+    // Stress testing
+    void loooop(final int i) {
+        final long time = (long) (500 + Math.random() * 1000);
+        mMapView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
 
-					mMapView.map().animator().animateTo(time, p);
-				}
-				loooop((i + 1) % 2);
+                mMapView.map().setTheme(themes[i]);
 
-			}
-		}, time);
-	}
+                MapPosition p = new MapPosition();
+                if (i == 1) {
+                    mMapView.map().getMapPosition(p);
+                    p.setScale(4);
+                    mMapView.map().animator().animateTo(time, p);
+                } else {
+                    //mMapView.map().setMapPosition(p);
+
+                    p.setScale(2 + (1 << (int) (Math.random() * 13)));
+                    //p.setX((p.getX() + (Math.random() * 4 - 2) / p.getScale()));
+                    //p.setY((p.getY() + (Math.random() * 4 - 2) / p.getScale()));
+                    p.setX(MercatorProjection.longitudeToX(Math.random() * 180));
+                    p.setY(MercatorProjection.latitudeToY(Math.random() * 60));
+
+                    p.setTilt((float) (Math.random() * 60));
+                    p.setBearing((float) (Math.random() * 360));
+                    //mMapView.map().setMapPosition(p);
+
+                    mMapView.map().animator().animateTo(time, p);
+                }
+                loooop((i + 1) % 2);
+
+            }
+        }, time);
+    }
 }

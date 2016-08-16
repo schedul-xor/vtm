@@ -16,6 +16,13 @@
  */
 package org.oscim.gdx;
 
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.Timer.Task;
+
 import org.oscim.layers.TileGridLayer;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
@@ -28,186 +35,180 @@ import org.oscim.tiling.TileSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.badlogic.gdx.Application;
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.utils.Timer;
-import com.badlogic.gdx.utils.Timer.Task;
-
 public abstract class GdxMap implements ApplicationListener {
-	final static Logger log = LoggerFactory.getLogger(GdxMap.class);
+    final static Logger log = LoggerFactory.getLogger(GdxMap.class);
 
-	protected final Map mMap;
-	private final MapAdapter mMapAdapter;
+    protected Map mMap;
 
-	VectorTileLayer mMapLayer;
-	private final MapRenderer mMapRenderer;
+    VectorTileLayer mMapLayer;
+    private MapRenderer mMapRenderer;
 
-	public GdxMap() {
-		mMap = mMapAdapter = new MapAdapter();
-		mMapRenderer = new MapRenderer(mMap);
-	}
+    public GdxMap() {
+    }
 
-	protected void initDefaultLayers(TileSource tileSource, boolean tileGrid, boolean labels,
-	        boolean buildings) {
-		Layers layers = mMap.layers();
+    protected void initDefaultLayers(TileSource tileSource, boolean tileGrid, boolean labels,
+                                     boolean buildings) {
+        Layers layers = mMap.layers();
 
-		if (tileSource != null) {
-			mMapLayer = mMap.setBaseMap(tileSource);
-			mMap.setTheme(VtmThemes.DEFAULT);
+        if (tileSource != null) {
+            mMapLayer = mMap.setBaseMap(tileSource);
+            mMap.setTheme(VtmThemes.DEFAULT);
 
-			if (buildings)
-				layers.add(new BuildingLayer(mMap, mMapLayer));
+            if (buildings)
+                layers.add(new BuildingLayer(mMap, mMapLayer));
 
-			if (labels)
-				layers.add(new LabelLayer(mMap, mMapLayer));
-		}
+            if (labels)
+                layers.add(new LabelLayer(mMap, mMapLayer));
+        }
 
-		if (tileGrid)
-			layers.add(new TileGridLayer(mMap));
-	}
+        if (tileGrid)
+            layers.add(new TileGridLayer(mMap));
+    }
 
-	@Override
-	public void create() {
+    @Override
+    public void create() {
+        mMap = new MapAdapter();
+        mMapRenderer = new MapRenderer(mMap);
 
-		Gdx.graphics.setContinuousRendering(false);
-		Gdx.app.setLogLevel(Application.LOG_DEBUG);
+        Gdx.graphics.setContinuousRendering(false);
+        Gdx.app.setLogLevel(Application.LOG_DEBUG);
 
-		int w = Gdx.graphics.getWidth();
-		int h = Gdx.graphics.getHeight();
+        int w = Gdx.graphics.getWidth();
+        int h = Gdx.graphics.getHeight();
 
-		mMap.viewport().setScreenSize(w, h);
-		mMapRenderer.onSurfaceCreated();
-		mMapRenderer.onSurfaceChanged(w, h);
+        mMap.viewport().setScreenSize(w, h);
+        mMapRenderer.onSurfaceCreated();
+        mMapRenderer.onSurfaceChanged(w, h);
 
-		InputMultiplexer mux = new InputMultiplexer();
-		mux.addProcessor(new InputHandler(this));
-		//mux.addProcessor(new GestureDetector(20, 0.5f, 2, 0.05f,
-		//                                     new MapController(mMap)));
-		mux.addProcessor(new MotionHandler(mMap));
+        InputMultiplexer mux = new InputMultiplexer();
+        mux.addProcessor(new InputHandler(this));
+        //mux.addProcessor(new GestureDetector(20, 0.5f, 2, 0.05f,
+        //                                     new MapController(mMap)));
+        mux.addProcessor(new MotionHandler(mMap));
 
-		Gdx.input.setInputProcessor(mux);
+        Gdx.input.setInputProcessor(mux);
 
-		createLayers();
-	}
+        createLayers();
+    }
 
-	protected void createLayers() {
-		mMap.layers().add(new TileGridLayer(mMap));
-	}
+    protected void createLayers() {
+        mMap.layers().add(new TileGridLayer(mMap));
+    }
 
-	@Override
-	public void dispose() {
+    @Override
+    public void dispose() {
 
-	}
+    }
 
-	@Override
-	public void render() {
-		if (!mMapAdapter.needsRedraw())
-			return;
+    /* private */ boolean mRenderWait;
+    /* private */ boolean mRenderRequest;
+    /* private */ boolean mUpdateRequest;
 
-		mMapRenderer.onDrawFrame();
-	}
+    @Override
+    public void render() {
+        if (!mRenderRequest)
+            return;
 
-	@Override
-	public void resize(int w, int h) {
-		mMap.viewport().setScreenSize(w, h);
-		mMapRenderer.onSurfaceChanged(w, h);
-		mMap.render();
-	}
+        mMapRenderer.onDrawFrame();
+    }
 
-	@Override
-	public void pause() {
-	}
+    @Override
+    public void resize(int w, int h) {
+        mMap.viewport().setScreenSize(w, h);
+        mMapRenderer.onSurfaceChanged(w, h);
+        mMap.render();
+    }
 
-	@Override
-	public void resume() {
-	}
+    @Override
+    public void pause() {
+    }
 
-	protected boolean onKeyDown(int keycode) {
-		return false;
-	}
+    @Override
+    public void resume() {
+    }
 
-	public Map getMap() {
-		return mMap;
-	}
+    protected boolean onKeyDown(int keycode) {
+        return false;
+    }
 
-	static class MapAdapter extends Map {
-		boolean mRenderRequest;
+    public Map getMap() {
+        return mMap;
+    }
 
-		@Override
-		public int getWidth() {
-			return Gdx.graphics.getWidth();
-		}
+    class MapAdapter extends Map {
 
-		@Override
-		public int getHeight() {
-			return Gdx.graphics.getHeight();
-		}
+        @Override
+        public int getWidth() {
+            return Gdx.graphics.getWidth();
+        }
 
-		@Override
-		public void updateMap(boolean forceRender) {
-			if (!mWaitRedraw) {
-				mWaitRedraw = true;
-				Gdx.app.postRunnable(mRedrawRequest);
-			}
-		}
+        @Override
+        public int getHeight() {
+            return Gdx.graphics.getHeight();
+        }
 
-		@Override
-		public void render() {
-			mRenderRequest = true;
-			if (mClearMap)
-				updateMap(false);
-			else
-				Gdx.graphics.requestRendering();
-		}
+        private final Runnable mRedrawCb = new Runnable() {
+            @Override
+            public void run() {
+                prepareFrame();
+                Gdx.graphics.requestRendering();
+            }
+        };
 
-		@Override
-		public boolean post(Runnable runnable) {
-			Gdx.app.postRunnable(runnable);
-			return true;
-		}
+        @Override
+        public void updateMap(boolean forceRender) {
+            synchronized (mRedrawCb) {
+                if (!mRenderRequest) {
+                    mRenderRequest = true;
+                    Gdx.app.postRunnable(mRedrawCb);
+                } else {
+                    mRenderWait = true;
+                }
+            }
+        }
 
-		@Override
-		public boolean postDelayed(final Runnable action, long delay) {
-			Timer.schedule(new Task() {
-				@Override
-				public void run() {
-					action.run();
-				}
-			}, delay / 1000f);
-			return true;
-		}
+        @Override
+        public void render() {
+            synchronized (mRedrawCb) {
+                mRenderRequest = true;
+                if (mClearMap)
+                    updateMap(false);
+                else {
+                    Gdx.graphics.requestRendering();
+                }
+            }
+        }
 
-		/**
-		 * Update all Layers on Main thread.
-		 * 
-		 * @param forceRedraw
-		 *            also render frame FIXME (does nothing atm)
-		 */
-		private void redrawMapInternal(boolean forceRedraw) {
-			updateLayers();
+        @Override
+        public boolean post(Runnable runnable) {
+            Gdx.app.postRunnable(runnable);
+            return true;
+        }
 
-			mRenderRequest = true;
-			Gdx.graphics.requestRendering();
-		}
+        @Override
+        public boolean postDelayed(final Runnable action, long delay) {
+            Timer.schedule(new Task() {
+                @Override
+                public void run() {
+                    action.run();
+                }
+            }, delay / 1000f);
+            return true;
+        }
 
-		/* private */boolean mWaitRedraw;
-		private final Runnable mRedrawRequest = new Runnable() {
-			@Override
-			public void run() {
-				mWaitRedraw = false;
-				redrawMapInternal(false);
-			}
-		};
+        @Override
+        public void beginFrame() {
+        }
 
-		public boolean needsRedraw() {
-			if (!mRenderRequest)
-				return false;
-
-			mRenderRequest = false;
-			return true;
-		}
-
-	}
+        @Override
+        public void doneFrame(boolean animate) {
+            synchronized (mRedrawCb) {
+                mRenderRequest = false;
+                if (animate || mRenderWait) {
+                    mRenderWait = false;
+                    updateMap(true);
+                }
+            }
+        }
+    }
 }

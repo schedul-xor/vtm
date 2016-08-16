@@ -1,6 +1,7 @@
 /*
- * Copyright 2013 Hannes Janetzek
  * Copyright 2013 mapsforge.org
+ * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -17,10 +18,6 @@
  */
 package org.oscim.tiling.source.mapfile;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
 import org.oscim.tiling.ITileDataSource;
 import org.oscim.tiling.TileSource;
 import org.oscim.tiling.source.mapfile.header.MapFileHeader;
@@ -29,116 +26,151 @@ import org.oscim.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
 public class MapFileTileSource extends TileSource {
-	static final Logger log = LoggerFactory.getLogger(MapFileTileSource.class);
+    static final Logger log = LoggerFactory.getLogger(MapFileTileSource.class);
 
-	/**
-	 * Amount of cache blocks that the index cache should store.
-	 */
-	private static final int INDEX_CACHE_SIZE = 64;
-	private static final String READ_ONLY_MODE = "r";
+    /**
+     * Amount of cache blocks that the index cache should store.
+     */
+    private static final int INDEX_CACHE_SIZE = 64;
+    private static final String READ_ONLY_MODE = "r";
 
-	MapFileHeader fileHeader;
-	MapFileInfo fileInfo;
-	IndexCache databaseIndexCache;
-	boolean experimental;
-	File mapFile;
-	RandomAccessFile mInputFile;
+    MapFileHeader fileHeader;
+    MapFileInfo fileInfo;
+    IndexCache databaseIndexCache;
+    boolean experimental;
+    File mapFile;
+    RandomAccessFile mInputFile;
 
-	public MapFileTileSource() {
-		super(0, 17);
-	}
+    /**
+     * The preferred language when extracting labels from this tile source.
+     */
+    private String preferredLanguage;
+    private Callback callback;
 
-	public boolean setMapFile(String filename) {
-		setOption("file", filename);
+    public MapFileTileSource() {
+        super(0, 17);
+    }
 
-		File file = new File(filename);
+    /**
+     * Extracts substring of preferred language from multilingual string using
+     * the preferredLanguage setting.
+     */
+    String extractLocalized(String s) {
+        if (callback != null)
+            return callback.extractLocalized(s);
+        return MapFileUtils.extract(s, preferredLanguage);
+    }
 
-		if (!file.exists()) {
-			return false;
-		} else if (!file.isFile()) {
-			return false;
-		} else if (!file.canRead()) {
-			return false;
-		}
+    public void setCallback(Callback callback) {
+        this.callback = callback;
+    }
 
-		return true;
-	}
+    public boolean setMapFile(String filename) {
+        setOption("file", filename);
 
-	@Override
-	public OpenResult open() {
-		if (!options.containsKey("file"))
-			return new OpenResult("no map file set");
+        File file = new File(filename);
 
-		try {
-			// make sure to close any previously opened file first
-			//close();
+        if (!file.exists()) {
+            return false;
+        } else if (!file.isFile()) {
+            return false;
+        } else if (!file.canRead()) {
+            return false;
+        }
 
-			File file = new File(options.get("file"));
+        return true;
+    }
 
-			// check if the file exists and is readable
-			if (!file.exists()) {
-				return new OpenResult("file does not exist: " + file);
-			} else if (!file.isFile()) {
-				return new OpenResult("not a file: " + file);
-			} else if (!file.canRead()) {
-				return new OpenResult("cannot read file: " + file);
-			}
+    public void setPreferredLanguage(String preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
+    }
 
-			// open the file in read only mode
-			mInputFile = new RandomAccessFile(file, READ_ONLY_MODE);
-			long mFileSize = mInputFile.length();
-			ReadBuffer mReadBuffer = new ReadBuffer(mInputFile);
+    @Override
+    public OpenResult open() {
+        if (!options.containsKey("file"))
+            return new OpenResult("no map file set");
 
-			fileHeader = new MapFileHeader();
-			OpenResult openResult = fileHeader.readHeader(mReadBuffer, mFileSize);
+        try {
+            // make sure to close any previously opened file first
+            //close();
 
-			if (!openResult.isSuccess()) {
-				close();
-				return openResult;
-			}
-			fileInfo = fileHeader.getMapFileInfo();
-			mapFile = file;
-			databaseIndexCache = new IndexCache(mInputFile, INDEX_CACHE_SIZE);
+            File file = new File(options.get("file"));
 
-			experimental = fileInfo.fileVersion == 4;
+            // check if the file exists and is readable
+            if (!file.exists()) {
+                return new OpenResult("file does not exist: " + file);
+            } else if (!file.isFile()) {
+                return new OpenResult("not a file: " + file);
+            } else if (!file.canRead()) {
+                return new OpenResult("cannot read file: " + file);
+            }
 
-			log.debug("File version: " + fileInfo.fileVersion);
-			return OpenResult.SUCCESS;
-		} catch (IOException e) {
-			log.error(e.getMessage());
-			// make sure that the file is closed
-			close();
-			return new OpenResult(e.getMessage());
-		}
-	}
+            // open the file in read only mode
+            mInputFile = new RandomAccessFile(file, READ_ONLY_MODE);
+            long mFileSize = mInputFile.length();
+            ReadBuffer mReadBuffer = new ReadBuffer(mInputFile);
 
-	@Override
-	public ITileDataSource getDataSource() {
-		try {
-			return new MapDatabase(this);
-		} catch (IOException e) {
-			log.debug(e.getMessage());
-		}
-		return null;
-	}
+            fileHeader = new MapFileHeader();
+            OpenResult openResult = fileHeader.readHeader(mReadBuffer, mFileSize);
 
-	@Override
-	public void close() {
-		IOUtils.closeQuietly(mInputFile);
-		mInputFile = null;
-		fileHeader = null;
-		fileInfo = null;
-		mapFile = null;
+            if (!openResult.isSuccess()) {
+                close();
+                return openResult;
+            }
+            fileInfo = fileHeader.getMapFileInfo();
+            mapFile = file;
+            databaseIndexCache = new IndexCache(mInputFile, INDEX_CACHE_SIZE);
 
-		if (databaseIndexCache != null) {
-			databaseIndexCache.destroy();
-			databaseIndexCache = null;
-		}
-	}
+            // Experimental?
+            //experimental = fileInfo.fileVersion == 4;
 
-	public MapInfo getMapInfo() {
-		return fileInfo;
-	}
+            log.debug("File version: " + fileInfo.fileVersion);
+            return OpenResult.SUCCESS;
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            // make sure that the file is closed
+            close();
+            return new OpenResult(e.getMessage());
+        }
+    }
 
+    @Override
+    public ITileDataSource getDataSource() {
+        try {
+            return new MapDatabase(this);
+        } catch (IOException e) {
+            log.debug(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public void close() {
+        IOUtils.closeQuietly(mInputFile);
+        mInputFile = null;
+        fileHeader = null;
+        fileInfo = null;
+        mapFile = null;
+
+        if (databaseIndexCache != null) {
+            databaseIndexCache.destroy();
+            databaseIndexCache = null;
+        }
+    }
+
+    public MapInfo getMapInfo() {
+        return fileInfo;
+    }
+
+    public interface Callback {
+        /**
+         * Extracts substring of preferred language from multilingual string.
+         */
+        String extractLocalized(String s);
+    }
 }

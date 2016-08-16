@@ -16,8 +16,16 @@
  */
 package org.oscim.android;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.opengl.GLSurfaceView;
+import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.view.GestureDetector;
+
 import org.oscim.android.canvas.AndroidGraphics;
 import org.oscim.android.gl.AndroidGL;
+import org.oscim.android.gl.GlConfigChooser;
 import org.oscim.android.input.AndroidMotionEvent;
 import org.oscim.android.input.GestureHandler;
 import org.oscim.backend.CanvasAdapter;
@@ -26,94 +34,220 @@ import org.oscim.map.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.view.GestureDetector;
-import android.widget.RelativeLayout;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
-public class MapView extends RelativeLayout {
+/**
+ * The MapView,
+ * <p/>
+ * add it your App, have a map!
+ * <p/>
+ * Dont forget to call onPause / onResume!
+ */
+public class MapView extends GLSurfaceView {
 
-	static {
-		System.loadLibrary("vtm-jni");
-	}
+    static final Logger log = LoggerFactory.getLogger(MapView.class);
 
-	static final Logger log = LoggerFactory.getLogger(MapView.class);
+    static {
+        System.loadLibrary("vtm-jni");
+    }
 
-	protected final AndroidMap mMap;
-	protected final GestureDetector mGestureDetector;
-	protected final AndroidMotionEvent mMotionEvent;
+    protected final AndroidMap mMap;
+    protected final GestureDetector mGestureDetector;
+    protected final AndroidMotionEvent mMotionEvent;
 
-	public MapView(Context context) {
-		this(context, null);
-	}
+    public MapView(Context context) {
+        this(context, null);
+    }
 
-	public MapView(Context context, AttributeSet attributeSet) {
-		super(context, attributeSet);
-		this.setWillNotDraw(true);
-		this.setClickable(true);
-		this.setFocusable(true);
+    public MapView(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
 
-		AndroidGraphics.init();
-		AndroidAssets.init(context);
-		GLAdapter.init(new AndroidGL());
+        /* Not sure if this makes sense */
+        this.setWillNotDraw(true);
+        this.setClickable(true);
+        this.setFocusable(true);
+        this.setFocusableInTouchMode(true);
 
-		DisplayMetrics metrics = getResources().getDisplayMetrics();
-		CanvasAdapter.dpi = (int) Math.max(metrics.xdpi, metrics.ydpi);
+        /* Setup android backedn */
+        AndroidGraphics.init();
+        AndroidAssets.init(context);
+        GLAdapter.init(new AndroidGL());
 
-		mMap = new AndroidMap(this);
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        CanvasAdapter.dpi = (int) Math.max(metrics.xdpi, metrics.ydpi);
 
-		if (context instanceof MapActivity)
-			((MapActivity) context).registerMapView(this);
+        /* Initialize the Map */
+        mMap = new AndroidMap(this);
 
-		mMap.clearMap();
-		mMap.updateMap(false);
+        /* Initialize Renderer */
+        setEGLConfigChooser(new GlConfigChooser());
+        setEGLContextClientVersion(2);
 
-		GestureHandler gestureHandler = new GestureHandler(mMap);
-		mGestureDetector = new GestureDetector(context, gestureHandler);
-		mGestureDetector.setOnDoubleTapListener(gestureHandler);
+        if (GLAdapter.debug)
+            setDebugFlags(GLSurfaceView.DEBUG_CHECK_GL_ERROR
+                    | GLSurfaceView.DEBUG_LOG_GL_CALLS);
 
-		mMotionEvent = new AndroidMotionEvent();
-	}
+        setRenderer(new GLRenderer(mMap));
+        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-	public void onStop() {
+        mMap.clearMap();
+        mMap.updateMap(false);
 
-	}
+        GestureHandler gestureHandler = new GestureHandler(mMap);
+        mGestureDetector = new GestureDetector(context, gestureHandler);
+        mGestureDetector.setOnDoubleTapListener(gestureHandler);
 
-	void onPause() {
-		mMap.pause(true);
-	}
+        mMotionEvent = new AndroidMotionEvent();
+    }
 
-	void onResume() {
-		mMap.pause(false);
-	}
+    public void onStop() {
 
-	@SuppressLint("ClickableViewAccessibility")
-	@Override
-	public boolean onTouchEvent(android.view.MotionEvent motionEvent) {
+    }
 
-		if (!isClickable())
-			return false;
+    public void onPause() {
+        mMap.pause(true);
+    }
 
-		if (mGestureDetector.onTouchEvent(motionEvent))
-			return true;
+    public void onResume() {
+        mMap.pause(false);
+    }
 
-		mMap.input.fire(null, mMotionEvent.wrap(motionEvent));
-		return true;
-	}
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean onTouchEvent(android.view.MotionEvent motionEvent) {
 
-	@Override
-	protected void onSizeChanged(int width, int height,
-	        int oldWidth, int oldHeight) {
+        if (!isClickable())
+            return false;
 
-		super.onSizeChanged(width, height, oldWidth, oldHeight);
+        if (mGestureDetector.onTouchEvent(motionEvent))
+            return true;
 
-		if (width > 0 && height > 0)
-			mMap.viewport().setScreenSize(width, height);
-	}
+        mMap.input.fire(null, mMotionEvent.wrap(motionEvent));
+        return true;
+    }
 
-	public Map map() {
-		return mMap;
-	}
+    @Override
+    protected void onSizeChanged(int width, int height,
+                                 int oldWidth, int oldHeight) {
+
+        super.onSizeChanged(width, height, oldWidth, oldHeight);
+
+        if (width > 0 && height > 0)
+            mMap.viewport().setScreenSize(width, height);
+    }
+
+    public Map map() {
+        return mMap;
+    }
+
+    static class AndroidMap extends Map {
+
+        private final MapView mMapView;
+
+        private boolean mRenderRequest;
+        private boolean mRenderWait;
+        private boolean mPausing;
+
+        public AndroidMap(MapView mapView) {
+            super();
+            mMapView = mapView;
+        }
+
+        @Override
+        public int getWidth() {
+            return mMapView.getWidth();
+        }
+
+        @Override
+        public int getHeight() {
+            return mMapView.getHeight();
+        }
+
+        private final Runnable mRedrawCb = new Runnable() {
+            @Override
+            public void run() {
+                prepareFrame();
+                mMapView.requestRender();
+            }
+        };
+
+        @Override
+        public void updateMap(boolean redraw) {
+            synchronized (mRedrawCb) {
+                if (mPausing)
+                    return;
+
+                if (!mRenderRequest) {
+                    mRenderRequest = true;
+                    mMapView.post(mRedrawCb);
+                } else {
+                    mRenderWait = true;
+                }
+            }
+        }
+
+        @Override
+        public void render() {
+            if (mPausing)
+                return;
+
+            /** TODO should not need to call prepareFrame in mRedrawCb */
+            updateMap(false);
+        }
+
+        @Override
+        public void beginFrame() {
+        }
+
+        @Override
+        public void doneFrame(boolean animate) {
+            synchronized (mRedrawCb) {
+                mRenderRequest = false;
+                if (animate || mRenderWait) {
+                    mRenderWait = false;
+                    render();
+                }
+            }
+        }
+
+        @Override
+        public boolean post(Runnable runnable) {
+            return mMapView.post(runnable);
+        }
+
+        @Override
+        public boolean postDelayed(Runnable action, long delay) {
+            return mMapView.postDelayed(action, delay);
+        }
+
+        public void pause(boolean pause) {
+            log.debug("pause... {}", pause);
+            mPausing = pause;
+        }
+    }
+
+    static class GLRenderer extends org.oscim.renderer.MapRenderer
+            implements GLSurfaceView.Renderer {
+
+        public GLRenderer(Map map) {
+            super(map);
+        }
+
+        @Override
+        public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+            super.onSurfaceCreated();
+        }
+
+        @Override
+        public void onSurfaceChanged(GL10 gl, int width, int height) {
+            super.onSurfaceChanged(width, height);
+
+        }
+
+        @Override
+        public void onDrawFrame(GL10 gl) {
+            super.onDrawFrame();
+        }
+    }
 }

@@ -1,6 +1,7 @@
 /*
  * Copyright 2010, 2011, 2012 mapsforge.org
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -17,182 +18,220 @@
  */
 package org.oscim.theme.styles;
 
-import static org.oscim.backend.canvas.Color.parseColor;
-
 import org.oscim.backend.canvas.Color;
 import org.oscim.backend.canvas.Paint.Cap;
+import org.oscim.renderer.bucket.TextureItem;
+
+import static org.oscim.backend.canvas.Color.parseColor;
 
 public final class LineStyle extends RenderStyle {
 
-	final int level;
-	public final String style;
-	public final float width;
-	public final int color;
-	public final Cap cap;
-	public final boolean outline;
-	public final boolean fixed;
-	public final int fadeScale;
-	public final float blur;
+    final int level;
+    public final String style;
+    public final float width;
+    public final int color;
+    public final Cap cap;
+    public final boolean outline;
+    public final boolean fixed;
+    public final int fadeScale;
+    public final float blur;
 
-	public final int stipple;
-	public final int stippleColor;
-	public final float stippleWidth;
+    public final int stipple;
+    public final int stippleColor;
+    public final float stippleWidth;
+    public final TextureItem texture;
 
-	private LineStyle(LineBuilder<?> builer) {
-		this.level = builer.level;
-		this.style = builer.style;
-		this.width = builer.strokeWidth;
-		this.color = builer.fillColor;
-		this.cap = builer.cap;
-		this.outline = builer.outline;
-		this.fixed = builer.fixed;
-		this.fadeScale = builer.fadeScale;
-		this.blur = builer.blur;
-		this.stipple = builer.stipple;
-		this.stippleColor = builer.stippleColor;
-		this.stippleWidth = builer.stippleWidth;
-	}
+    public final boolean randomOffset;
 
-	public LineStyle(int level, String style, int color, float width,
-	        Cap cap, boolean fixed,
-	        int stipple, int stippleColor, float stippleWidth,
-	        int fadeScale, float blur, boolean isOutline) {
+    private LineStyle(LineBuilder<?> builder) {
+        this.level = builder.level;
+        this.style = builder.style;
+        this.width = builder.strokeWidth;
+        this.color = builder.fillColor;
+        this.cap = builder.cap;
+        this.outline = builder.outline;
+        this.fixed = builder.fixed;
+        this.fadeScale = builder.fadeScale;
+        this.blur = builder.blur;
+        this.stipple = builder.stipple;
+        this.stippleColor = builder.stippleColor;
+        this.stippleWidth = builder.stippleWidth;
+        this.texture = builder.texture;
+        this.randomOffset = builder.randomOffset;
+    }
 
-		this.level = level;
-		this.style = style;
-		this.outline = isOutline;
+    public LineStyle(int level, String style, int color, float width,
+                     Cap cap, boolean fixed,
+                     int stipple, int stippleColor, float stippleWidth,
+                     int fadeScale, float blur, boolean isOutline, TextureItem texture,
+                     boolean randomOffset) {
 
-		this.cap = cap;
-		this.color = color;
-		this.width = width;
-		this.fixed = fixed;
+        this.level = level;
+        this.style = style;
+        this.outline = isOutline;
 
-		this.stipple = stipple;
-		this.stippleColor = stippleColor;
-		this.stippleWidth = stippleWidth;
+        this.cap = cap;
+        this.color = color;
+        this.width = width;
+        this.fixed = fixed;
 
-		this.blur = blur;
-		this.fadeScale = fadeScale;
-	}
+        this.stipple = stipple;
+        this.stippleColor = stippleColor;
+        this.stippleWidth = stippleWidth;
+        this.texture = texture;
 
-	public LineStyle(int stroke, float width) {
-		this(0, "", stroke, width, Cap.BUTT, true, 0, 0, 0, -1, 0, false);
-	}
+        this.blur = blur;
+        this.fadeScale = fadeScale;
 
-	public LineStyle(int level, int stroke, float width) {
-		this(level, "", stroke, width, Cap.BUTT, true, 0, 0, 0, -1, 0, false);
-	}
+        this.randomOffset = randomOffset;
+    }
 
-	public LineStyle(int stroke, float width, Cap cap) {
-		this(0, "", stroke, width, cap, true, 0, 0, 0, -1, 0, false);
-	}
+    public LineStyle(int stroke, float width) {
+        this(0, "", stroke, width, Cap.BUTT, true, 0, 0, 0, -1, 0, false, null, true);
+    }
 
-	@Override
-	public void renderWay(Callback cb) {
-		cb.renderWay(this, level);
-	}
+    public LineStyle(int level, int stroke, float width) {
+        this(level, "", stroke, width, Cap.BUTT, true, 0, 0, 0, -1, 0, false, null, true);
+    }
 
-	@Override
-	public LineStyle current() {
-		return (LineStyle) mCurrent;
-	}
+    public LineStyle(int stroke, float width, Cap cap) {
+        this(0, "", stroke, width, cap, true, 0, 0, 0, -1, 0, false, null, true);
+    }
 
-	public static class LineBuilder<T extends LineBuilder<T>> extends StyleBuilder<T> {
+    @Override
+    public void renderWay(Callback cb) {
+        cb.renderWay(this, level);
+    }
 
-		public String style;
-		public Cap cap;
-		public boolean outline;
-		public boolean fixed;
-		public int fadeScale;
-		public float blur;
+    @Override
+    public LineStyle current() {
+        return (LineStyle) mCurrent;
+    }
 
-		public int stipple;
-		public int stippleColor;
-		public float stippleWidth;
+    public static class LineBuilder<T extends LineBuilder<T>> extends StyleBuilder<T> {
 
-		public T set(LineStyle line) {
-			if (line == null)
-				return reset();
-			this.level = line.level;
-			this.style = line.style;
-			this.strokeWidth = line.width;
-			this.fillColor = line.color;
-			this.cap = line.cap;
-			this.outline = line.outline;
-			this.fixed = line.fixed;
-			this.fadeScale = line.fadeScale;
-			this.blur = line.blur;
-			this.stipple = line.stipple;
-			this.stippleColor = line.stippleColor;
-			this.stippleWidth = line.stippleWidth;
-			return self();
-		}
+        public String style;
+        public Cap cap;
+        public boolean outline;
+        public boolean fixed;
+        public int fadeScale;
+        public float blur;
 
-		public T reset() {
-			level = -1;
-			style = null;
-			fillColor = Color.BLACK;
-			cap = Cap.ROUND;
-			strokeWidth = 1;
-			fixed = false;
+        public int stipple;
+        public int stippleColor;
+        public float stippleWidth;
+        public TextureItem texture;
 
-			fadeScale = -1;
-			blur = 0;
+        public boolean randomOffset;
 
-			stipple = 0;
-			stippleWidth = 1;
-			stippleColor = Color.BLACK;
+        public T set(LineStyle line) {
+            if (line == null)
+                return reset();
+            this.level = line.level;
+            this.style = line.style;
+            this.strokeWidth = line.width;
+            this.fillColor = line.color;
+            this.cap = line.cap;
+            this.outline = line.outline;
+            this.fixed = line.fixed;
+            this.fadeScale = line.fadeScale;
+            this.blur = line.blur;
+            this.stipple = line.stipple;
+            this.stippleColor = line.stippleColor;
+            this.stippleWidth = line.stippleWidth;
+            this.texture = line.texture;
+            this.randomOffset = line.randomOffset;
+            return self();
+        }
 
-			return self();
-		}
+        public T reset() {
+            level = -1;
+            style = null;
+            fillColor = Color.BLACK;
+            cap = Cap.ROUND;
+            strokeWidth = 1;
+            fixed = false;
 
-		public T style(String name) {
-			this.style = name;
-			return self();
-		}
+            fadeScale = -1;
+            blur = 0;
 
-		public T blur(float blur) {
-			this.blur = blur;
-			return self();
-		}
+            stipple = 0;
+            stippleWidth = 1;
+            stippleColor = Color.BLACK;
+            texture = null;
 
-		public T fadeScale(int zoom) {
-			this.fadeScale = zoom;
-			return self();
-		}
+            randomOffset = true;
 
-		public T stippleColor(int color) {
-			this.stippleColor = color;
-			return self();
-		}
+            return self();
+        }
 
-		public T stippleColor(String color) {
-			this.stippleColor = parseColor(color);
-			return self();
-		}
+        public T style(String name) {
+            this.style = name;
+            return self();
+        }
 
-		public T isOutline(boolean outline) {
-			this.outline = outline;
-			return self();
-		}
+        public T blur(float blur) {
+            this.blur = blur;
+            return self();
+        }
 
-		public LineStyle build() {
-			return new LineStyle(this);
-		}
+        public T fadeScale(int zoom) {
+            this.fadeScale = zoom;
+            return self();
+        }
 
-		public T cap(Cap cap) {
-			this.cap = cap;
-			return self();
-		}
+        public T stipple(int width) {
+            this.stipple = width;
+            return self();
+        }
 
-		public T fixed(boolean b) {
-			this.fixed = b;
-			return self();
-		}
-	}
+        public T stippleColor(int color) {
+            this.stippleColor = color;
+            return self();
+        }
 
-	@SuppressWarnings("rawtypes")
-	public static LineBuilder<?> builder() {
-		return new LineBuilder();
-	}
+        public T stippleColor(String color) {
+            this.stippleColor = parseColor(color);
+            return self();
+        }
+
+        public T stippleWidth(float width) {
+            this.stippleWidth = width;
+            return self();
+        }
+
+        public T isOutline(boolean outline) {
+            this.outline = outline;
+            return self();
+        }
+
+        public LineStyle build() {
+            return new LineStyle(this);
+        }
+
+        public T cap(Cap cap) {
+            this.cap = cap;
+            return self();
+        }
+
+        public T fixed(boolean b) {
+            this.fixed = b;
+            return self();
+        }
+
+        public T texture(TextureItem texture) {
+            this.texture = texture;
+            return self();
+        }
+
+        public T randomOffset(boolean randomOffset) {
+            this.randomOffset = randomOffset;
+            return self();
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static LineBuilder<?> builder() {
+        return new LineBuilder();
+    }
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright 2014 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,93 +17,97 @@
  */
 package org.oscim.android.test;
 
-import static org.oscim.tiling.source.bitmap.DefaultSources.STAMEN_TONER;
+import android.os.Bundle;
+
+import org.oscim.backend.canvas.Color;
+import org.oscim.core.MapPosition;
+import org.oscim.event.Event;
+import org.oscim.layers.vector.PathLayer;
+import org.oscim.map.Map.UpdateListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.oscim.backend.canvas.Color;
-import org.oscim.core.GeoPoint;
-import org.oscim.layers.PathLayer;
+import static org.oscim.tiling.source.bitmap.DefaultSources.STAMEN_TONER;
 
-import android.os.Bundle;
-import android.os.SystemClock;
-
+/**
+ * This is a very INEFFICIENT and somewhat less useful example for how to use
+ * PathLayers!
+ */
 public class PathOverlayActivity extends BitmapTileMapActivity {
 
-	public PathOverlayActivity() {
-		super(STAMEN_TONER.build());
-	}
+    private static final boolean ANIMATION = true;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		mBitmapLayer.tileRenderer().setBitmapAlpha(0.5f);
+    private List<PathLayer> mPathLayers = new ArrayList<>();
 
-		createLayers(1, true);
+    public PathOverlayActivity() {
+        super(STAMEN_TONER.build());
+    }
 
-		mMap.setMapPosition(0, 0, 1 << 2);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mBitmapLayer.tileRenderer().setBitmapAlpha(0.5f);
 
-		looooop();
-	}
+        for (double lat = -90; lat <= 90; lat += 5) {
+            int c = Color.fade(Color.rainbow((float) (lat + 90) / 180), 0.5f);
+            PathLayer pathLayer = new PathLayer(mMap, c, 6);
+            mMap.layers().add(pathLayer);
+            mPathLayers.add(pathLayer);
+        }
 
-	void looooop() {
-		mMap.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				long t = SystemClock.uptimeMillis();
-				float pos = t % 20000 / 10000f - 1f;
-				createLayers(pos, false);
-				//Samples.log.debug("update took" + (SystemClock.uptimeMillis() - t) + " " + pos);
-				looooop();
-				redraw();
-			}
-		}, 50);
-	}
+        if (ANIMATION)
+            mMap.events.bind(new UpdateListener() {
+                @Override
+                public void onMapEvent(Event e, MapPosition mapPosition) {
+                    //if (e == Map.UPDATE_EVENT) {
+                    long t = System.currentTimeMillis();
+                    float pos = t % 20000 / 10000f - 1f;
+                    createLayers(pos);
+                    mMap.updateMap(true);
+                    //}
+                }
+            });
+        else
+            createLayers(1);
+    }
 
-	void redraw() {
-		mMap.render();
-	}
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-	ArrayList<PathLayer> mPathLayers = new ArrayList<PathLayer>();
+        /* ignore saved position */
+        mMap.setMapPosition(0, 0, 1 << 2);
+    }
 
-	void createLayers(float pos, boolean init) {
+    void createLayers(float pos) {
 
-		int i = 0;
+        int i = 0;
+        for (double lat = -90; lat <= 90; lat += 5) {
+            double[] packedCoordinates = new double[360 + 2];
+            //List<GeoPoint> pts = new ArrayList<>();
+            int c = 0;
+            for (double lon = -180; lon <= 180; lon += 2) {
+                //pts.add(new GeoPoint(lat, lon));
+                double longitude = lon;
 
-		for (double lat = -90; lat <= 90; lat += 5) {
-			List<GeoPoint> pts = new ArrayList<GeoPoint>();
+                double latitude = lat + (pos * 90);
+                if (latitude < -90)
+                    latitude += 180;
+                if (latitude > 90)
+                    latitude -= 180;
 
-			for (double lon = -180; lon <= 180; lon += 2) {
-				//pts.add(new GeoPoint(lat, lon));
-				double longitude = lon + (pos * 180);
-				if (longitude < -180)
-					longitude += 360;
-				if (longitude > 180)
-					longitude -= 360;
+                latitude += Math.sin((Math.abs(pos) * (lon / Math.PI)));
 
-				double latitude = lat + (pos * 90);
-				if (latitude < -90)
-					latitude += 180;
-				if (latitude > 90)
-					latitude -= 180;
+                packedCoordinates[c++] = longitude;
+                packedCoordinates[c++] = latitude;
+            }
 
-				latitude += Math.sin((Math.abs(pos) * (lon / Math.PI)));
+            //LineString line = new LineString(factory.create(packedCoordinates, 2), geomFactory);
+            //mPathLayers.get(i++).setLineString(line);
 
-				pts.add(new GeoPoint(latitude, longitude));
-			}
-			PathLayer pathLayer;
-			if (init) {
-				int c = Color.fade(Color.rainbow((float) (lat + 90) / 180), 0.5f);
-				pathLayer = new PathLayer(mMap, c, 6);
-				mMap.layers().add(pathLayer);
-				mPathLayers.add(pathLayer);
-			} else {
-				pathLayer = mPathLayers.get(i++);
-			}
+            mPathLayers.get(i++).setLineString(packedCoordinates);
 
-			pathLayer.setPoints(pts);
-		}
-
-	}
+        }
+    }
 }

@@ -1,5 +1,7 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 Longri
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,88 +18,103 @@
  */
 package org.oscim.android.canvas;
 
-import static android.graphics.Bitmap.Config.ARGB_8888;
-
-import java.io.InputStream;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
+import org.oscim.utils.IOUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
+import static android.graphics.Bitmap.Config.ARGB_8888;
+
 public class AndroidBitmap implements org.oscim.backend.canvas.Bitmap {
-	final Bitmap mBitmap;
+    final Bitmap mBitmap;
 
-	public AndroidBitmap(InputStream inputStream) {
-		Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-		try {
-			GLUtils.getType(bitmap);
-		} catch (IllegalArgumentException e) {
-			bitmap = bitmap.copy(ARGB_8888, false);
-		}
-		mBitmap = bitmap;
-	}
+    public AndroidBitmap(InputStream inputStream) {
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        try {
+            GLUtils.getType(bitmap);
+        } catch (IllegalArgumentException e) {
+            bitmap = bitmap.copy(ARGB_8888, false);
+        }
+        mBitmap = bitmap;
+    }
 
-	@Override
-	public boolean isValid() {
-		return mBitmap != null;
-	}
+    @Override
+    public boolean isValid() {
+        return mBitmap != null;
+    }
 
-	/**
-	 * @param format ignored always ARGB8888
-	 */
-	public AndroidBitmap(int width, int height, int format) {
-		mBitmap = android.graphics.Bitmap
-		    .createBitmap(width, height, ARGB_8888);
-	}
+    /**
+     * @param format ignored always ARGB8888
+     */
+    public AndroidBitmap(int width, int height, int format) {
+        mBitmap = android.graphics.Bitmap
+                .createBitmap(width, height, ARGB_8888);
+    }
 
-	public AndroidBitmap(android.graphics.Bitmap bitmap) {
-		mBitmap = bitmap;
-	}
+    public AndroidBitmap(android.graphics.Bitmap bitmap) {
+        mBitmap = bitmap;
+    }
 
-	@Override
-	public int getWidth() {
-		return mBitmap.getWidth();
-	}
+    @Override
+    public int getWidth() {
+        return mBitmap.getWidth();
+    }
 
-	@Override
-	public int getHeight() {
-		return mBitmap.getHeight();
-	}
+    @Override
+    public int getHeight() {
+        return mBitmap.getHeight();
+    }
 
-	@Override
-	public int[] getPixels() {
-		int width = getWidth();
-		int height = getHeight();
-		int[] colors = new int[width * height];
-		mBitmap.getPixels(colors, 0, width, 0, 0, width, height);
-		return colors;
-	}
+    @Override
+    public int[] getPixels() {
+        int width = getWidth();
+        int height = getHeight();
+        int[] colors = new int[width * height];
+        mBitmap.getPixels(colors, 0, width, 0, 0, width, height);
+        return colors;
+    }
 
-	@Override
-	public void eraseColor(int color) {
-		//int a = android.graphics.Color.TRANSPARENT;
-		mBitmap.eraseColor(color);
-	}
+    @Override
+    public void eraseColor(int color) {
+        //int a = android.graphics.Color.TRANSPARENT;
+        mBitmap.eraseColor(color);
+    }
 
-	@Override
-	public void uploadToTexture(boolean replace) {
-		int format = GLUtils.getInternalFormat(mBitmap);
-		int type = GLUtils.getType(mBitmap);
+    @Override
+    public void uploadToTexture(boolean replace) {
+        int format = GLUtils.getInternalFormat(mBitmap);
+        int type = GLUtils.getType(mBitmap);
 
-		if (replace)
-			GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0,
-			                      mBitmap, format, type);
-		else
-			GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, format,
-			                   mBitmap, type, 0);
-	}
+        if (replace)
+            GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0,
+                    mBitmap, format, type);
+        else
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, format,
+                    mBitmap, type, 0);
+    }
 
-	@Override
-	public void recycle() {
-		if (mBitmap == null)
-			return;
+    @Override
+    public void recycle() {
+        if (mBitmap == null)
+            return;
 
-		mBitmap.recycle();
-	}
+        mBitmap.recycle();
+    }
+
+    @Override
+    public byte[] getPngEncodedData() {
+        ByteArrayOutputStream outputStream = null;
+        try {
+            outputStream = new ByteArrayOutputStream();
+            mBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            return outputStream.toByteArray();
+        } finally {
+            IOUtils.closeQuietly(outputStream);
+        }
+    }
 }

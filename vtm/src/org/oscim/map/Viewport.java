@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -16,7 +17,6 @@
  */
 package org.oscim.map;
 
-import org.oscim.core.BoundingBox;
 import org.oscim.core.Box;
 import org.oscim.core.GeoPoint;
 import org.oscim.core.MapPosition;
@@ -25,317 +25,452 @@ import org.oscim.core.Point;
 import org.oscim.core.Tile;
 import org.oscim.renderer.GLMatrix;
 import org.oscim.utils.FastMath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Viewport class contains a MapPosition and the projection matrices.
  * It provides functions to modify the MapPosition and translate between
  * map and screen coordinates.
- * <p>
+ * <p/>
  * Public methods are thread safe.
  */
 public class Viewport {
-	//static final Logger log = LoggerFactory.getLogger(Viewport.class);
 
-	public final static int MAX_ZOOMLEVEL = 20;
-	public final static int MIN_ZOOMLEVEL = 2;
+    static final Logger log = LoggerFactory.getLogger(Viewport.class);
 
-	public final static double MAX_SCALE = (1 << MAX_ZOOMLEVEL);
-	public final static double MIN_SCALE = (1 << MIN_ZOOMLEVEL);
+    private final static int MAX_ZOOMLEVEL = 20;
+    private final static int MIN_ZOOMLEVEL = 2;
+    private final static float MIN_TILT = 0;
+    private final static float MAX_TILT = 65;
 
-	public final static float MAX_TILT = 65;
+    protected double mMaxScale = (1 << MAX_ZOOMLEVEL);
+    protected double mMinScale = (1 << MIN_ZOOMLEVEL);
 
-	protected final MapPosition mPos = new MapPosition();
+    protected float mMinTilt = MIN_TILT;
+    protected float mMaxTilt = MAX_TILT;
 
-	protected final GLMatrix mProjMatrix = new GLMatrix();
-	protected final GLMatrix mProjMatrixUnscaled = new GLMatrix();
-	protected final GLMatrix mProjMatrixInverse = new GLMatrix();
-	protected final GLMatrix mRotationMatrix = new GLMatrix();
-	protected final GLMatrix mViewMatrix = new GLMatrix();
-	protected final GLMatrix mViewProjMatrix = new GLMatrix();
-	protected final GLMatrix mUnprojMatrix = new GLMatrix();
-	protected final GLMatrix mTmpMatrix = new GLMatrix();
+    protected float mMinBearing = -180;
+    protected float mMaxBearing = 180;
 
-	/* temporary vars: only use in synchronized functions! */
-	protected final Point mMovePoint = new Point();
-	protected final float[] mv = new float[4];
-	protected final float[] mu = new float[4];
-	protected final float[] mViewCoords = new float[8];
+    protected double mMinX = 0;
+    protected double mMaxX = 1;
+    protected double mMinY = 0;
+    protected double mMaxY = 1;
 
-	protected final Box mMapBBox = new Box();
+    protected final MapPosition mPos = new MapPosition();
 
-	protected float mHeight, mWidth;
+    protected final GLMatrix mProjMatrix = new GLMatrix();
+    protected final GLMatrix mProjMatrixUnscaled = new GLMatrix();
+    protected final GLMatrix mProjMatrixInverse = new GLMatrix();
+    protected final GLMatrix mRotationMatrix = new GLMatrix();
+    protected final GLMatrix mViewMatrix = new GLMatrix();
+    protected final GLMatrix mViewProjMatrix = new GLMatrix();
+    protected final GLMatrix mUnprojMatrix = new GLMatrix();
+    protected final GLMatrix mTmpMatrix = new GLMatrix();
 
-	public final static float VIEW_DISTANCE = 3.0f;
-	public final static float VIEW_NEAR = 1;
-	public final static float VIEW_FAR = 8;
-	/** scale map plane at VIEW_DISTANCE to near plane */
-	public final static float VIEW_SCALE = (VIEW_NEAR / VIEW_DISTANCE) * 0.5f;
+    /* temporary vars: only use in synchronized functions! */
+    protected final Point mMovePoint = new Point();
+    protected final float[] mv = new float[4];
+    protected final float[] mu = new float[4];
+    protected final float[] mViewCoords = new float[8];
 
-	protected Viewport() {
-		mPos.scale = MIN_SCALE;
-		mPos.x = 0.5;
-		mPos.y = 0.5;
-		mPos.bearing = 0;
-		mPos.tilt = 0;
-	}
+    protected float mHeight, mWidth;
 
-	/**
-	 * Get the current MapPosition.
-	 * 
-	 * @param pos MapPosition to be updated.
-	 * 
-	 * @return true iff current position is different from
-	 *         passed position.
-	 */
-	public synchronized boolean getMapPosition(MapPosition pos) {
+    public final static float VIEW_DISTANCE = 3.0f;
+    public final static float VIEW_NEAR = 1;
+    public final static float VIEW_FAR = 8;
+    /**
+     * scale map plane at VIEW_DISTANCE to near plane
+     */
+    public final static float VIEW_SCALE = (VIEW_NEAR / VIEW_DISTANCE) * 0.5f;
 
-		boolean changed = (pos.scale != mPos.scale
-		        || pos.x != mPos.x
-		        || pos.y != mPos.y
-		        || pos.bearing != mPos.bearing
-		        || pos.tilt != mPos.tilt);
+    public Viewport() {
+        mPos.scale = mMinScale;
+        mPos.x = 0.5;
+        mPos.y = 0.5;
+        mPos.bearing = 0;
+        mPos.tilt = 0;
+    }
 
-		pos.bearing = mPos.bearing;
-		pos.tilt = mPos.tilt;
+    public double limitScale(double scale) {
+        if (scale > mMaxScale)
+            return mMaxScale;
+        else if (scale < mMinScale)
+            return mMinScale;
 
-		pos.x = mPos.x;
-		pos.y = mPos.y;
-		pos.scale = mPos.scale;
-		pos.zoomLevel = FastMath.log2((int) mPos.scale);
+        return scale;
+    }
 
-		return changed;
-	}
+    public float limitTilt(float tilt) {
+        if (tilt > mMaxTilt)
+            return mMaxTilt;
+        else if (tilt < mMinTilt)
+            return mMinTilt;
 
-	/**
-	 * Get the inverse projection of the viewport, i.e. the
-	 * coordinates with z==0 that will be projected exactly
-	 * to screen corners by current view-projection-matrix.
-	 * 
-	 * @param box float[8] will be set.
-	 * @param add increase extents of box
-	 */
-	public synchronized void getMapExtents(float[] box, float add) {
-		float t = getDepth(1);
-		float t2 = getDepth(-1);
+        return tilt;
+    }
 
-		// top-right
-		unproject(1, -1, t, box, 0);
-		// top-left
-		unproject(-1, -1, t, box, 2);
-		// bottom-left
-		unproject(-1, 1, t2, box, 4);
-		// bottom-right
-		unproject(1, 1, t2, box, 6);
+    public boolean limitPosition(MapPosition pos) {
+        boolean changed = false;
+        if (pos.scale > mMaxScale) {
+            pos.scale = mMaxScale;
+            changed = true;
+        } else if (pos.scale < mMinScale) {
+            pos.scale = mMinScale;
+            changed = true;
+        }
 
-		if (add == 0)
-			return;
+        if (pos.tilt > mMaxTilt) {
+            pos.tilt = mMaxTilt;
+            changed = true;
+        } else if (pos.tilt < mMinTilt) {
+            pos.tilt = mMinTilt;
+            changed = true;
+        }
 
-		for (int i = 0; i < 8; i += 2) {
-			float x = box[i];
-			float y = box[i + 1];
-			float len = (float) Math.sqrt(x * x + y * y);
-			box[i + 0] += x / len * add;
-			box[i + 1] += y / len * add;
-		}
-	}
+        if (pos.bearing > mMaxBearing) {
+            pos.bearing = mMaxBearing;
+            changed = true;
+        } else if (pos.bearing < mMinBearing) {
+            pos.bearing = mMinBearing;
+            changed = true;
+        }
 
-	/**
-	 * Get Z-value of the map-plane for a point on screen -
-	 * calculate the intersection of a ray from camera origin
-	 * and the map plane
-	 */
-	protected float getDepth(float y) {
-		// origin is moved by VIEW_DISTANCE
-		double cx = VIEW_DISTANCE;
-		// 'height' of the ray
-		double ry = y * (mHeight / mWidth) * 0.5f;
+        if (pos.x > mMaxX) {
+            pos.x = mMaxX;
+            changed = true;
+        } else if (pos.x < mMinX) {
+            pos.x = mMinX;
+            changed = true;
+        }
 
-		double ua;
+        if (pos.y > mMaxY) {
+            pos.y = mMaxY;
+            changed = true;
+        } else if (pos.y < mMinY) {
+            pos.y = mMinY;
+            changed = true;
+        }
 
-		if (y == 0)
-			ua = 1;
-		else {
-			// tilt of the plane (center is kept on x = 0)
-			double t = Math.toRadians(mPos.tilt);
-			double px = y * Math.sin(t);
-			double py = y * Math.cos(t);
-			ua = 1 + (px * ry) / (py * cx);
-		}
+        return changed;
+    }
 
-		mv[0] = 0;
-		mv[1] = (float) (ry / ua);
-		mv[2] = (float) (cx - cx / ua);
+    /**
+     * Get the current MapPosition.
+     *
+     * @param pos MapPosition to be updated.
+     * @return true iff current position is different from
+     * passed position.
+     */
+    public boolean getMapPosition(MapPosition pos) {
 
-		mProjMatrixUnscaled.prj(mv);
+        boolean changed = (pos.scale != mPos.scale
+                || pos.x != mPos.x
+                || pos.y != mPos.y
+                || pos.bearing != mPos.bearing
+                || pos.tilt != mPos.tilt);
 
-		return mv[2];
-	}
+        pos.bearing = mPos.bearing;
+        pos.tilt = mPos.tilt;
 
-	protected void unproject(float x, float y, float z, float[] coords, int position) {
-		mv[0] = x;
-		mv[1] = y;
-		mv[2] = z;
+        pos.x = mPos.x;
+        pos.y = mPos.y;
+        pos.scale = mPos.scale;
+        pos.zoomLevel = FastMath.log2((int) mPos.scale);
 
-		mUnprojMatrix.prj(mv);
+        return changed;
+    }
 
-		coords[position + 0] = mv[0];
-		coords[position + 1] = mv[1];
-	}
+    /**
+     * Get the inverse projection of the viewport, i.e. the
+     * coordinates with z==0 that will be projected exactly
+     * to screen corners by current view-projection-matrix.
+     *
+     * @param box float[8] will be set.
+     * @param add increase extents of box
+     */
+    public void getMapExtents(float[] box, float add) {
+        /* top-right */
+        unproject(1, -1, box, 0);
+        /* top-left */
+        unproject(-1, -1, box, 2);
+        /* bottom-left */
+        unproject(-1, 1, box, 4);
+        /* bottom-right */
+        unproject(1, 1, box, 6);
 
-	/**
-	 * Get the minimal axis-aligned BoundingBox that encloses
-	 * the visible part of the map.
-	 * 
-	 * @return BoundingBox containing view
-	 */
-	public synchronized BoundingBox getBBox(int expand) {
-		getBBox(mMapBBox, expand);
+        if (add == 0)
+            return;
 
-		/* scale map-pixel coordinates at current scale to
-		 * absolute coordinates and apply mercator projection. */
-		double minLon = MercatorProjection.toLongitude(mMapBBox.xmin);
-		double maxLon = MercatorProjection.toLongitude(mMapBBox.xmax);
-		double minLat = MercatorProjection.toLatitude(mMapBBox.ymax);
-		double maxLat = MercatorProjection.toLatitude(mMapBBox.ymin);
+        for (int i = 0; i < 8; i += 2) {
+            float x = box[i];
+            float y = box[i + 1];
+            float len = (float) Math.sqrt(x * x + y * y);
+            box[i + 0] += x / len * add;
+            box[i + 1] += y / len * add;
+        }
+    }
 
-		return new BoundingBox(minLat, minLon, maxLat, maxLon);
-	}
+    protected void unproject(float x, float y, float[] coords, int position) {
+        mv[0] = x;
+        mv[1] = y;
+        mv[2] = -1;
+        mUnprojMatrix.prj(mv);
+        double nx = mv[0];
+        double ny = mv[1];
+        double nz = mv[2];
 
-	public synchronized BoundingBox getBBox() {
-		return getBBox(0);
-	}
+        mv[0] = x;
+        mv[1] = y;
+        mv[2] = 1;
+        mUnprojMatrix.prj(mv);
+        double fx = mv[0];
+        double fy = mv[1];
+        double fz = mv[2];
 
-	/**
-	 * Get the minimal axis-aligned BoundingBox that encloses
-	 * the visible part of the map. Sets box to map coordinates:
-	 * xmin,ymin,ymax,ymax
-	 */
-	public synchronized void getBBox(Box box, int expand) {
-		float[] coords = mViewCoords;
-		getMapExtents(coords, expand);
+        double dx = fx - nx;
+        double dy = fy - ny;
+        double dz = fz - nz;
 
-		box.xmin = coords[0];
-		box.xmax = coords[0];
-		box.ymin = coords[1];
-		box.ymax = coords[1];
+        double dist = -nz / dz;
 
-		for (int i = 2; i < 8; i += 2) {
-			box.xmin = Math.min(box.xmin, coords[i]);
-			box.xmax = Math.max(box.xmax, coords[i]);
-			box.ymin = Math.min(box.ymin, coords[i + 1]);
-			box.ymax = Math.max(box.ymax, coords[i + 1]);
-		}
+        coords[position + 0] = (float) (nx + dist * dx);
+        coords[position + 1] = (float) (ny + dist * dy);
+    }
 
-		//updatePosition();
-		double cs = mPos.scale * Tile.SIZE;
-		double cx = mPos.x * cs;
-		double cy = mPos.y * cs;
+    /**
+     * Get the minimal axis-aligned BoundingBox that encloses
+     * the visible part of the map. Sets box to map coordinates:
+     * xmin,ymin,xmax,ymax
+     */
+    public Box getBBox(Box box, int expand) {
+        if (box == null)
+            box = new Box();
 
-		box.xmin = (cx + box.xmin) / cs;
-		box.xmax = (cx + box.xmax) / cs;
-		box.ymin = (cy + box.ymin) / cs;
-		box.ymax = (cy + box.ymax) / cs;
-	}
+        float[] coords = mViewCoords;
+        getMapExtents(coords, expand);
 
-	/**
-	 * Get the GeoPoint for x,y in screen coordinates.
-	 * 
-	 * @param x screen coordinate
-	 * @param y screen coordinate
-	 * @return the corresponding GeoPoint
-	 */
-	public synchronized GeoPoint fromScreenPoint(float x, float y) {
-		fromScreenPoint(x, y, mMovePoint);
-		return new GeoPoint(
-		                    MercatorProjection.toLatitude(mMovePoint.y),
-		                    MercatorProjection.toLongitude(mMovePoint.x));
-	}
+        box.xmin = coords[0];
+        box.xmax = coords[0];
+        box.ymin = coords[1];
+        box.ymax = coords[1];
 
-	/**
-	 * Get the map position for x,y in screen coordinates.
-	 * 
-	 * @param x screen coordinate
-	 * @param y screen coordinate
-	 */
-	public synchronized void fromScreenPoint(double x, double y, Point out) {
-		// scale to -1..1
-		float mx = (float) (1 - (x / mWidth * 2));
-		float my = (float) (1 - (y / mHeight * 2));
+        for (int i = 2; i < 8; i += 2) {
+            box.xmin = Math.min(box.xmin, coords[i]);
+            box.xmax = Math.max(box.xmax, coords[i]);
+            box.ymin = Math.min(box.ymin, coords[i + 1]);
+            box.ymax = Math.max(box.ymax, coords[i + 1]);
+        }
 
-		unproject(-mx, my, getDepth(-my), mu, 0);
+        double cs = mPos.scale * Tile.SIZE;
+        double cx = mPos.x * cs;
+        double cy = mPos.y * cs;
 
-		double cs = mPos.scale * Tile.SIZE;
-		double cx = mPos.x * cs;
-		double cy = mPos.y * cs;
+        box.xmin = (cx + box.xmin) / cs;
+        box.xmax = (cx + box.xmax) / cs;
+        box.ymin = (cy + box.ymin) / cs;
+        box.ymax = (cy + box.ymax) / cs;
 
-		double dx = cx + mu[0];
-		double dy = cy + mu[1];
+        return box;
+    }
 
-		dx /= cs;
-		dy /= cs;
+    /**
+     * Get the GeoPoint for x,y in screen coordinates.
+     *
+     * @param x screen coordinate
+     * @param y screen coordinate
+     * @return the corresponding GeoPoint
+     */
+    public GeoPoint fromScreenPoint(float x, float y) {
+        fromScreenPoint(x, y, mMovePoint);
+        return new GeoPoint(
+                MercatorProjection.toLatitude(mMovePoint.y),
+                MercatorProjection.toLongitude(mMovePoint.x));
+    }
 
-		while (dx > 1)
-			dx -= 1;
-		while (dx < 0)
-			dx += 1;
+    protected void unprojectScreen(double x, double y, float[] out) {
+        /* scale to -1..1 */
+        float mx = (float) (1 - (x / mWidth * 2));
+        float my = (float) (1 - (y / mHeight * 2));
 
-		if (dy > 1)
-			dy = 1;
-		else if (dy < 0)
-			dy = 0;
+        unproject(-mx, my, out, 0);
+    }
 
-		out.x = dx;
-		out.y = dy;
-	}
+    /**
+     * Get the map position for x,y in screen coordinates.
+     *
+     * @param x screen coordinate
+     * @param y screen coordinate
+     */
+    public void fromScreenPoint(double x, double y, Point out) {
+        unprojectScreen(x, y, mu);
 
-	/**
-	 * Get the screen pixel for a GeoPoint
-	 * 
-	 * @param geoPoint the GeoPoint
-	 * @param out Point projected to screen pixel relative to center
-	 */
-	public synchronized void toScreenPoint(GeoPoint geoPoint, Point out) {
-		MercatorProjection.project(geoPoint, out);
-		toScreenPoint(out.x, out.y, out);
-	}
+        double cs = mPos.scale * Tile.SIZE;
+        double cx = mPos.x * cs;
+        double cy = mPos.y * cs;
 
-	/**
-	 * Get the screen pixel for map coordinates
-	 * 
-	 * @param out Point projected to screen coordinate
-	 */
-	public synchronized void toScreenPoint(double x, double y, Point out) {
+        double dx = cx + mu[0];
+        double dy = cy + mu[1];
 
-		double cs = mPos.scale * Tile.SIZE;
-		double cx = mPos.x * cs;
-		double cy = mPos.y * cs;
+        dx /= cs;
+        dy /= cs;
 
-		mv[0] = (float) (x * cs - cx);
-		mv[1] = (float) (y * cs - cy);
+        while (dx > 1)
+            dx -= 1;
+        while (dx < 0)
+            dx += 1;
 
-		mv[2] = 0;
-		mv[3] = 1;
+        if (dy > 1)
+            dy = 1;
+        else if (dy < 0)
+            dy = 0;
 
-		mViewProjMatrix.prj(mv);
+        out.x = dx;
+        out.y = dy;
+    }
 
-		out.x = (mv[0] * (mWidth / 2));
-		out.y = -(mv[1] * (mHeight / 2));
-	}
+    /**
+     * Get the screen pixel for a GeoPoint
+     *
+     * @param geoPoint the GeoPoint
+     * @param out      Point projected to screen pixel relative to center
+     */
+    public void toScreenPoint(GeoPoint geoPoint, Point out) {
+        MercatorProjection.project(geoPoint, out);
+        toScreenPoint(out.x, out.y, out);
+    }
 
-	public synchronized boolean copy(Viewport viewport) {
-		mUnprojMatrix.copy(viewport.mUnprojMatrix);
-		mRotationMatrix.copy(viewport.mRotationMatrix);
-		mViewMatrix.copy(viewport.mViewMatrix);
-		mViewProjMatrix.copy(viewport.mViewProjMatrix);
-		return viewport.getMapPosition(mPos);
-	}
+    /**
+     * Get the screen pixel for map coordinates
+     *
+     * @param out Point projected to screen coordinate
+     */
+    public void toScreenPoint(double x, double y, Point out) {
 
-	public synchronized void initFrom(Viewport viewport) {
-		mProjMatrix.copy(viewport.mProjMatrix);
-		mProjMatrixUnscaled.copy(viewport.mProjMatrixUnscaled);
-		mProjMatrixInverse.copy(viewport.mProjMatrixInverse);
+        double cs = mPos.scale * Tile.SIZE;
+        double cx = mPos.x * cs;
+        double cy = mPos.y * cs;
 
-		mHeight = viewport.mHeight;
-		mWidth = viewport.mWidth;
-	}
+        mv[0] = (float) (x * cs - cx);
+        mv[1] = (float) (y * cs - cy);
+
+        mv[2] = 0;
+        mv[3] = 1;
+
+        mViewProjMatrix.prj(mv);
+
+        out.x = (mv[0] * (mWidth / 2));
+        out.y = -(mv[1] * (mHeight / 2));
+    }
+
+    protected boolean copy(Viewport viewport) {
+        mHeight = viewport.mHeight;
+        mWidth = viewport.mWidth;
+        mProjMatrix.copy(viewport.mProjMatrix);
+        mProjMatrixUnscaled.copy(viewport.mProjMatrixUnscaled);
+        mProjMatrixInverse.copy(viewport.mProjMatrixInverse);
+
+        mUnprojMatrix.copy(viewport.mUnprojMatrix);
+        mRotationMatrix.copy(viewport.mRotationMatrix);
+        mViewMatrix.copy(viewport.mViewMatrix);
+        mViewProjMatrix.copy(viewport.mViewProjMatrix);
+        return viewport.getMapPosition(mPos);
+    }
+
+    public double getMaxScale() {
+        return mMaxScale;
+    }
+
+    public void setMaxScale(double maxScale) {
+        this.mMaxScale = maxScale;
+    }
+
+    public double getMinScale() {
+        return mMinScale;
+    }
+
+    public void setMinScale(double minScale) {
+        this.mMinScale = minScale;
+    }
+
+    public int getMaxZoomLevel() {
+        return FastMath.log2((int) mMaxScale);
+    }
+
+    public void setMaxZoomLevel(int maxZoomLevel) {
+        this.mMaxScale = (1 << maxZoomLevel);
+    }
+
+    public int getMinZoomLevel() {
+        return FastMath.log2((int) mMinScale);
+    }
+
+    public void setMinZoomLevel(int minZoomLevel) {
+        this.mMinScale = (1 << minZoomLevel);
+    }
+
+    public float getMaxTilt() {
+        return mMaxTilt;
+    }
+
+    public void setMaxTilt(float maxTilt) {
+        this.mMaxTilt = maxTilt;
+    }
+
+    public float getMinTilt() {
+        return mMinTilt;
+    }
+
+    public void setMinTilt(float minTilt) {
+        this.mMinTilt = minTilt;
+    }
+
+    public float getMaxBearing() {
+        return mMaxBearing;
+    }
+
+    public void setMaxBearing(float maxBearing) {
+        this.mMaxBearing = maxBearing;
+    }
+
+    public float getMinBearing() {
+        return mMinBearing;
+    }
+
+    public void setMinBearing(float minBearing) {
+        this.mMinBearing = minBearing;
+    }
+
+    public double getMaxX() {
+        return mMaxX;
+    }
+
+    public void setMaxX(double maxX) {
+        this.mMaxX = maxX;
+    }
+
+    public double getMinX() {
+        return mMinX;
+    }
+
+    public void setMinX(double minX) {
+        this.mMinX = minX;
+    }
+
+    public double getMaxY() {
+        return mMaxY;
+    }
+
+    public void setMaxY(double maxY) {
+        this.mMaxY = maxY;
+    }
+
+    public double getMinY() {
+        return mMinY;
+    }
+
+    public void setMinY(double minY) {
+        this.mMinY = minY;
+    }
 }

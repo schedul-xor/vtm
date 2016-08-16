@@ -1,5 +1,24 @@
+/*
+ * Copyright 2016 devemux86
+ *
+ * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
+ *
+ * This program is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.oscim.test;
 
+import com.badlogic.gdx.Input;
+
+import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.canvas.Color;
 import org.oscim.backend.canvas.Paint.Cap;
 import org.oscim.core.GeometryBuffer;
@@ -11,199 +30,195 @@ import org.oscim.renderer.GLViewport;
 import org.oscim.renderer.MapRenderer;
 import org.oscim.renderer.bucket.LineBucket;
 import org.oscim.renderer.bucket.LineTexBucket;
+import org.oscim.renderer.bucket.TextureItem;
 import org.oscim.theme.styles.LineStyle;
-
-import com.badlogic.gdx.Input;
 
 public class LineRenderTest extends GdxMap {
 
-	GeometryBuffer mGeom = new GeometryBuffer(2, 1);
-	GeometryBuffer mLine = new GeometryBuffer(2, 1);
+    GeometryBuffer mGeom = new GeometryBuffer(2, 1);
+    GeometryBuffer mLine = new GeometryBuffer(2, 1);
 
-	static boolean fixedLineWidth = true;
-	LineTest l = new LineTest();
+    static boolean fixedLineWidth = true;
+    LineTest l = new LineTest();
 
-	@Override
-	public void createLayers() {
-		MapRenderer.setBackgroundColor(0xff000000);
+    @Override
+    public void createLayers() {
+        MapRenderer.setBackgroundColor(0xff000000);
 
-		// TileSource ts = new OSciMap4TileSource();
-		// ts.setOption("url", "http://opensciencemap.org/tiles/vtm");
-		// initDefaultLayers(ts, false, false, false);
+        // TileSource ts = new OSciMap4TileSource();
+        // ts.setOption("url", "http://opensciencemap.org/tiles/vtm");
+        // initDefaultLayers(ts, false, false, false);
 
-		mMap.setMapPosition(0, 0, 1 << 4);
+        mMap.setMapPosition(0, 0, 1 << 4);
 
-		GeometryBuffer g = mLine;
-		g.startLine();
-		g.addPoint(-100, 0);
-		g.addPoint(100, 0);
+        GeometryBuffer g = mLine;
+        g.startLine();
+        g.addPoint(-100, 0);
+        g.addPoint(100, 0);
 
-		addLines(l, 0, true, false);
+        addLines(l, 0, true, false);
 
-		mMap.layers().add(new GenericLayer(mMap, l));
-	}
+        mMap.layers().add(new GenericLayer(mMap, l));
+    }
 
-	void addLines(LineTest l, int layer, boolean addOutline, boolean fixed) {
+    void addLines(LineTest l, int layer, boolean addOutline, boolean fixed) {
 
-		GeometryBuffer g = mLine;
+        GeometryBuffer g = mLine;
 
-		LineStyle line1, line2, line3, line4;
+        LineStyle line1, line2, line3, line4;
 
-		if (fixed) {
-			line1 = new LineStyle(Color.RED, 0.5f);
-			line2 = new LineStyle(Color.GREEN, 1);
-			line3 = new LineStyle(Color.BLUE, 2);
-			line4 = new LineStyle(Color.LTGRAY, 3);
+        if (fixed) {
+            line1 = new LineStyle(Color.RED, 0.5f);
+            line2 = new LineStyle(Color.GREEN, 1);
+            line4 = new LineStyle(Color.LTGRAY, 3);
+        } else {
+            line1 = new LineStyle(0, null, Color.fade(Color.RED, 0.5f), 4.0f, Cap.BUTT, false, 0, 0, 0, 0, 1f, false, null, true);
+            line2 = new LineStyle(0, null, Color.GREEN, 6.0f, Cap.BUTT, false, 0, 0, 0, 0, 1f, false, null, true);
+            line4 = new LineStyle(0, null, Color.LTGRAY, 2.0f, Cap.ROUND, false, 0, 0, 0, 0, 1f, false, null, true);
+        }
 
-		} else {
-			line1 = new LineStyle(0, null, Color.fade(Color.RED, 0.5f), 4.0f,
-			                      Cap.BUTT, false, 0, 0, 0, 0, 1f, false);
+        TextureItem tex = new TextureItem(CanvasAdapter.getBitmapAsset("", "patterns/dot.png"));
+        tex.mipmap = true;
+        line3 = LineStyle.builder()
+                .stippleColor(Color.CYAN)
+                .stipple(8)
+                .stippleWidth(0.6f)
+                .strokeWidth(4)
+                .strokeColor(Color.BLUE)
+                .fixed(fixed)
+                .texture(tex)
+                .randomOffset(true)
+                .build();
 
-			line2 = new LineStyle(0, null, Color.GREEN, 6.0f, Cap.BUTT, true, 0, 0,
-			                      0, 0, 1f, false);
+        LineStyle outline = new LineStyle(0, null, Color.BLUE, 2.0f, Cap.ROUND, false, 0, 0, 0, 0, 1f, true, null, true);
+        LineStyle outline2 = new LineStyle(0, null, Color.RED, 2.0f, Cap.ROUND, false, 0, 0, 0, 0, 0, true, null, true);
 
-			line4 = new LineStyle(0, null, Color.LTGRAY, 2.0f, Cap.ROUND, false, 0,
-			                      0, 0, 0, 1f, false);
-		}
+        LineBucket ol = l.buckets.addLineBucket(0, outline);
+        LineBucket ol2 = l.buckets.addLineBucket(5, outline2);
 
-		line3 = new LineStyle(0, null, Color.BLUE, 2.0f, Cap.ROUND, true, 4,
-		                      Color.CYAN, 1, 0, 0, false);
+        LineBucket ll = l.buckets.addLineBucket(10, line1);
+        ll.addLine(g.translate(0, -20));
+        ll.addLine(g.translate(0, 10.5f));
+        addCircle(-200, -200, 100, ll);
 
-		LineStyle outline = new LineStyle(0, null, Color.BLUE, 2.0f, Cap.ROUND, false, 0,
-		                                  0, 0, 0, 1f, true);
+        if (addOutline)
+            ol.addOutline(ll);
 
-		LineStyle outline2 = new LineStyle(0, null, Color.RED, 2.0f, Cap.ROUND, false, 0,
-		                                   0, 0, 0, 0, true);
+        ll = l.buckets.addLineBucket(20, line2);
+        ll.addLine(g.translate(0, 10.5f));
+        ll.addLine(g.translate(0, 10.5f));
+        addCircle(200, -200, 100, ll);
 
-		LineBucket ol = l.buckets.addLineBucket(0, outline);
-		LineBucket ol2 = l.buckets.addLineBucket(5, outline2);
+        if (addOutline)
+            ol.addOutline(ll);
 
-		LineBucket ll = l.buckets.addLineBucket(10, line1);
-		ll.addLine(g.translate(0, -20));
-		ll.addLine(g.translate(0, 10.5f));
-		addCircle(-200, -200, 100, ll);
+        LineTexBucket lt = l.buckets.getLineTexBucket(30);
+        lt.line = line3;
+        lt.addLine(g.translate(0, 10.5f));
+        lt.addLine(g.translate(0, 10.5f));
+        addCircle(200, 200, 100, lt);
 
-		if (addOutline)
-			ol.addOutline(ll);
+        ll = l.buckets.addLineBucket(40, line4);
+        ll.addLine(g.translate(0, 10.5f));
+        ll.addLine(g.translate(0, 10.5f));
+        addCircle(-200, 200, 100, ll);
 
-		ll = l.buckets.addLineBucket(20, line2);
-		ll.addLine(g.translate(0, 10.5f));
-		ll.addLine(g.translate(0, 10.5f));
-		addCircle(200, -200, 100, ll);
+        if (addOutline)
+            ol2.addOutline(ll);
+    }
 
-		if (addOutline)
-			ol.addOutline(ll);
+    void addCircle(float cx, float cy, float radius, LineBucket ll) {
+        GeometryBuffer g = mGeom;
 
-		LineTexBucket lt = l.buckets.getLineTexBucket(30);
-		lt.line = line3;
-		lt.addLine(g.translate(0, 10.5f));
-		lt.addLine(g.translate(0, 10.5f));
-		addCircle(200, 200, 100, lt);
+        g.clear();
+        g.startLine();
+        g.addPoint(cx, cy);
+        g.addPoint(cx, cy);
 
-		// if (addOutline)
-		// ol2.addOutline(ll);
+        for (int i = 0; i < 60; i++) {
+            double d = Math.toRadians(i * 6);
+            g.setPoint(1, cx + (float) Math.sin(d) * radius,
+                    cy + (float) Math.cos(d) * radius);
+            ll.addLine(g);
+        }
+    }
 
-		ll = l.buckets.addLineBucket(40, line4);
-		ll.addLine(g.translate(0, 10.5f));
-		ll.addLine(g.translate(0, 10.5f));
-		addCircle(-200, 200, 100, ll);
+    void addCircle(float cx, float cy, float radius, LineTexBucket ll) {
+        GeometryBuffer g = mGeom;
 
-		if (addOutline)
-			ol2.addOutline(ll);
-	}
+        g.clear();
+        g.startLine();
+        g.addPoint(cx, cy);
+        g.addPoint(cx, cy);
 
-	void addCircle(float cx, float cy, float radius, LineBucket ll) {
-		GeometryBuffer g = mGeom;
+        for (int i = 0; i < 60; i++) {
+            double d = Math.toRadians(i * 6);
+            g.setPoint(1, cx + (float) Math.sin(d) * radius,
+                    cy + (float) Math.cos(d) * radius);
+            ll.addLine(g);
+        }
+    }
 
-		g.clear();
-		g.startLine();
-		g.addPoint(cx, cy);
-		g.addPoint(cx, cy);
+    @Override
+    protected boolean onKeyDown(int keycode) {
+        if (keycode < Input.Keys.NUM_1 || keycode > Input.Keys.NUM_4)
+            return false;
 
-		for (int i = 0; i < 60; i++) {
-			double d = Math.toRadians(i * 6);
-			g.setPoint(1, cx + (float) Math.sin(d) * radius,
-			           cy + (float) Math.cos(d) * radius);
-			ll.addLine(g);
-		}
-	}
+        synchronized (l) {
+            l.clear();
 
-	void addCircle(float cx, float cy, float radius, LineTexBucket ll) {
-		GeometryBuffer g = mGeom;
+            GeometryBuffer g = mLine;
+            g.clear();
+            g.startLine();
+            g.addPoint(-100, 0);
+            g.addPoint(100, 0);
 
-		g.clear();
-		g.startLine();
-		g.addPoint(cx, cy);
-		g.addPoint(cx, cy);
+            if (keycode == Input.Keys.NUM_1)
+                addLines(l, 0, true, true);
+            else if (keycode == Input.Keys.NUM_2)
+                addLines(l, 0, true, false);
+            else if (keycode == Input.Keys.NUM_3)
+                addLines(l, 0, false, true);
+            else if (keycode == Input.Keys.NUM_4)
+                addLines(l, 0, false, false);
+        }
 
-		for (int i = 0; i < 60; i++) {
-			double d = Math.toRadians(i * 6);
-			g.setPoint(1, cx + (float) Math.sin(d) * radius,
-			           cy + (float) Math.cos(d) * radius);
-			ll.addLine(g);
-		}
-	}
+        mMap.updateMap(true);
 
-	@Override
-	protected boolean onKeyDown(int keycode) {
-		if (keycode < Input.Keys.NUM_1 || keycode > Input.Keys.NUM_4)
-			return false;
+        return true;
+    }
 
-		synchronized (l) {
-			l.clear();
+    class LineTest extends BucketRenderer {
 
-			GeometryBuffer g = mLine;
-			g.clear();
-			g.startLine();
-			g.addPoint(-100, 0);
-			g.addPoint(100, 0);
+        public LineTest() {
+            mMapPosition.scale = 0;
+        }
 
-			if (keycode == Input.Keys.NUM_1)
-				addLines(l, 0, true, true);
-			else if (keycode == Input.Keys.NUM_2)
-				addLines(l, 0, true, false);
-			else if (keycode == Input.Keys.NUM_3)
-				addLines(l, 0, false, true);
-			else if (keycode == Input.Keys.NUM_4)
-				addLines(l, 0, false, false);
-		}
+        public synchronized void clear() {
+            buckets.clear();
+            setReady(false);
+        }
 
-		mMap.updateMap(true);
+        @Override
+        public synchronized void update(GLViewport v) {
 
-		return true;
-	}
+            if (mMapPosition.scale == 0)
+                mMapPosition.copy(v.pos);
 
-	class LineTest extends BucketRenderer {
+            if (!isReady()) {
+                compile();
+            }
+        }
 
-		public LineTest() {
-			mMapPosition.scale = 0;
-		}
+        // @Override
+        // protected void setMatrix(MapPosition pos, Matrices m, boolean
+        // project) {
+        // m.useScreenCoordinates(true, 8f);
+        // }
+    }
 
-		public synchronized void clear() {
-			buckets.clear();
-			setReady(false);
-		}
-
-		@Override
-		public synchronized void update(GLViewport v) {
-
-			if (mMapPosition.scale == 0)
-				mMapPosition.copy(v.pos);
-
-			if (!isReady()) {
-				compile();
-			}
-		}
-
-		// @Override
-		// protected void setMatrix(MapPosition pos, Matrices m, boolean
-		// project) {
-		// m.useScreenCoordinates(true, 8f);
-		// }
-	}
-
-	public static void main(String[] args) {
-		GdxMapApp.init();
-		GdxMapApp.run(new LineRenderTest(), null, 256);
-	}
+    public static void main(String[] args) {
+        GdxMapApp.init();
+        GdxMapApp.run(new LineRenderTest(), null, 256);
+    }
 }

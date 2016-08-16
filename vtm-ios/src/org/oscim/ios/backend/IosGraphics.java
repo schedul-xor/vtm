@@ -1,60 +1,83 @@
+/*
+ * Copyright 2016 Longri
+ * Copyright 2016 devemux86
+ *
+ * This program is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.oscim.ios.backend;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.canvas.Bitmap;
 import org.oscim.backend.canvas.Canvas;
 import org.oscim.backend.canvas.Paint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * iOS specific implementation of {@link CanvasAdapter}.
+ */
 public class IosGraphics extends CanvasAdapter {
 
-	private static final IosGraphics INSTANCE = new IosGraphics();
+    static final Logger log = LoggerFactory.getLogger(IosGraphics.class);
 
-	public static CanvasAdapter get() {
-		return INSTANCE;
-	}
+    public static void init() {
+        CanvasAdapter.init(new IosGraphics());
+    }
 
-	public static void init() {
-		g = INSTANCE;
-	}
+    @Override
+    protected Canvas newCanvasImpl() {
+        return new IosCanvas();
+    }
 
-	@Override
-	public Canvas getCanvas() {
-		return new IosCanvas();
-	}
+    @Override
+    protected Paint newPaintImpl() {
+        return new IosPaint();
+    }
 
-	@Override
-	public Paint getPaint() {
-		return new IosPaint();
-	}
+    @Override
+    protected Bitmap newBitmapImpl(int width, int height, int format) {
+        return new IosBitmap(width, height, format);
+    }
 
-	@Override
-	public Bitmap getBitmap(int width, int height, int format) {
-		return new IosBitmap(width, height, format);
-	}
+    @Override
+    protected Bitmap decodeBitmapImpl(InputStream inputStream) {
+        try {
+            return new IosBitmap(inputStream);
+        } catch (IOException e) {
+            log.error("decodeBitmapImpl", e);
+            return null;
+        }
+    }
 
-	@Override
-	public Bitmap decodeBitmap(InputStream inputStream) {
-		try {
-			return new IosBitmap(inputStream);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+    @Override
+    protected Bitmap decodeSvgBitmapImpl(InputStream inputStream) {
+        try {
+            return new IosSvgBitmap(inputStream);
+        } catch (IOException e) {
+            log.error("decodeSvgBitmapImpl", e);
+            return null;
+        }
+    }
 
-	@Override
-	public Bitmap loadBitmapAsset(String fileName) {
-		return new IosBitmap(fileName);
-
-		//		try {
-		//			return createBitmap(fileName);
-		//		} catch (IOException e) {
-		//			e.printStackTrace();
-		//		}
-		//		return null;
-	}
-
+    @Override
+    protected Bitmap loadBitmapAssetImpl(String relativePathPrefix, String src) {
+        try {
+            return createBitmap(relativePathPrefix, src);
+        } catch (IOException e) {
+            log.error("loadBitmapAssetImpl", e);
+            return null;
+        }
+    }
 }
