@@ -389,6 +389,30 @@ public class Viewport {
         return mHeight != viewport.mHeight || mWidth != viewport.mWidth;
     }
 
+    public double toScreenPoint(double x, double y, double z, boolean relativeToCenter, Point out) {
+
+        double cs = mPos.scale * Tile.SIZE;
+        double cx = mPos.x * cs;
+        double cy = mPos.y * cs;
+        double cz = 0;
+
+        mv[0] = (float) (x * cs - cx);
+        mv[1] = (float) (y * cs - cy);
+        mv[2] = (float) (z * cs - cz);
+        mv[3] = 1;
+
+        mViewProjMatrix.prj(mv);
+
+        out.x = (mv[0] * (mWidth / 2));
+        out.y = -(mv[1] * (mHeight / 2));
+
+        if (!relativeToCenter) {
+            out.x += mWidth / 2;
+            out.y += mHeight / 2;
+        }
+        return mv[2]; // Return projected z
+    }
+
     protected boolean copy(Viewport viewport) {
         boolean sizeChanged = sizeChanged(viewport);
 
