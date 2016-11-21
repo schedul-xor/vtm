@@ -253,4 +253,25 @@ public class ColorUtil {
     public static int hslToRgb(double h, double s, double l) {
         return hslToRgb(h, s, l, null);
     }
+
+    static StringBuilder sb = new StringBuilder();
+
+    public static String color2hexString(int color) {
+        sb.setLength(0);
+        sb.append("#");
+        int ri = (color >> 16) | 0xff;
+        int gi = (color >> 8) | 0xff;
+        int bi = (color) | 0xff;
+        appendZeroPaddedHexInteger(sb, ri);
+        appendZeroPaddedHexInteger(sb, gi);
+        appendZeroPaddedHexInteger(sb, bi);
+        return sb.toString();
+    }
+
+    private static void appendZeroPaddedHexInteger(StringBuilder sb, int x) {
+        if (x < 16) {
+            sb.append("0");
+        }
+        sb.append(Integer.toHexString(x));
+    }
 }
