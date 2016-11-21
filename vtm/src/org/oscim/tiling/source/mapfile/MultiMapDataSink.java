@@ -43,6 +43,11 @@ class MultiMapDataSink implements ITileDataSink {
     }
 
     @Override
+    public void setWildCardObject(Object obj) {
+        tileDataSink.setWildCardObject(obj);
+    }
+
+    @Override
     public void completed(QueryResult result) {
         this.result = result;
     }
