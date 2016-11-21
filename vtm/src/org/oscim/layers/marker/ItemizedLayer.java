@@ -154,7 +154,11 @@ public class ItemizedLayer<Item extends MarkerInterface> extends MarkerLayer<Ite
             if (mOnItemGestureListener == null) {
                 return false;
             }
-            return onSingleTapUpHelper(index, that.mItemList.get(index));
+            if (index == -1) {
+                return onSingleTapUpHelper(-1, null);
+            } else {
+                return onSingleTapUpHelper(index, that.mItemList.get(index));
+            }
         }
     };
 
@@ -240,6 +244,10 @@ public class ItemizedLayer<Item extends MarkerInterface> extends MarkerLayer<Ite
             mMarkerRenderer.update();
             mMap.render();
             return true;
+        } else if (nearest == -1 && task.run(-1)) {
+            mMarkerRenderer.update();
+            mMap.render();
+            return false;
         }
         return false;
     }
