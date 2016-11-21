@@ -4,6 +4,7 @@
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016 devemux86
  * Copyright 2016 Stephan Leuschner 
+ * Copyright 2016 Pedinel
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -31,9 +32,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class ItemizedLayer<Item extends MarkerItem> extends MarkerLayer<Item>
+public class ItemizedLayer<Item extends MarkerInterface> extends MarkerLayer<Item>
         implements GestureListener {
 
     static final Logger log = LoggerFactory.getLogger(ItemizedLayer.class);
@@ -43,8 +45,8 @@ public class ItemizedLayer<Item extends MarkerItem> extends MarkerLayer<Item>
     protected OnItemGestureListener<Item> mOnItemGestureListener;
     protected int mDrawnItemsLimit = Integer.MAX_VALUE;
 
-    public ItemizedLayer(Map map, MarkerSymbol defaulMarker) {
-        this(map, new ArrayList<Item>(), defaulMarker, null);
+    public ItemizedLayer(Map map, MarkerSymbol defaultMarker) {
+        this(map, new ArrayList<Item>(), defaultMarker, null);
     }
 
     public ItemizedLayer(Map map, List<Item> list,
@@ -97,10 +99,14 @@ public class ItemizedLayer<Item extends MarkerItem> extends MarkerLayer<Item>
         mItemList.add(location, item);
     }
 
-    public boolean addItems(List<Item> items) {
+    public boolean addItems(Collection<Item> items) {
         final boolean result = mItemList.addAll(items);
         populate();
         return result;
+    }
+
+    public List<Item> getItemList() {
+        return mItemList;
     }
 
     public void removeAllItems() {
@@ -262,13 +268,5 @@ public class ItemizedLayer<Item extends MarkerItem> extends MarkerLayer<Item>
             return activateSelectedItems(e, mActiveItemLongPress);
 
         return false;
-    }
-
-    public Item getByUid(Object uid) {
-        for (Item it : mItemList)
-            if (it.getUid() == uid)
-                return it;
-
-        return null;
     }
 }

@@ -6,6 +6,7 @@
  * 
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016 Stephan Leuschner
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -20,7 +21,6 @@
  * You should have received a copy of the GNU Lesser General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.oscim.layers.marker;
 
 import org.oscim.core.Point;
@@ -28,12 +28,12 @@ import org.oscim.layers.Layer;
 import org.oscim.map.Map;
 
 /**
- * Draws a list of {@link MarkerItem} as markers to a map. The item with the
+ * Draws a list of {@link MarkerInterface} as markers to a map. The item with the
  * lowest index is drawn as last and therefore the 'topmost' marker. It also
  * gets checked for onTap first. This class is generic, because you then you get
  * your custom item-class passed back in onTap(). << TODO
  */
-public abstract class MarkerLayer<Item extends MarkerItem> extends Layer {
+public abstract class MarkerLayer<Item extends MarkerInterface> extends Layer {
 
     protected final MarkerRenderer mMarkerRenderer;
     protected Item mFocusedItem;
@@ -53,7 +53,7 @@ public abstract class MarkerLayer<Item extends MarkerItem> extends Layer {
     public MarkerLayer(Map map, MarkerSymbol defaultSymbol) {
         super(map);
 
-        mMarkerRenderer = new MarkerRenderer((MarkerLayer<MarkerItem>) this, defaultSymbol);
+        mMarkerRenderer = new MarkerRenderer((MarkerLayer<MarkerInterface>) this, defaultSymbol);
         mRenderer = mMarkerRenderer;
     }
 
@@ -70,7 +70,7 @@ public abstract class MarkerLayer<Item extends MarkerItem> extends Layer {
      * should call this as soon as it has data, before anything else gets
      * called.
      */
-    protected final void populate() {
+    public final void populate() {
         mMarkerRenderer.populate(size());
     }
 

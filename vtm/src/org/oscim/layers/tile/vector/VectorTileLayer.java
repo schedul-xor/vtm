@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -76,8 +77,6 @@ public class VectorTileLayer extends TileLayer {
     public boolean setTileSource(TileSource tileSource) {
         pauseLoaders(true);
         mTileManager.clearJobs();
-        mTileManager.setZoomLevel(tileSource.getZoomLevelMin(),
-                tileSource.getZoomLevelMax());
 
         if (mTileSource != null) {
             mTileSource.close();
@@ -92,6 +91,9 @@ public class VectorTileLayer extends TileLayer {
         }
 
         mTileSource = tileSource;
+
+        mTileManager.setZoomLevel(tileSource.getZoomLevelMin(),
+                tileSource.getZoomLevelMax());
 
         for (TileLoader l : mTileLoader)
             ((VectorTileLoader) l).setDataSource(tileSource.getDataSource());
@@ -175,7 +177,8 @@ public class VectorTileLayer extends TileLayer {
     @Override
     public void onDetach() {
         super.onDetach();
-        mTileSource.close();
+        if (mTileSource != null)
+            mTileSource.close();
     }
 
     public void callThemeHooks(MapTile tile, RenderBuckets layers, MapElement element,

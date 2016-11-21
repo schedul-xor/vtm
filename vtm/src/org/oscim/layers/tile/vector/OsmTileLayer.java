@@ -1,19 +1,41 @@
+/*
+ * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
+ *
+ * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
+ *
+ * This program is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.oscim.layers.tile.vector;
 
 import org.oscim.core.Tag;
 import org.oscim.core.TagSet;
 import org.oscim.layers.tile.TileLoader;
 import org.oscim.map.Map;
+import org.oscim.utils.Utils;
 
 public class OsmTileLayer extends VectorTileLayer {
 
-    protected final static int MAX_ZOOMLEVEL = 17;
-    protected final static int MIN_ZOOMLEVEL = 2;
-    protected final static int CACHE_LIMIT = 150;
+    private static final int MAX_ZOOMLEVEL = 17;
+    private static final int MIN_ZOOMLEVEL = 2;
+    private static final int CACHE_LIMIT = 150;
 
     public OsmTileLayer(Map map) {
+        this(map, MIN_ZOOMLEVEL, MAX_ZOOMLEVEL);
+    }
+
+    public OsmTileLayer(Map map, int zoomMin, int zoomMax) {
         super(map, CACHE_LIMIT);
-        mTileManager.setZoomLevel(MIN_ZOOMLEVEL, MAX_ZOOMLEVEL);
+        mTileManager.setZoomLevel(zoomMin, zoomMax);
     }
 
     @Override
@@ -21,10 +43,10 @@ public class OsmTileLayer extends VectorTileLayer {
         return new OsmTileLoader(this);
     }
 
-    static class OsmTileLoader extends VectorTileLoader {
+    private static class OsmTileLoader extends VectorTileLoader {
         private final TagSet mFilteredTags;
 
-        public OsmTileLoader(VectorTileLayer tileLayer) {
+        OsmTileLoader(VectorTileLayer tileLayer) {
             super(tileLayer);
             mFilteredTags = new TagSet();
         }
@@ -52,7 +74,7 @@ public class OsmTileLayer extends VectorTileLayer {
                 Tag t = tags[i];
 
                 for (TagReplacement replacement : mTagReplacement) {
-                    if (t.key == replacement.key) {
+                    if (Utils.equals(t.key, replacement.key)) {
                         mFilteredTags.add(replacement.tag);
                         continue O;
                     }

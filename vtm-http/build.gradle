@@ -1,0 +1,17 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+dependencies {
+    compile project(':vtm')
+    compile 'com.squareup.okhttp:okhttp:1.5.2'
+}
+
+sourceSets {
+    main.java.srcDirs = ['src']
+}
+
+if (project.hasProperty("SONATYPE_USERNAME")) {
+    afterEvaluate {
+        project.apply from: "${rootProject.projectDir}/deploy.gradle"
+    }
+}

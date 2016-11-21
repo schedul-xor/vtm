@@ -1,29 +1,32 @@
+[![Maven Central](https://img.shields.io/maven-central/v/org.mapsforge/vtm.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.mapsforge%22)
 [![Build Status](https://travis-ci.org/mapsforge/vtm.svg?branch=master)](https://travis-ci.org/mapsforge/vtm)
-[![GitHub license](https://img.shields.io/badge/license-LGPL3-blue.svg)](COPYING.LESSER)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.mapsforge/vtm/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.mapsforge/vtm)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
 
 # V™
 
-VTM was developed within the [OpenScienceMap](http://opensciencemap.org) project.
+VTM was developed within the [OpenScienceMap](https://github.com/opensciencemap) project.
 
-**This fork is for continue VTM development. And make it compatible with latest [Mapsforge](https://github.com/mapsforge/mapsforge).**
+**This fork continues VTM development. And provides compatibility with latest [Mapsforge](https://github.com/mapsforge/mapsforge).**
 
-See the [integration guide](docs/Integration.md) and [changelog](docs/Changelog.md). If you have any questions or problems, don't hesitate to ask our public [mailing list](https://groups.google.com/group/mapsforge-dev) for help. You can also report bugs and improvement requests via our [issue tracker](https://github.com/mapsforge/vtm/issues). And read through [how to contribute](.github/CONTRIBUTING.md) guidelines.
+See the **[integration guide](docs/Integration.md)** and [changelog](docs/Changelog.md). And read through [how to contribute](.github/CONTRIBUTING.md) guidelines.
+
+If you have any questions or problems, don't hesitate to ask our public [mailing list](https://groups.google.com/group/mapsforge-dev) for help.
 
 ## Features
 - Java map library
 - OpenGL vector-tile rendering
 - Themeable vector layers
 - Support for multiple tile sources:
-  - primary opensciencemap (.vtm)
-  - mapsforge files
+  - OpenScienceMap (.vtm)
+  - Mapsforge (.map)
+  - Mapbox tiles (.mvt)
   - GeoJSON tiles
-  - bitmap: any quadtree-scheme tiles as texture
+  - Raster tiles: any quadtree-scheme tiles as texture
 - Backends:
   - Android (optional libGDX)
   - iOS (using libGDX/RoboVM, [instructions](docs/ios.md))
   - Desktop (using libGDX/LWJGL)
-  - HTML5/WebGL (using libGDX/GWT)
+  - HTML5/WebGL (using libGDX/GWT, [instructions](docs/web.md))
 
 ### Projects
 - **vtm** contains the core library
@@ -36,21 +39,19 @@ See the [integration guide](docs/Integration.md) and [changelog](docs/Changelog.
 - **vtm-web** HTML5/GWT backend
 - **vtm-web-app** HTML5/GWT application
 
-The libGDX backend for GWT is experimental.
-
-## Master build downloads
-- [Latest jars and samples](http://ci.mapsforge.org/job/vtm/)
+## Applications
+- VTM is used by many [applications](docs/Applications.md).
 
 ## WebGL Demo
 [OpenScienceMap](http://opensciencemap.org/s3db/#scale=17,rot=61,tilt=51,lat=53.075,lon=8.807) view of Bremen.
-- hold right mouse button to change view direction
+- Hold right mouse button to change view direction.
 
 ## Credits
 This library contains code from several projects:
+- **Android**: some Matrix code, TimSort (http://source.android.com)
+- **libGDX**: AsyncTask, MathUtils and Interpolation classes (https://github.com/libgdx)
 - **mapsforge**: based on 0.2.4 (https://github.com/mapsforge/mapsforge)
 - **osmdroid**: some overlay classes (https://github.com/osmdroid/osmdroid)
-- **libGDX**: AsyncTask, MathUtils and Interpolation classes (https://github.com/libgdx)
-- **Android**: some Matrix code, TimSort (http://source.android.com)
 - **tessellate**: (https://github.com/cscheid/tessellate)
 
 ## Screenshots

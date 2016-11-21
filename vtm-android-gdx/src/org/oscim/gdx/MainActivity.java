@@ -40,13 +40,14 @@ public class MainActivity extends AndroidApplication {
         AndroidGraphics.init();
         GdxAssets.init("");
         GLAdapter.init(new AndroidGL());
-        Tile.SIZE = 400;
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         CanvasAdapter.dpi = (int) Math.max(metrics.xdpi, metrics.ydpi);
+        Tile.SIZE = Tile.calculateTileSize(metrics.scaledDensity);
 
         AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
         cfg.stencil = 8;
+        cfg.numSamples = 2;
 
         new SharedLibraryLoader().load("vtm-jni");
 
@@ -57,7 +58,7 @@ public class MainActivity extends AndroidApplication {
         @Override
         public void createLayers() {
             TileSource ts = new OSciMap4TileSource();
-            initDefaultLayers(ts, true, true, true);
+            initDefaultLayers(ts, true, true, true, getResources().getDisplayMetrics().density);
         }
     }
 }

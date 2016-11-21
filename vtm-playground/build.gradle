@@ -1,13 +1,12 @@
 apply plugin: 'java'
-apply plugin: 'application'
 
 dependencies {
     compile project(':vtm-desktop')
     compile project(':vtm-extras')
+    compile project(':vtm-http')
     compile project(':vtm-jeo')
     compile project(':vtm-jts')
     compile 'org.slf4j:slf4j-simple:1.7.21'
-    runtime 'com.squareup.okhttp:okhttp:1.5.2'
 }
 
 sourceSets {
@@ -16,6 +15,3 @@ sourceSets {
         resources.srcDirs = ['resources']
     }
 }
-
-mainClassName = 'org.oscim.gdx.GdxMapApp'
-run { ignoreExitValue = true }

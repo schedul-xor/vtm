@@ -2,6 +2,7 @@
  * Copyright 2010, 2011, 2012 mapsforge.org
  * Copyright 2013, 2014 Hannes Janetzek
  * Copyright 2016 devemux86
+ * Copyright 2016 Andrey Novikov
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -18,6 +19,7 @@
  */
 package org.oscim.tiling.source.mapfile;
 
+import org.oscim.backend.CanvasAdapter;
 import org.oscim.core.GeometryBuffer.GeometryType;
 import org.oscim.core.MapElement;
 import org.oscim.core.MercatorProjection;
@@ -216,6 +218,10 @@ public class MapDatabase implements ITileDataSource {
         mTileClipper = new TileClipper(0, 0, 0, 0);
     }
 
+    public MapFileTileSource getTileSource() {
+        return mTileSource;
+    }
+
     @Override
     public void query(MapTile tile, ITileDataSink sink) {
 
@@ -377,10 +383,14 @@ public class MapDatabase implements ITileDataSource {
         long numCols = queryParameters.toBlockX - queryParameters.fromBlockX;
 
         //log.debug(numCols + "/" + numRows + " " + mCurrentCol + " " + mCurrentRow);
-        xmin = -16;
-        ymin = -16;
-        xmax = Tile.SIZE + 16;
-        ymax = Tile.SIZE + 16;
+
+        // Buffer based on dpi
+        int buffer = (int) (16 * CanvasAdapter.dpi / CanvasAdapter.DEFAULT_DPI + 0.5f);
+
+        xmin = -buffer;
+        ymin = -buffer;
+        xmax = Tile.SIZE + buffer;
+        ymax = Tile.SIZE + buffer;
 
         if (numRows > 0) {
             int w = (int) (Tile.SIZE / (numCols + 1));
@@ -541,9 +551,9 @@ public class MapDatabase implements ITileDataSource {
         Tag[] poiTags = mTileSource.fileInfo.poiTags;
         MapElement e = mElem;
 
-        int numTags = 0;
-
         for (int elementCounter = numberOfPois; elementCounter != 0; --elementCounter) {
+            int numTags = 0;
+
             if (mDebugFile) {
                 /* get and check the POI signature */
                 mSignaturePoi = mReadBuffer.readUTF8EncodedString(SIGNATURE_LENGTH_POI);
@@ -683,9 +693,11 @@ public class MapDatabase implements ITileDataSource {
                 if (e.type == GeometryType.NONE)
                     e.type = line ? LINE : POLY;
 
-            } else if ((deltaLon > minDeltaLon || deltaLon < -minDeltaLon
+            } else /*if ((deltaLon > minDeltaLon || deltaLon < -minDeltaLon
                     || deltaLat > minDeltaLat || deltaLat < -minDeltaLat)
-                    || e.tags.contains("natural", "nosea")) {
+                    || e.tags.contains("natural", "nosea"))*/ {
+                // Avoid additional simplification
+                // https://github.com/mapsforge/vtm/issues/39
                 outBuffer[outPos++] = lon;
                 outBuffer[outPos++] = lat;
                 cnt += 2;
@@ -714,8 +726,6 @@ public class MapDatabase implements ITileDataSource {
         Tag[] wayTags = mTileSource.fileInfo.wayTags;
         MapElement e = mElem;
 
-        int numTags = 0;
-
         int wayDataBlocks;
 
         // skip string block
@@ -731,6 +741,8 @@ public class MapDatabase implements ITileDataSource {
         //setTileClipping(queryParameters);
 
         for (int elementCounter = numberOfWays; elementCounter != 0; --elementCounter) {
+            int numTags = 0;
+
             if (mDebugFile) {
                 // get and check the way signature
                 mSignatureWay = mReadBuffer.readUTF8EncodedString(SIGNATURE_LENGTH_WAY);
@@ -838,9 +850,11 @@ public class MapDatabase implements ITileDataSource {
                     e.tags.add(new Tag(Tag.KEY_REF, str, false));
                 }
             }
-            if ((featureByte & WAY_FEATURE_LABEL_POSITION) != 0)
-                // labelPosition =
-                readOptionalLabelPosition();
+
+            int[] labelPosition = null;
+            if ((featureByte & WAY_FEATURE_LABEL_POSITION) != 0) {
+                labelPosition = readOptionalLabelPosition();
+            }
 
             if ((featureByte & WAY_FEATURE_DATA_BLOCKS_BYTE) != 0) {
                 wayDataBlocks = mReadBuffer.readUnsignedInt();
@@ -868,6 +882,8 @@ public class MapDatabase implements ITileDataSource {
                     continue;
                 }
 
+                if (labelPosition != null && wayDataBlock == 0)
+                    e.setLabelPosition(e.points[0] + labelPosition[0], e.points[1] + labelPosition[1]);
                 mTileProjection.project(e);
 
                 if (!e.tags.containsKey("building"))
@@ -877,6 +893,7 @@ public class MapDatabase implements ITileDataSource {
                 e.simplify(1, true);
 
                 e.setLayer(layer);
+
                 mapDataSink.process(e);
             }
         }
@@ -884,14 +901,14 @@ public class MapDatabase implements ITileDataSource {
         return true;
     }
 
-    private float[] readOptionalLabelPosition() {
-        float[] labelPosition = new float[2];
+    private int[] readOptionalLabelPosition() {
+        int[] labelPosition = new int[2];
 
         /* get the label position latitude offset (VBE-S) */
-        labelPosition[1] = mTileLatitude + mReadBuffer.readSignedInt();
+        labelPosition[1] = mReadBuffer.readSignedInt();
 
         /* get the label position longitude offset (VBE-S) */
-        labelPosition[0] = mTileLongitude + mReadBuffer.readSignedInt();
+        labelPosition[0] = mReadBuffer.readSignedInt();
 
         return labelPosition;
     }
@@ -1018,6 +1035,10 @@ public class MapDatabase implements ITileDataSource {
                 } else {
                     indices[idx] = (short) cnt;
                 }
+            }
+            if (e.labelPosition != null) {
+                e.labelPosition.x = projectLon(e.labelPosition.x);
+                e.labelPosition.y = projectLat(e.labelPosition.y);
             }
         }
     }

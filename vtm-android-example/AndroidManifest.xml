@@ -39,6 +39,15 @@
             android:name=".LineTexActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
+            android:name=".LocationActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".MapboxMapActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".MapFragmentActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
             android:name=".MapsforgeMapActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
@@ -46,6 +55,9 @@
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".MarkerOverlayActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".MultiMapActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".OsmJsonMapActivity"

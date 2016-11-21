@@ -2,6 +2,7 @@
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016 Andrey Novikov
  * Copyright 2016 Stephan Leuschner
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -25,7 +26,6 @@ import org.oscim.event.Event;
 import org.oscim.event.EventDispatcher;
 import org.oscim.event.EventListener;
 import org.oscim.event.Gesture;
-import org.oscim.event.GestureDetector;
 import org.oscim.event.MotionEvent;
 import org.oscim.layers.Layer;
 import org.oscim.layers.MapEventLayer;
@@ -106,9 +106,6 @@ public abstract class Map implements TaskQueue {
     protected final MapPosition mMapPosition;
 
     protected final MapEventLayer mEventLayer;
-    protected GestureDetector mGestureDetector;
-
-    private TileLayer mBaseLayer;
 
     protected boolean mClearMap = true;
 
@@ -149,7 +146,7 @@ public abstract class Map implements TaskQueue {
     /**
      * Create OsmTileLayer with given TileSource and
      * set as base map (layer 1)
-     * <p/>
+     * <p>
      * TODO deprecate
      */
     public VectorTileLayer setBaseMap(TileSource tileSource) {
@@ -161,7 +158,6 @@ public abstract class Map implements TaskQueue {
 
     public TileLayer setBaseMap(TileLayer tileLayer) {
         mLayers.add(1, tileLayer);
-        mBaseLayer = tileLayer;
         return tileLayer;
     }
 
@@ -178,10 +174,6 @@ public abstract class Map implements TaskQueue {
      * to all vector layers and use map background color from theme.
      */
     public void setTheme(ThemeFile theme, boolean allLayers) {
-        if (mBaseLayer == null) {
-            log.error("No base layer set");
-            throw new IllegalStateException();
-        }
         setTheme(ThemeLoader.load(theme), allLayers);
     }
 
@@ -194,18 +186,18 @@ public abstract class Map implements TaskQueue {
             throw new IllegalArgumentException("Theme cannot be null.");
         }
 
-        if (mBaseLayer == null) {
-            log.warn("No base layer set.");
-        } else if (mBaseLayer instanceof VectorTileLayer) {
-            ((VectorTileLayer) mBaseLayer).setRenderTheme(theme);
-        }
-
-        if (allLayers) {
-            for (Layer layer : mLayers) {
-                if (layer instanceof VectorTileLayer) {
-                    ((VectorTileLayer) layer).setRenderTheme(theme);
-                }
+        boolean themeSet = false;
+        for (Layer layer : mLayers) {
+            if (layer instanceof VectorTileLayer) {
+                ((VectorTileLayer) layer).setRenderTheme(theme);
+                themeSet = true;
+                if (!allLayers)
+                    break;
             }
+        }
+        if (!themeSet) {
+            log.error("No vector layers set");
+            throw new IllegalStateException();
         }
 
         MapRenderer.setBackgroundColor(theme.getMapBackground());
@@ -246,7 +238,7 @@ public abstract class Map implements TaskQueue {
     public abstract boolean postDelayed(Runnable action, long delay);
 
     /**
-     * Post a task to run on a shared worker-thread. Shoul only use for
+     * Post a task to run on a shared worker-thread. Should only use for
      * tasks running less than a second.
      */
     @Override
@@ -349,7 +341,7 @@ public abstract class Map implements TaskQueue {
 
     /**
      * This function is run on main-thread before rendering a frame.
-     * <p/>
+     * <p>
      * For internal use only. Do not call!
      */
     protected void prepareFrame() {
@@ -360,10 +352,11 @@ public abstract class Map implements TaskQueue {
         mAnimator.updateAnimation();
 
         boolean changed = mViewport.getMapPosition(pos);
+        boolean sizeChanged = mViewport.sizeChanged();
 
         if (mClearMap)
             events.fire(CLEAR_EVENT, pos);
-        else if (changed)
+        else if (changed || sizeChanged)
             events.fire(POSITION_EVENT, pos);
         else
             events.fire(UPDATE_EVENT, pos);

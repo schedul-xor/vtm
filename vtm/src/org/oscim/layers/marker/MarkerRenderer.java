@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 Izumi Kawashima
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -35,7 +36,7 @@ public class MarkerRenderer extends BucketRenderer {
 
     private final SymbolBucket mSymbolLayer;
     private final float[] mBox = new float[8];
-    private final MarkerLayer<MarkerItem> mMarkerLayer;
+    private final MarkerLayer<MarkerInterface> mMarkerLayer;
     private final Point mMapPoint = new Point();
 
     /**
@@ -51,7 +52,7 @@ public class MarkerRenderer extends BucketRenderer {
     private InternalItem[] mItems;
 
     static class InternalItem {
-        MarkerItem item;
+        MarkerInterface item;
         boolean visible;
         boolean changes;
         float x, y;
@@ -64,7 +65,7 @@ public class MarkerRenderer extends BucketRenderer {
         }
     }
 
-    public MarkerRenderer(MarkerLayer<MarkerItem> markerLayer, MarkerSymbol defaultSymbol) {
+    public MarkerRenderer(MarkerLayer<MarkerInterface> markerLayer, MarkerSymbol defaultSymbol) {
         mSymbolLayer = new SymbolBucket();
         mMarkerLayer = markerLayer;
         mDefaultMarker = defaultSymbol;
@@ -161,7 +162,11 @@ public class MarkerRenderer extends BucketRenderer {
                 marker = mDefaultMarker;
 
             SymbolItem s = SymbolItem.pool.get();
-            s.set(it.x, it.y, marker.getBitmap(), true);
+            if (marker.isBitmap()) {
+                s.set(it.x, it.y, marker.getBitmap(), true);
+            } else {
+                s.set(it.x, it.y, marker.getTextureRegion(), true);
+            }
             s.offset = marker.getHotspot();
             s.billboard = marker.isBillboard();
             mSymbolLayer.pushSymbol(s);

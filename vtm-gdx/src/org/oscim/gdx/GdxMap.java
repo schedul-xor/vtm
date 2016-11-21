@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2016 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -20,6 +21,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 
@@ -32,15 +34,12 @@ import org.oscim.map.Map;
 import org.oscim.renderer.MapRenderer;
 import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.TileSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class GdxMap implements ApplicationListener {
-    final static Logger log = LoggerFactory.getLogger(GdxMap.class);
 
     protected Map mMap;
+    protected GestureDetector mGestureDetector;
 
-    VectorTileLayer mMapLayer;
     private MapRenderer mMapRenderer;
 
     public GdxMap() {
@@ -48,21 +47,26 @@ public abstract class GdxMap implements ApplicationListener {
 
     protected void initDefaultLayers(TileSource tileSource, boolean tileGrid, boolean labels,
                                      boolean buildings) {
+        initDefaultLayers(tileSource, tileGrid, labels, buildings, 1);
+    }
+
+    protected void initDefaultLayers(TileSource tileSource, boolean tileGrid, boolean labels,
+                                     boolean buildings, float scale) {
         Layers layers = mMap.layers();
 
         if (tileSource != null) {
-            mMapLayer = mMap.setBaseMap(tileSource);
+            VectorTileLayer mapLayer = mMap.setBaseMap(tileSource);
             mMap.setTheme(VtmThemes.DEFAULT);
 
             if (buildings)
-                layers.add(new BuildingLayer(mMap, mMapLayer));
+                layers.add(new BuildingLayer(mMap, mapLayer));
 
             if (labels)
-                layers.add(new LabelLayer(mMap, mMapLayer));
+                layers.add(new LabelLayer(mMap, mapLayer));
         }
 
         if (tileGrid)
-            layers.add(new TileGridLayer(mMap));
+            layers.add(new TileGridLayer(mMap, scale));
     }
 
     @Override
@@ -81,6 +85,8 @@ public abstract class GdxMap implements ApplicationListener {
         mMapRenderer.onSurfaceChanged(w, h);
 
         InputMultiplexer mux = new InputMultiplexer();
+        mGestureDetector = new GestureDetector(new LayerHandler(mMap));
+        mux.addProcessor(mGestureDetector);
         mux.addProcessor(new InputHandler(this));
         //mux.addProcessor(new GestureDetector(20, 0.5f, 2, 0.05f,
         //                                     new MapController(mMap)));
@@ -92,7 +98,6 @@ public abstract class GdxMap implements ApplicationListener {
     }
 
     protected void createLayers() {
-        mMap.layers().add(new TileGridLayer(mMap));
     }
 
     @Override

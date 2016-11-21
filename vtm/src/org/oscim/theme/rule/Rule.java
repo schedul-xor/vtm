@@ -1,6 +1,7 @@
 /*
  * Copyright 2014 Hannes Janetzek
- * 
+ * Copyright 2016 devemux86
+ *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  * 
  * This program is free software: you can redistribute it and/or modify it under the
@@ -19,6 +20,7 @@ package org.oscim.theme.rule;
 import org.oscim.core.Tag;
 import org.oscim.theme.rule.RuleBuilder.RuleType;
 import org.oscim.theme.styles.RenderStyle;
+import org.oscim.utils.Utils;
 
 import java.util.List;
 
@@ -49,6 +51,7 @@ public class Rule {
     public final Rule[] subRules;
     public final RenderStyle[] styles;
 
+    public String cat;
     public final int zoom;
     public final int element;
     public final boolean selectFirstMatch;
@@ -127,6 +130,11 @@ public class Rule {
             subRule.scaleTextSize(scaleFactor);
     }
 
+    public Rule setCat(String cat) {
+        this.cat = cat;
+        return this;
+    }
+
     public void updateStyles() {
         for (RenderStyle ri : styles)
             ri.update();
@@ -183,7 +191,7 @@ public class Rule {
         @Override
         public boolean matchesTags(Tag[] tags) {
             for (Tag tag : tags)
-                if (mKey == tag.key)
+                if (Utils.equals(mKey, tag.key))
                     return true;
 
             return false;
@@ -202,7 +210,7 @@ public class Rule {
         @Override
         public boolean matchesTags(Tag[] tags) {
             for (Tag tag : tags)
-                if (mValue == tag.value)
+                if (Utils.equals(mValue, tag.value))
                     return true;
 
             return false;
@@ -224,8 +232,8 @@ public class Rule {
         @Override
         public boolean matchesTags(Tag[] tags) {
             for (Tag tag : tags)
-                if (mKey == tag.key)
-                    return (mValue == tag.value);
+                if (Utils.equals(mKey, tag.key))
+                    return (Utils.equals(mValue, tag.value));
 
             return false;
         }
@@ -256,7 +264,7 @@ public class Rule {
             if (mKeys == null) {
                 for (Tag tag : tags) {
                     for (String value : mValues) {
-                        if (value == tag.value)
+                        if (Utils.equals(value, tag.value))
                             return true;
                     }
                 }
@@ -265,12 +273,12 @@ public class Rule {
 
             for (Tag tag : tags)
                 for (String key : mKeys) {
-                    if (key == tag.key) {
+                    if (Utils.equals(key, tag.key)) {
                         if (mValues == null)
                             return true;
 
                         for (String value : mValues) {
-                            if (value == tag.value)
+                            if (Utils.equals(value, tag.value))
                                 return true;
                         }
                     }
@@ -312,7 +320,7 @@ public class Rule {
 
             for (Tag tag : tags)
                 for (String value : values)
-                    if (value == tag.value)
+                    if (Utils.equals(value, tag.value))
                         return !exclusive;
 
             return exclusive;
@@ -321,7 +329,7 @@ public class Rule {
         private boolean containsKeys(Tag[] tags) {
             for (Tag tag : tags)
                 for (String key : keys)
-                    if (key == tag.key)
+                    if (Utils.equals(key, tag.key))
                         return true;
 
             return false;
