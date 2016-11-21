@@ -49,6 +49,7 @@ public class TileManager {
 
     public final static Event TILE_LOADED = new Event();
     public final static Event TILE_REMOVED = new Event();
+    public final static Event SCANNED_MAP_TILE_UPDATED = new Event();
 
     private final int mCacheLimit;
     private int mCacheReduce;
@@ -72,6 +73,8 @@ public class TileManager {
 
     private final Map mMap;
     private final Viewport mViewport;
+
+    private int prevScannedMapTilesHash = 0;
 
     /**
      * cache for all tiles
@@ -316,6 +319,11 @@ public class TileManager {
         boolean changed = (newCnt != curCnt);
 
         Arrays.sort(newTiles, 0, newCnt, TileSet.coordComparator);
+        int newHash = this.hashForSortedMapTileJobs(newTiles);
+        if (newHash != prevScannedMapTilesHash) {
+            scannedMapTileUpdateDispatcher.fire(SCANNED_MAP_TILE_UPDATED, newTiles);
+        }
+        prevScannedMapTilesHash = newHash;
 
         if (!changed) {
             /* compare if any tile has changed */
@@ -378,6 +386,17 @@ public class TileManager {
             }
         }
         return true;
+    }
+
+    private int hashForSortedMapTileJobs(MapTile[] jobs) {
+        int result = 7;
+        for (MapTile job : jobs) {
+            if (job == null) {
+                continue;
+            }
+            result = 31 * result + job.hashCode();
+        }
+        return result;
     }
 
     public void clearJobs() {
@@ -730,4 +749,36 @@ public class TileManager {
         mMinZoom = zoomLevelMin;
         mMaxZoom = zoomLevelMax;
     }
+
+    public EventDispatcher<TileManagerEventListener, MapTile> getTileManagerEventDispatcher() {
+        return this.tileManagerEventDispatcher;
+    }
+
+    public interface TileManagerEventListener extends EventListener {
+        void onTileManagerEvent(Event event, MapTile tile);
+    }
+
+    public EventDispatcher<ScannedMapTileUpdateEventListener, MapTile[]> getScannedMapTileUpdateDispatcher() {
+        return this.scannedMapTileUpdateDispatcher;
+    }
+
+    private final EventDispatcher<ScannedMapTileUpdateEventListener, MapTile[]> scannedMapTileUpdateDispatcher = new EventDispatcher<ScannedMapTileUpdateEventListener, MapTile[]>() {
+
+        @Override
+        public void tell(ScannedMapTileUpdateEventListener listener, Event event, MapTile[] data) {
+            listener.onScannedMapTileUpdated(event, data);
+        }
+    };
+
+    public interface ScannedMapTileUpdateEventListener extends EventListener {
+        void onScannedMapTileUpdated(Event event, MapTile[] tiles);
+    }
+
+    private final EventDispatcher<TileManagerEventListener, MapTile> tileManagerEventDispatcher =
+            new EventDispatcher<TileManagerEventListener, MapTile>() {
+                @Override
+                public void tell(TileManagerEventListener l, Event event, MapTile tile) {
+                    l.onTileManagerEvent(event, tile);
+                }
+            };
 }
