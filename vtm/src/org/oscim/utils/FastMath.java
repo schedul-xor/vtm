@@ -48,6 +48,10 @@ public class FastMath {
         return r;
     }
 
+    public static boolean isPowerOf2(int v) {
+        return (v & (v - 1)) == 0;
+    }
+
     /**
      * Integer version of 2^x
      */
