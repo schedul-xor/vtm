@@ -23,6 +23,7 @@ import org.oscim.backend.AssetAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class AndroidAssets extends AssetAdapter {
     Context mContext;
@@ -42,6 +43,16 @@ public class AndroidAssets extends AssetAdapter {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @Override
+    protected boolean openFileExists(String file) {
+        try {
+            return Arrays.asList(mContext.getAssets().list("")).contains(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

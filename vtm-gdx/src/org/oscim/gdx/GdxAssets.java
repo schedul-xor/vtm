@@ -50,6 +50,11 @@ public class GdxAssets extends AssetAdapter {
         }
     }
 
+    @Override
+    protected boolean openFileExists(String file) {
+        return Gdx.files.internal(pathPrefix + file) != null;
+    }
+
     public static void init(String path) {
         AssetAdapter.init(new GdxAssets(path));
     }
