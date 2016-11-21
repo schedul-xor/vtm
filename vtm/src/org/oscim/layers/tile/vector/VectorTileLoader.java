@@ -215,6 +215,11 @@ public class VectorTileLoader extends TileLoader implements RenderStyle.Callback
         clearState();
     }
 
+    @Override
+    public void setWildCardObject(Object obj) {
+        
+    }
+
     protected void renderWay(RenderStyle[] style) {
         if (style == null)
             return;
