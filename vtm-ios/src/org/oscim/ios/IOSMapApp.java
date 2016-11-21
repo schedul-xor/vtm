@@ -23,6 +23,7 @@ import org.oscim.gdx.GdxMap;
 import org.oscim.ios.backend.IosGL;
 import org.oscim.ios.backend.IosGraphics;
 import org.oscim.layers.GroupLayer;
+import org.oscim.layers.Layer;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
@@ -71,5 +72,11 @@ public class IOSMapApp extends GdxMap {
 
         map.setTheme(VtmThemes.DEFAULT);
         map.setMapPosition(53.075, 8.808, 1 << 17);
+
+        l.getRenderer().setVisible(true);
+        for(Layer layer : groupLayer.layers){
+            layer.getRenderer().setVisible(true);
+        }
+        mapScaleBarLayer.getRenderer().setVisible(true);
     }
 }

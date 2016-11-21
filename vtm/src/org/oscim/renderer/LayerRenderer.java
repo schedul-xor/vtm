@@ -29,6 +29,11 @@ public abstract class LayerRenderer {
     boolean isInitialized;
 
     /**
+     *
+     */
+    boolean isVisible;
+
+    /**
      * Set 'ready for render' state when layer data is ready for rendering.
      *
      * @param ready true if render() should be called, false otherwise.
@@ -69,4 +74,11 @@ public abstract class LayerRenderer {
      */
     public abstract void render(GLViewport viewport);
 
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    public void setVisible(boolean visible) {
+        isVisible = visible;
+    }
 }

@@ -29,6 +29,7 @@ import org.oscim.gdx.GdxMap;
 import org.oscim.gdx.client.GwtGdxGraphics;
 import org.oscim.gdx.client.MapConfig;
 import org.oscim.gdx.client.MapUrl;
+import org.oscim.layers.Layer;
 import org.oscim.layers.tile.bitmap.BitmapTileLayer;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.buildings.S3DBLayer;
@@ -150,6 +151,10 @@ class GwtMap extends GdxMap {
 
         mSearchBox = new SearchBox(mMap);
 
+        for (Layer layer : mMap.layers()) {
+            if(layer.getRenderer() ==null){continue;}
+            layer.getRenderer().setVisible(true);
+        }
     }
 
     @Override

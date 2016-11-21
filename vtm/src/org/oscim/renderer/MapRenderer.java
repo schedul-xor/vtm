@@ -150,7 +150,7 @@ public class MapRenderer {
 
             renderer.update(mViewport);
 
-            if (renderer.isReady)
+            if (renderer.isVisible() && renderer.isReady)
                 renderer.render(mViewport);
 
             if (GLAdapter.debug)
