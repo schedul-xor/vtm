@@ -64,10 +64,7 @@ public class GwtBitmap implements Bitmap {
     @Override
     public void recycle() {
         // FIXME this should be called at some point in time
-        pixmap.dispose();
-
-        if (image != null)
-            RootPanel.get().remove(image);
+        disposePixmapAndRemoveFromRootPanel();
     }
 
     @Override
@@ -88,11 +85,15 @@ public class GwtBitmap implements Bitmap {
 
         if (disposable || image != null) {
             //log.debug("dispose pixmap " + getWidth() + "/" + getHeight());
-            pixmap.dispose();
-
-            if (image != null)
-                RootPanel.get().remove(image);
+            disposePixmapAndRemoveFromRootPanel();
         }
+    }
+
+    private void disposePixmapAndRemoveFromRootPanel(){
+//        pixmap.dispose();
+
+//        if (image != null)
+//            RootPanel.get().remove(image);
     }
 
     @Override
