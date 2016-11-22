@@ -163,7 +163,7 @@ public class BitmapBucket extends TextureBucket {
         //textures = null;
     }
 
-    static class Shader extends GLShader {
+    public static class Shader extends GLShader {
         int uMVP, uAlpha, aPos, aTexCoord;
 
         Shader(String shaderFile) {
