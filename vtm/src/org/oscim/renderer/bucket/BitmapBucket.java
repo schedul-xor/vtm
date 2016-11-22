@@ -190,7 +190,7 @@ public class BitmapBucket extends TextureBucket {
         public final static int INDICES_PER_SPRITE = 6;
         final static int VERTICES_PER_SPRITE = 4;
         final static int SHORTS_PER_VERTICE = 6;
-        static Shader shader;
+        public static Shader shader;
 
         static void init() {
             shader = new Shader("texture_alpha");
