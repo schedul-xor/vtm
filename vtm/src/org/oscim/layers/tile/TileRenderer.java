@@ -16,6 +16,8 @@
  */
 package org.oscim.layers.tile;
 
+import org.oscim.core.MapPosition;
+import org.oscim.core.MercatorProjection;
 import org.oscim.layers.tile.MapTile.TileNode;
 import org.oscim.renderer.BufferObject;
 import org.oscim.renderer.GLViewport;
@@ -362,4 +364,18 @@ public abstract class TileRenderer extends LayerRenderer {
 
         return minFade;
     }
+
+    static public float getMapAffineX(double longitude, double tileScale, MapPosition pos) {
+        double objAbsRateX = MercatorProjection.longitudeToX(longitude);
+        double rateXDelta = objAbsRateX - pos.x;
+        return (float) (rateXDelta * tileScale);
+    }
+
+    static public float getMapAffineY(double latitude, double tileScale, MapPosition pos) {
+        double objAbsRateY = MercatorProjection.latitudeToY(latitude);
+        double rateYDelta = objAbsRateY - pos.y;
+        return (float) (rateYDelta * tileScale);
+    }
+
+
 }
