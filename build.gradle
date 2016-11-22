@@ -1,3 +1,5 @@
+apply plugin: 'maven'
+
 buildscript {
     repositories {
         jcenter()
@@ -9,13 +11,13 @@ buildscript {
 }
 
 allprojects {
-    group = 'org.mapsforge'
-    version = 'master-SNAPSHOT'
+    group = 'com.ogiqvo.vtm'
+    version = '0.0.15'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     ext.androidBuildVersionTools = "25.0.0"
     ext.gdxVersion = "1.9.4"
-    ext.gwtVersion = "2.7.0"
+    ext.gwtVersion = '2.7.0'
 
     if (JavaVersion.current().isJava8Compatible()) {
         tasks.withType(Javadoc) {

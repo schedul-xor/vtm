@@ -66,8 +66,7 @@ android.libraryVariants.all { variant ->
     artifacts.add('archives', fatJar);
 }
 
-if (project.hasProperty("SONATYPE_USERNAME")) {
-    afterEvaluate {
-        project.apply from: "${rootProject.projectDir}/deploy.gradle"
-    }
+// Automated Gradle project deployment to Sonatype OSSRH
+afterEvaluate {
+    project.apply from: "${rootProject.projectDir}/vtm-android/deploy.gradle"
 }
