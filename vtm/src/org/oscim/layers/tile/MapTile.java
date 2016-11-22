@@ -146,7 +146,7 @@ public class MapTile extends Tile {
      * Only used GLRenderer when this tile sits in for another tile.
      * e.g. x:-1,y:0,z:1 for x:1,y:0
      */
-    MapTile holder;
+    public MapTile holder;
 
     public static abstract class TileData extends Inlist<TileData> {
         Object id;
