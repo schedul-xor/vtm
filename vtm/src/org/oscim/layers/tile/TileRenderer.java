@@ -57,7 +57,7 @@ public abstract class TileRenderer extends LayerRenderer {
         mDrawTiles = new TileSet();
     }
 
-    protected void setTileManager(TileManager tileManager) {
+    public void setTileManager(TileManager tileManager) {
         mTileManager = tileManager;
     }
 
