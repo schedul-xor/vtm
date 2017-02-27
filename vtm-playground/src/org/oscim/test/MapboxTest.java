@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -19,6 +19,7 @@ import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.theme.VtmThemes;
+import org.oscim.tiling.source.OkHttpEngine;
 import org.oscim.tiling.source.UrlTileSource;
 import org.oscim.tiling.source.mvt.MapboxTileSource;
 
@@ -27,7 +28,9 @@ public class MapboxTest extends GdxMapApp {
     @Override
     public void createLayers() {
         UrlTileSource tileSource = MapboxTileSource.builder()
-                .apiKey("vector-tiles-xxxxxxx") // Put a proper API key
+                .apiKey("mapzen-xxxxxxx") // Put a proper API key
+                .httpFactory(new OkHttpEngine.OkHttpFactory())
+                //.locale("en")
                 .build();
 
         VectorTileLayer l = mMap.setBaseMap(tileSource);

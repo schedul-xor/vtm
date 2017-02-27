@@ -1,8 +1,7 @@
 buildscript {
     repositories {
-        mavenLocal()
+        jcenter()
         mavenCentral()
-        maven { url 'http://dl.bintray.com/steffenschaefer/maven' }
     }
     dependencies {
         classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
@@ -25,7 +24,6 @@ sourceSets {
 dependencies {
     providedCompile project(':vtm-web')
     providedCompile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
-    providedCompile "com.badlogicgames.gdx:gdx:$gdxVersion"
     providedCompile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
     providedCompile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
     providedCompile 'org.slf4j:slf4j-api:1.7.21'
@@ -42,6 +40,9 @@ gwt {
     gwtVersion = project.ext.gwtVersion
     modules 'org.oscim.web.VtmWebApp'
 
+    minHeapSize = "512M"
+    maxHeapSize = "2048M"
+
     superDev {
         noPrecompile = true
     }
@@ -54,6 +55,7 @@ gwt {
     src += files(sourceSets.main.java.srcDirs)
     src += files(project(':vtm').sourceSets.main.allJava.srcDirs)
     src += files(project(':vtm-themes').sourceSets.main.allJava.srcDirs)
+    src += files(project(':vtm-themes').sourceSets.main.resources.srcDirs)
     src += files(project(':vtm-gdx').sourceSets.main.allJava.srcDirs)
     src += files(project(':vtm-web').sourceSets.main.allJava.srcDirs)
 }
@@ -67,6 +69,12 @@ task jettyDraftWar(type: JettyRunWar) {
 
 task copyThemeAssets(type: Copy) {
     from "$rootDir/vtm-themes/resources/assets"
+    into "assets"
+    include '**/*'
+}
+
+task copyThemeLocalAssets(type: Copy) {
+    from "resources/assets"
     into "assets"
     include '**/*'
 }
@@ -85,6 +93,11 @@ task copyWarSources(type: Copy) {
 
 tasks.withType(JavaCompile) { compileTask ->
     compileTask.dependsOn copyThemeAssets
+    compileTask.dependsOn copyThemeLocalAssets
     compileTask.dependsOn copyVtmAssets
     compileTask.dependsOn copyWarSources
+}
+
+clean {
+    delete "assets"
 }

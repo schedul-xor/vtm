@@ -1,11 +1,10 @@
 buildscript {
     repositories {
-        mavenLocal()
+        jcenter()
         mavenCentral()
-        maven { url 'http://dl.bintray.com/steffenschaefer/maven' }
     }
     dependencies {
-        classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.5'
+        classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
     }
 }
 
@@ -16,6 +15,7 @@ repositories {
 //apply plugin: 'war'
 //apply plugin: 'jetty'
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'gwt-base'
 
 sourceSets {
@@ -26,7 +26,6 @@ dependencies {
     compile project(':vtm-gdx')
     compile project(':vtm-extras')
     compile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
-    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
     compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
     compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
     compile 'org.slf4j:slf4j-api:1.7.21'
@@ -40,7 +39,7 @@ evaluationDependsOn(':vtm-gdx')
 evaluationDependsOn(':vtm-extras')
 
 gwt {
-    gwtVersion = '2.6.1'
+    gwtVersion = project.ext.gwtVersion
     modules 'org.oscim.gdx.VtmWeb'
 
     superDev {
@@ -54,27 +53,9 @@ gwt {
 
     src += files(sourceSets.main.java.srcDirs)
     src += files(project(':vtm').sourceSets.main.allJava.srcDirs)
-    src += files(project(':vtm').sourceSets.main.resources.srcDirs)
     src += files(project(':vtm-themes').sourceSets.main.allJava.srcDirs)
     src += files(project(':vtm-themes').sourceSets.main.resources.srcDirs)
     src += files(project(':vtm-gdx').sourceSets.main.allJava.srcDirs)
-    src += files(project(':vtm-gdx').sourceSets.main.resources.srcDirs)
-}
-
-jar {
-    manifest {
-        attributes(
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.version,
-                'Build-Date': new java.text.SimpleDateFormat('HH:mm:ss yyyy/MM/dd').format(new Date()),
-        )
-    }
-
-    dependsOn classes
-    from project.sourceSets.main.allSource
-    includes = ['**/*']
-    excludes = ['**/*.java']
-    includeEmptyDirs = false
 }
 
 // Run jetty with draft compiled war

@@ -1,6 +1,7 @@
 /*
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016 Izumi Kawashima
+ * Copyright 2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -20,6 +21,7 @@ package org.oscim.web.client;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 
+import org.oscim.backend.AssetAdapter;
 import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.GL;
 import org.oscim.backend.GLAdapter;
@@ -36,6 +38,7 @@ import org.oscim.layers.tile.buildings.S3DBLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.renderer.MapRenderer;
+import org.oscim.theme.StreamRenderTheme;
 import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.TileSource;
 import org.oscim.tiling.source.bitmap.BitmapTileSource;
