@@ -30,6 +30,7 @@ package org.oscim.layers.tile.vector.labeling;
 // 5 QuadTree might be handy
 //
 
+import org.oscim.backend.GLAdapter;
 import org.oscim.layers.tile.vector.labeling.LabelLayer.Worker;
 import org.oscim.renderer.BucketRenderer;
 import org.oscim.renderer.GLState;
@@ -59,7 +60,7 @@ class TextRenderer extends BucketRenderer {
             t = mWorker.poll();
             if (t == null) {
                 if (!mWorker.isRunning()) {
-                    mWorker.submit(50);
+                    mWorker.submit(GLAdapter.GDX_WEBGL_QUIRKS ? 3000 : 50);
                 }
                 return;
             }
