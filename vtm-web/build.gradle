@@ -1,15 +1,16 @@
 buildscript {
     repositories {
-        maven { url 'http://dl.bintray.com/steffenschaefer/maven' }
+        jcenter()
     }
     dependencies {
-        classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.5'
+        classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
     }
 }
 
 //apply plugin: 'war'
 //apply plugin: 'jetty'
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'gwt-base'
 
 sourceSets {
@@ -75,3 +76,13 @@ gwt {
 //  compileTask.dependsOn copyThemeAssets
 //  compileTask.dependsOn copyVtmAssets
 //}
+
+javadoc {
+    options.addStringOption("sourcepath", "")
+}
+
+if (project.hasProperty("SONATYPE_USERNAME")) {
+    afterEvaluate {
+        project.apply from: "${rootProject.projectDir}/deploy.gradle"
+    }
+}
