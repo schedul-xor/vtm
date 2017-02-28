@@ -18,6 +18,7 @@
  */
 package org.oscim.layers.tile.buildings;
 
+import org.oscim.backend.canvas.Color;
 import org.oscim.core.MapElement;
 import org.oscim.core.MercatorProjection;
 import org.oscim.core.Tag;
@@ -34,8 +35,11 @@ import org.oscim.renderer.bucket.RenderBuckets;
 import org.oscim.theme.styles.ExtrusionStyle;
 import org.oscim.theme.styles.RenderStyle;
 import org.oscim.utils.pool.Inlist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BuildingLayer extends Layer implements TileLoaderThemeHook {
+    static final Logger log = LoggerFactory.getLogger(BuildingLayer.class);
 
     private final static int MIN_ZOOM = 17;
     private final static int MAX_ZOOM = 17;
@@ -60,6 +64,10 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
                 false, TRANSLUCENT);
         if (POST_AA)
             mRenderer = new OffscreenRenderer(Mode.SSAO_FXAA, mRenderer);
+    }
+
+    protected float[] explicitColorForMapElement(MapTile tile,ExtrusionStyle extrusion,MapElement element) {
+        return extrusion.colors;
     }
 
     /**
@@ -102,9 +110,10 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
         float groundScale = (float) MercatorProjection
                 .groundResolution(lat, 1 << tile.zoomLevel);
 
+        float[] overriddenColors = explicitColorForMapElement(tile, extrusion, element);
         ebs.buckets = Inlist.push(ebs.buckets,
                 new ExtrusionBucket(0, groundScale,
-                        extrusion.colors));
+                        overriddenColors));
 
         ebs.buckets.add(element, height, minHeight);
 
