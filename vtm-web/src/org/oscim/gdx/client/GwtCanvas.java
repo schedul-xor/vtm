@@ -96,6 +96,11 @@ public class GwtCanvas implements org.oscim.backend.canvas.Canvas {
     }
 
     @Override
+    public void drawBitmapScaled(Bitmap bitmap) {
+        // TODO
+    }
+
+    @Override
     public void drawCircle(float x, float y, float radius, Paint paint) {
         // TODO
     }
