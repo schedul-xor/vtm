@@ -19,17 +19,20 @@
 package org.oscim.android.test;
 
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 
 import org.oscim.backend.canvas.Bitmap;
 import org.oscim.core.GeoPoint;
-import org.oscim.layers.TileGridLayer;
 import org.oscim.layers.marker.ItemizedLayer;
 import org.oscim.layers.marker.MarkerItem;
 import org.oscim.layers.marker.MarkerSymbol;
 import org.oscim.layers.marker.MarkerSymbol.HotspotPlace;
+import org.oscim.layers.tile.buildings.BuildingLayer;
+import org.oscim.layers.tile.vector.VectorTileLayer;
+import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.renderer.atlas.TextureAtlas;
 import org.oscim.renderer.atlas.TextureRegion;
+import org.oscim.theme.VtmThemes;
+import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
 import org.oscim.utils.TextureAtlasUtils;
 
 import java.util.ArrayList;
@@ -41,12 +44,14 @@ import static org.oscim.android.canvas.AndroidGraphics.drawableToBitmap;
 public class AtlasMarkerOverlayActivity extends MarkerOverlayActivity {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mBitmapLayer.tileRenderer().setBitmapAlpha(0.5f);
-
+    void createLayers() {
         // Map events receiver
         mMap.layers().add(new MapEventsReceiver(mMap));
+
+        VectorTileLayer l = mMap.setBaseMap(new OSciMap4TileSource());
+        mMap.layers().add(new BuildingLayer(mMap, l));
+        mMap.layers().add(new LabelLayer(mMap, l));
+        mMap.setTheme(VtmThemes.DEFAULT);
 
         /* directly load bitmap from resources */
         Bitmap bitmapPoi = drawableToBitmap(getResources(), R.drawable.marker_poi);
@@ -89,7 +94,5 @@ public class AtlasMarkerOverlayActivity extends MarkerOverlayActivity {
         }
 
         mMarkerLayer.addItems(pts);
-
-        mMap.layers().add(new TileGridLayer(mMap, getResources().getDisplayMetrics().density));
     }
 }

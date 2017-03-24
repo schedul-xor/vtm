@@ -1,6 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -20,24 +20,16 @@ package org.oscim.android.test;
 import android.os.Bundle;
 
 import org.oscim.backend.canvas.Color;
-import org.oscim.layers.TileGridLayer;
 import org.oscim.layers.vector.VectorLayer;
 import org.oscim.layers.vector.geometries.PointDrawable;
 import org.oscim.layers.vector.geometries.Style;
 import org.oscim.utils.ColorUtil;
 
-import static org.oscim.tiling.source.bitmap.DefaultSources.STAMEN_TONER;
-
-public class VectorLayerMapActivity extends BitmapTileMapActivity {
-
-    public VectorLayerMapActivity() {
-        super(STAMEN_TONER.build());
-    }
+public class VectorLayerMapActivity extends SimpleMapActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBitmapLayer.tileRenderer().setBitmapAlpha(0.5f);
 
         VectorLayer vectorLayer = new VectorLayer(mMap);
 
@@ -95,7 +87,6 @@ public class VectorLayerMapActivity extends BitmapTileMapActivity {
         vectorLayer.update();
 
         mMap.layers().add(vectorLayer);
-        mMap.layers().add(new TileGridLayer(mMap, 0xff222222, 1.2f, 1));
     }
 
     @Override

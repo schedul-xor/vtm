@@ -2,7 +2,7 @@
  * Copyright 2010, 2011, 2012 mapsforge.org
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016-2017 devemux86
- * Copyright 2016 Longri
+ * Copyright 2016-2017 Longri
  * Copyright 2016 Andrey Novikov
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
@@ -30,7 +30,6 @@ import org.oscim.backend.canvas.Paint.FontStyle;
 import org.oscim.renderer.atlas.TextureAtlas;
 import org.oscim.renderer.atlas.TextureAtlas.Rect;
 import org.oscim.renderer.atlas.TextureRegion;
-import org.oscim.renderer.bucket.TextureItem;
 import org.oscim.theme.IRenderTheme.ThemeException;
 import org.oscim.theme.rule.Rule;
 import org.oscim.theme.rule.Rule.Closed;
@@ -49,6 +48,7 @@ import org.oscim.theme.styles.SymbolStyle;
 import org.oscim.theme.styles.SymbolStyle.SymbolBuilder;
 import org.oscim.theme.styles.TextStyle;
 import org.oscim.theme.styles.TextStyle.TextBuilder;
+import org.oscim.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -143,13 +143,13 @@ public class XmlThemeBuilder extends DefaultHandler {
     private RuleBuilder mCurrentRule;
     private TextureAtlas mTextureAtlas;
 
-    private int mLevels = 0;
-    private int mMapBackground = 0xffffffff;
-    private float mTextScale = 1;
+    int mLevels = 0;
+    int mMapBackground = 0xffffffff;
+    float mTextScale = 1;
 
-    private final ThemeFile mTheme;
+    final ThemeFile mTheme;
     private final ThemeCallback mThemeCallback;
-    private RenderTheme mRenderTheme;
+    RenderTheme mRenderTheme;
 
     private final float mScale, mScale2;
 
@@ -170,12 +170,11 @@ public class XmlThemeBuilder extends DefaultHandler {
 
     @Override
     public void endDocument() {
-
         Rule[] rules = new Rule[mRulesList.size()];
         for (int i = 0, n = rules.length; i < n; i++)
             rules[i] = mRulesList.get(i).onComplete(null);
 
-        mRenderTheme = new RenderTheme(mMapBackground, mTextScale, rules, mLevels);
+        mRenderTheme = createTheme(rules);
 
         mRulesList.clear();
         mStyles.clear();
@@ -183,6 +182,10 @@ public class XmlThemeBuilder extends DefaultHandler {
         mElementStack.clear();
 
         mTextureAtlas = null;
+    }
+
+    RenderTheme createTheme(Rule[] rules) {
+        return new RenderTheme(mMapBackground, mTextScale, rules, mLevels);
     }
 
     @Override
@@ -556,7 +559,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                 logUnknownAttribute(elementName, name, value, i);
         }
 
-        b.texture = loadTexture(src, b.symbolWidth, b.symbolHeight, b.symbolPercent);
+        b.texture = Utils.loadTexture(mTheme.getRelativePathPrefix(), src, b.symbolWidth, b.symbolHeight, b.symbolPercent);
         /*if (b.texture != null)
             b.texture.mipmap = true;*/
 
@@ -649,25 +652,9 @@ public class XmlThemeBuilder extends DefaultHandler {
                 logUnknownAttribute(elementName, name, value, i);
         }
 
-        b.texture = loadTexture(src, b.symbolWidth, b.symbolHeight, b.symbolPercent);
+        b.texture = Utils.loadTexture(mTheme.getRelativePathPrefix(), src, b.symbolWidth, b.symbolHeight, b.symbolPercent);
 
         return b.build();
-    }
-
-    private TextureItem loadTexture(String src, int width, int height, int percent) {
-        if (src == null || src.length() == 0)
-            return null;
-
-        try {
-            Bitmap bitmap = CanvasAdapter.getBitmapAsset(mTheme.getRelativePathPrefix(), src, width, height, percent);
-            if (bitmap != null) {
-                log.debug("loading {}", src);
-                return new TextureItem(bitmap, true);
-            }
-        } catch (Exception e) {
-            log.debug("missing file / {}", e.getMessage());
-        }
-        return null;
     }
 
     private LineStyle createOutline(String style, Attributes attributes) {
@@ -1041,13 +1028,17 @@ public class XmlThemeBuilder extends DefaultHandler {
             try {
                 Bitmap bitmap = CanvasAdapter.getBitmapAsset(mTheme.getRelativePathPrefix(), src, b.symbolWidth, b.symbolHeight, b.symbolPercent);
                 if (bitmap != null)
-                    return b.bitmap(bitmap).build();
+                    return buildSymbol(b, src, bitmap);
             } catch (Exception e) {
                 log.debug(e.getMessage());
             }
             return null;
         }
         return b.texture(getAtlasRegion(src)).build();
+    }
+
+    SymbolStyle buildSymbol(SymbolBuilder<?> b, String src, Bitmap bitmap) {
+        return b.bitmap(bitmap).build();
     }
 
     private ExtrusionStyle createExtrusion(String elementName, Attributes attributes, int level) {

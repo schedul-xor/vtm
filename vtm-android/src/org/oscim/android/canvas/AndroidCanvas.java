@@ -1,6 +1,8 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
+ * Copyright 2017 nebular
+ * Copyright 2017 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -17,6 +19,7 @@
  */
 package org.oscim.android.canvas;
 
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 
 import org.oscim.backend.canvas.Bitmap;
@@ -62,7 +65,20 @@ public class AndroidCanvas implements Canvas {
     }
 
     @Override
-    public void drawLine(int x1, int y1, int x2, int y2, Paint paint) {
+    public void drawBitmapScaled(Bitmap bitmap) {
+        android.graphics.Bitmap scaledBitmap = android.graphics.Bitmap.createScaledBitmap(
+                ((AndroidBitmap) bitmap).mBitmap, canvas.getWidth(), canvas.getHeight(), true);
+        canvas.drawBitmap(scaledBitmap, 0, 0, null);
+        scaledBitmap.recycle();
+    }
+
+    @Override
+    public void drawCircle(float x, float y, float radius, Paint paint) {
+        canvas.drawCircle(x, y, radius, ((AndroidPaint) paint).mPaint);
+    }
+
+    @Override
+    public void drawLine(float x1, float y1, float x2, float y2, Paint paint) {
         canvas.drawLine(x1, y1, x2, y2, ((AndroidPaint) paint).mPaint);
     }
 
@@ -73,7 +89,7 @@ public class AndroidCanvas implements Canvas {
 
     @Override
     public void fillColor(int color) {
-        canvas.drawColor(color, PorterDuff.Mode.CLEAR);
+        canvas.drawColor(color, color == Color.TRANSPARENT ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER);
     }
 
     @Override

@@ -1,7 +1,9 @@
 /*
  * Copyright 2010, 2011, 2012, 2013 mapsforge.org
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
+ * Copyright 2017 nebular
+ * Copyright 2017 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -26,11 +28,13 @@ import org.oscim.backend.canvas.Paint;
 import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
 public class AwtCanvas implements Canvas {
 
@@ -126,16 +130,55 @@ public class AwtCanvas implements Canvas {
 
     @Override
     public void drawBitmap(Bitmap bitmap, float x, float y) {
-        this.canvas.drawImage(((AwtBitmap) bitmap).bitmap, (int) x, (int) y, null);
+        BufferedImage src = ((AwtBitmap) bitmap).bitmap;
+        // TODO Need better check
+        if (src.isAlphaPremultiplied()) {
+            int intX = (int) x;
+            int intY = (int) y;
+            int[] srcbuf = ((DataBufferInt) src.getRaster().getDataBuffer()).getData();
+            int[] dstbuf = ((DataBufferInt) this.bitmap.getRaster().getDataBuffer()).getData();
+            int width = intX + src.getWidth() > this.bitmap.getWidth() ? this.getWidth() - intX : src.getWidth();
+            int height = intY + src.getHeight() > this.bitmap.getHeight() ? this.getHeight() - intY : src.getHeight();
+            int dstoffs = intX + intY * this.bitmap.getWidth();
+            int srcoffs = 0;
+            for (int i = 0; i < height; i++, dstoffs += this.bitmap.getWidth(), srcoffs += width)
+                System.arraycopy(srcbuf, srcoffs, dstbuf, dstoffs, width);
+        } else
+            this.canvas.drawImage(src, (int) x, (int) y, null);
     }
 
     @Override
-    public void drawLine(int x1, int y1, int x2, int y2, Paint paint) {
+    public void drawBitmapScaled(Bitmap bitmap) {
+        Image scaledImage = ((AwtBitmap) bitmap).bitmap.getScaledInstance(this.bitmap.getWidth(), this.bitmap.getHeight(), Image.SCALE_DEFAULT);
+        this.canvas.drawImage(scaledImage, 0, 0, this.bitmap.getWidth(), this.bitmap.getHeight(), null);
+    }
+
+    @Override
+    public void drawCircle(float x, float y, float radius, Paint paint) {
         AwtPaint awtPaint = (AwtPaint) paint;
         this.canvas.setColor(awtPaint.color);
         if (awtPaint.stroke != null)
             this.canvas.setStroke(awtPaint.stroke);
-        this.canvas.drawLine(x1, y1, x2, y2);
+        float doubleRadius = radius * 2;
+
+        Paint.Style style = paint.getStyle();
+        switch (style) {
+            case FILL:
+                this.canvas.fillOval((int) (x - radius), (int) (y - radius), (int) doubleRadius, (int) doubleRadius);
+                break;
+            case STROKE:
+                this.canvas.drawOval((int) (x - radius), (int) (y - radius), (int) doubleRadius, (int) doubleRadius);
+                break;
+        }
+    }
+
+    @Override
+    public void drawLine(float x1, float y1, float x2, float y2, Paint paint) {
+        AwtPaint awtPaint = (AwtPaint) paint;
+        this.canvas.setColor(awtPaint.color);
+        if (awtPaint.stroke != null)
+            this.canvas.setStroke(awtPaint.stroke);
+        this.canvas.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
     }
 
     @Override
@@ -158,7 +201,7 @@ public class AwtCanvas implements Canvas {
     public void fillColor(int color) {
         java.awt.Color awtColor = color == Color.TRANSPARENT ? TRANSPARENT : new java.awt.Color(color);
         Composite originalComposite = this.canvas.getComposite();
-        this.canvas.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+        this.canvas.setComposite(AlphaComposite.getInstance(color == Color.TRANSPARENT ? AlphaComposite.CLEAR : AlphaComposite.SRC_OVER));
         this.canvas.setColor(awtColor);
         this.canvas.fillRect(0, 0, getWidth(), getHeight());
         this.canvas.setComposite(originalComposite);

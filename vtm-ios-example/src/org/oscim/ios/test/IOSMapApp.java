@@ -1,6 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 Longri
+ * Copyright 2016-2017 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.oscim.ios;
+package org.oscim.ios.test;
 
 import org.oscim.backend.GLAdapter;
 import org.oscim.gdx.GdxAssets;
@@ -70,7 +70,7 @@ public class IOSMapApp extends GdxMap {
         renderer.setOffset(5, 0);
         map.layers().add(mapScaleBarLayer);
 
-        map.setTheme(VtmThemes.DEFAULT);
+        map.setTheme(VtmThemes.OSMARENDER);
         map.setMapPosition(53.075, 8.808, 1 << 17);
 
         l.getRenderer().setVisible(true);

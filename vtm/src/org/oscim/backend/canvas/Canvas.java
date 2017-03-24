@@ -1,6 +1,8 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
+ * Copyright 2017 nebular
+ * Copyright 2017 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -42,7 +44,14 @@ public interface Canvas {
      */
     void drawBitmap(Bitmap bitmap, float x, float y);
 
-    void drawLine(int x1, int y1, int x2, int y2, Paint paint);
+    /**
+     * Draw scaled Bitmap to fill target.
+     */
+    void drawBitmapScaled(Bitmap bitmap);
+
+    void drawCircle(float x, float y, float radius, Paint paint);
+
+    void drawLine(float x1, float y1, float x2, float y2, Paint paint);
 
     void drawRectangle(float x0, float y0, float x1, float y1, Paint paint, boolean isFill);
 

@@ -22,13 +22,15 @@ import org.oscim.event.GestureListener;
 import org.oscim.event.MotionEvent;
 import org.oscim.gdx.GdxMapApp;
 import org.oscim.layers.Layer;
-import org.oscim.layers.TileGridLayer;
 import org.oscim.layers.marker.ItemizedLayer;
 import org.oscim.layers.marker.MarkerItem;
 import org.oscim.layers.marker.MarkerSymbol;
-import org.oscim.layers.tile.bitmap.BitmapTileLayer;
+import org.oscim.layers.tile.buildings.BuildingLayer;
+import org.oscim.layers.tile.vector.VectorTileLayer;
+import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.map.Map;
-import org.oscim.tiling.source.bitmap.DefaultSources;
+import org.oscim.theme.VtmThemes;
+import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,12 +45,13 @@ public class MarkerLayerTest extends GdxMapApp implements ItemizedLayer.OnItemGe
 
     @Override
     public void createLayers() {
-        BitmapTileLayer bitmapLayer = new BitmapTileLayer(mMap, DefaultSources.STAMEN_TONER.build());
-        bitmapLayer.tileRenderer().setBitmapAlpha(0.5f);
-        mMap.setBaseMap(bitmapLayer);
-
         // Map events receiver
         mMap.layers().add(new MapEventsReceiver(mMap));
+
+        VectorTileLayer l = mMap.setBaseMap(new OSciMap4TileSource());
+        mMap.layers().add(new BuildingLayer(mMap, l));
+        mMap.layers().add(new LabelLayer(mMap, l));
+        mMap.setTheme(VtmThemes.DEFAULT);
 
         mMap.setMapPosition(0, 0, 1 << 2);
 
@@ -74,8 +77,6 @@ public class MarkerLayerTest extends GdxMapApp implements ItemizedLayer.OnItemGe
                 pts.add(new MarkerItem(lat + "/" + lon, "", new GeoPoint(lat, lon)));
         }
         mMarkerLayer.addItems(pts);
-
-        mMap.layers().add(new TileGridLayer(mMap));
     }
 
     @Override

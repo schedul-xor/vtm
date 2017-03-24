@@ -12,8 +12,6 @@ repositories {
     maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 }
 
-//apply plugin: 'war'
-//apply plugin: 'jetty'
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'gwt-base'
