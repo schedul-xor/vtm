@@ -1,17 +1,30 @@
 # Changelog
 
-## New since 0.7.0
+## New since 0.8.0
+
+- Many other minor improvements and bug fixes
+- [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.9.0)
+
+## Version 0.8.0 (2017-07-19)
 
 - Real time (SVG) texture atlas [#63](https://github.com/mapsforge/vtm/issues/63)
 - Marker clustering [#312](https://github.com/mapsforge/vtm/issues/312)
 - Osmagray theme [#300](https://github.com/mapsforge/vtm/issues/300)
 - Symbol rotation [#294](https://github.com/mapsforge/vtm/issues/294)
-- Location custom shaders & improvements [#317](https://github.com/mapsforge/vtm/issues/317) [#321](https://github.com/mapsforge/vtm/issues/321)
+- Location renderer improvements [#317](https://github.com/mapsforge/vtm/issues/317)
 - POT textures [#334](https://github.com/mapsforge/vtm/issues/334)
 - OkHttp external cache [#135](https://github.com/mapsforge/vtm/issues/135)
 - Texture atlas improvements [#301](https://github.com/mapsforge/vtm/pull/301) [#304](https://github.com/mapsforge/vtm/pull/304)
+- vtm-json module [#367](https://github.com/mapsforge/vtm/issues/367)
+- Mapzen GeoJSON vector tiles [#55](https://github.com/mapsforge/vtm/issues/55)
 - vtm-ios-example module [#326](https://github.com/mapsforge/vtm/issues/326)
+- Handle layers enabled state [#342](https://github.com/mapsforge/vtm/issues/342)
+- Fix coord scale short overflow [#343](https://github.com/mapsforge/vtm/issues/343)
+- Mapsforge map read improvements [#357](https://github.com/mapsforge/vtm/issues/357) [#370](https://github.com/mapsforge/vtm/issues/370)
+- Improve canvas DPI setting [#349](https://github.com/mapsforge/vtm/issues/349)
+- OSM indoor layer enhancements [#366](https://github.com/mapsforge/vtm/issues/366)
 - Gretty plugin at web modules [#338](https://github.com/mapsforge/vtm/issues/338)
+- Disable vtm-jeo module until update [#375](https://github.com/mapsforge/vtm/issues/375)
 - Many other minor improvements and bug fixes
 - [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.8.0)
 
@@ -21,7 +34,7 @@
 - Improved gestures implementation [#253](https://github.com/mapsforge/vtm/issues/253)
 - Polygon label position enhancements [#80](https://github.com/mapsforge/vtm/issues/80)
 - vtm-web modules update [#51](https://github.com/mapsforge/vtm/issues/51)
-- Mapbox (Mapzen) vector tiles [#57](https://github.com/mapsforge/vtm/issues/57)
+- Mapzen MVT vector tiles [#57](https://github.com/mapsforge/vtm/issues/57)
 - SVG resources scaling in themes [#214](https://github.com/mapsforge/vtm/issues/214)
 - Circle map style [#122](https://github.com/mapsforge/vtm/issues/122)
 - Oneway arrows in themes [#275](https://github.com/mapsforge/vtm/issues/275)

@@ -1,6 +1,5 @@
 /*
- * Copyright 2016-2017 devemux86
- * Copyright 2017 Mathieu De Brito
+ * Copyright 2017 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -18,17 +17,18 @@ package org.oscim.android.test;
 import android.os.Bundle;
 
 import org.oscim.android.cache.TileCache;
+import org.oscim.layers.TileGridLayer;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.source.OkHttpEngine;
 import org.oscim.tiling.source.UrlTileSource;
-import org.oscim.tiling.source.mvt.MapboxTileSource;
+import org.oscim.tiling.source.geojson.MapzenGeojsonTileSource;
 
-public class MapboxMapActivity extends MapActivity {
+public class MapzenGeojsonMapActivity extends MapActivity {
 
-    private static final boolean USE_CACHE = true;
+    private static final boolean USE_CACHE = false;
 
     private TileCache mCache;
 
@@ -36,7 +36,7 @@ public class MapboxMapActivity extends MapActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        UrlTileSource tileSource = MapboxTileSource.builder()
+        UrlTileSource tileSource = MapzenGeojsonTileSource.builder()
                 .apiKey("mapzen-xxxxxxx") // Put a proper API key
                 .httpFactory(new OkHttpEngine.OkHttpFactory())
                 //.locale("en")
@@ -54,6 +54,8 @@ public class MapboxMapActivity extends MapActivity {
 
         mMap.layers().add(new BuildingLayer(mMap, l));
         mMap.layers().add(new LabelLayer(mMap, l));
+
+        mMap.layers().add(new TileGridLayer(mMap, getResources().getDisplayMetrics().density));
     }
 
     @Override

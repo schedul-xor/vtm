@@ -1,6 +1,7 @@
 /*
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016 devemux86
+ * Copyright 2017 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -215,7 +216,7 @@ public final class LineTexBucket extends LineBucket {
     }
 
     static class Shader extends GLShader {
-        int uMVP, uColor, uWidth, uBgColor, uScale, uMode;
+        int uMVP, uColor, uWidth, uBgColor, uMode;
         int uPatternWidth, uPatternScale;
         int aPos0, aPos1, aLen0, aLen1, aFlip;
 
@@ -225,7 +226,6 @@ public final class LineTexBucket extends LineBucket {
 
             uMVP = getUniform("u_mvp");
 
-            uScale = getUniform("u_scale");
             uColor = getUniform("u_color");
             uWidth = getUniform("u_width");
             uBgColor = getUniform("u_bgcolor");
@@ -247,7 +247,7 @@ public final class LineTexBucket extends LineBucket {
 
         /* factor to normalize extrusion vector and scale to coord scale */
         private final static float COORD_SCALE_BY_DIR_SCALE =
-                MapRenderer.COORD_SCALE / LineBucket.DIR_SCALE;
+                COORD_SCALE / LineBucket.DIR_SCALE;
 
         private static int mVertexFlipID;
 

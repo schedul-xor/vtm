@@ -40,11 +40,12 @@ public class Samples extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_samples);
-        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.samples);
+        LinearLayout linearLayout = findViewById(R.id.samples);
         linearLayout.addView(createButton(SimpleMapActivity.class));
         linearLayout.addView(createButton(MapsforgeMapActivity.class));
-        linearLayout.addView(createButton(MapboxMapActivity.class));
-        linearLayout.addView(createButton(OsmJsonMapActivity.class));
+        linearLayout.addView(createButton(MapzenMvtMapActivity.class));
+        linearLayout.addView(createButton(MapzenGeojsonMapActivity.class));
+        linearLayout.addView(createButton(OpenMapTilesGeojsonMapActivity.class));
 
         linearLayout.addView(createLabel("Vector Features"));
         linearLayout.addView(createButton(MapsforgeStyleActivity.class));
@@ -77,7 +78,7 @@ public class Samples extends Activity {
         linearLayout.addView(createButton(MapPositionActivity.class));
         linearLayout.addView(createButton(S3DBMapActivity.class));
         linearLayout.addView(createButton(ThemeStylerActivity.class));
-        linearLayout.addView(createButton(JeoIndoorMapActivity.class));
+        //linearLayout.addView(createButton(JeoIndoorMapActivity.class));
     }
 
     private Button createButton(final Class<?> clazz) {

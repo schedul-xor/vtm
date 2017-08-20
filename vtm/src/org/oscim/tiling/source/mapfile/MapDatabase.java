@@ -1,7 +1,7 @@
 /*
  * Copyright 2010, 2011, 2012 mapsforge.org
  * Copyright 2013, 2014 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  * Copyright 2016 Andrey Novikov
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
@@ -44,8 +44,7 @@ import static org.oscim.tiling.QueryResult.SUCCESS;
 /**
  * A class for reading binary map files.
  *
- * @see <a
- * href="http://code.google.com/p/mapsforge/wiki/SpecificationBinaryMapFile">Specification</a>
+ * @see <a href="http://code.google.com/p/mapsforge/wiki/SpecificationBinaryMapFile">Specification</a>
  */
 public class MapDatabase implements ITileDataSource {
     /**
@@ -77,17 +76,6 @@ public class MapDatabase implements ITileDataSource {
     private static final String INVALID_FIRST_WAY_OFFSET = "invalid first way offset: ";
 
     static final Logger log = LoggerFactory.getLogger(MapDatabase.class);
-
-    /**
-     * Maximum way nodes sequence length which is considered as valid.
-     */
-    private static final int MAXIMUM_WAY_NODES_SEQUENCE_LENGTH = 8192;
-
-    /**
-     * Maximum number of map objects in the zoom table which is considered as
-     * valid.
-     */
-    private static final int MAXIMUM_ZOOM_TABLE_OBJECTS = 65536 * 2;
 
     /**
      * Bitmask for the optional POI feature "elevation".
@@ -231,7 +219,7 @@ public class MapDatabase implements ITileDataSource {
         }
 
         if (mIntBuffer == null)
-            mIntBuffer = new int[MAXIMUM_WAY_NODES_SEQUENCE_LENGTH * 2];
+            mIntBuffer = new int[Short.MAX_VALUE * 2];
 
         try {
             mTileProjection.setTile(tile);
@@ -635,7 +623,7 @@ public class MapDatabase implements ITileDataSource {
         for (int coordinateBlock = 0; coordinateBlock < numBlocks; ++coordinateBlock) {
             int numWayNodes = mReadBuffer.readUnsignedInt();
 
-            if (numWayNodes < 2 || numWayNodes > MAXIMUM_WAY_NODES_SEQUENCE_LENGTH) {
+            if (numWayNodes < 2 || numWayNodes > Short.MAX_VALUE) {
                 log.warn("invalid number of way nodes: " + numWayNodes);
                 logDebugSignatures();
                 return false;
@@ -923,24 +911,6 @@ public class MapDatabase implements ITileDataSource {
         for (int row = 0; row < rows; row++) {
             cumulatedNumberOfPois += mReadBuffer.readUnsignedInt();
             cumulatedNumberOfWays += mReadBuffer.readUnsignedInt();
-
-            if (cumulatedNumberOfPois < 0
-                    || cumulatedNumberOfPois > MAXIMUM_ZOOM_TABLE_OBJECTS) {
-                log.warn("invalid cumulated number of POIs in row " + row + ' '
-                        + cumulatedNumberOfPois);
-                if (mDebugFile) {
-                    log.warn(DEBUG_SIGNATURE_BLOCK + mSignatureBlock);
-                }
-                return null;
-            } else if (cumulatedNumberOfWays < 0
-                    || cumulatedNumberOfWays > MAXIMUM_ZOOM_TABLE_OBJECTS) {
-                log.warn("invalid cumulated number of ways in row " + row + ' '
-                        + cumulatedNumberOfWays);
-                if (mTileSource.fileInfo.debugFile) {
-                    log.warn(DEBUG_SIGNATURE_BLOCK + mSignatureBlock);
-                }
-                return null;
-            }
 
             zoomTable[row][0] = cumulatedNumberOfPois;
             zoomTable[row][1] = cumulatedNumberOfWays;

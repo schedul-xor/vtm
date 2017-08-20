@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:2.3.3'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
     }
 }
@@ -15,9 +15,10 @@ allprojects {
     version = '0.0.15'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-    ext.androidBuildVersionTools = "25.0.2"
+    ext.androidBuildVersionTools = "26.0.1"
     ext.gdxVersion = "1.9.6"
     ext.gwtVersion = "2.8.0"
+    ext.slf4jVersion = "1.7.25"
 
     if (JavaVersion.current().isJava8Compatible()) {
         tasks.withType(Javadoc) {
@@ -28,9 +29,10 @@ allprojects {
     }
 }
 
-def androidCompileSdk() { return 25 }
+def androidCompileSdk() { return 26 }
 
-def androidMinSdk() { return 10 }
+// Minimum API Level by Support Library
+def androidMinSdk() { return 14 }
 
 def androidTargetSdk() { return 22 }
 
@@ -40,8 +42,8 @@ def versionName() { return version }
 
 subprojects {
     repositories {
-        maven { url 'https://repo.boundlessgeo.com/main' }
         jcenter()
+        maven { url 'https://maven.google.com' }
     }
 
     tasks.withType(JavaCompile) {

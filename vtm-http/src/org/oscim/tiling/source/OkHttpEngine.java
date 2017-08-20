@@ -31,7 +31,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map.Entry;
 
-import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -47,24 +46,19 @@ public class OkHttpEngine implements HttpEngine {
     private byte[] mCachedData;
 
     public static class OkHttpFactory implements HttpEngine.Factory {
-        private final OkHttpClient mClient;
+        private final OkHttpClient.Builder mClientBuilder;
 
         public OkHttpFactory() {
-            mClient = new OkHttpClient();
+            mClientBuilder = new OkHttpClient.Builder();
         }
 
-        /**
-         * OkHttp cache implemented through {@link OkHttpClient.Builder#cache(Cache)}.
-         */
-        public OkHttpFactory(Cache cache) {
-            mClient = new OkHttpClient.Builder()
-                    .cache(cache)
-                    .build();
+        public OkHttpFactory(OkHttpClient.Builder clientBuilder) {
+            mClientBuilder = clientBuilder;
         }
 
         @Override
         public HttpEngine create(UrlTileSource tileSource) {
-            return new OkHttpEngine(mClient, tileSource);
+            return new OkHttpEngine(mClientBuilder.build(), tileSource);
         }
     }
 
@@ -106,14 +100,8 @@ public class OkHttpEngine implements HttpEngine {
         if (mInputStream == null)
             return;
 
-        final InputStream is = mInputStream;
+        IOUtils.closeQuietly(mInputStream);
         mInputStream = null;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                IOUtils.closeQuietly(is);
-            }
-        }).start();
     }
 
     @Override

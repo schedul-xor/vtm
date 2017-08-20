@@ -10,10 +10,6 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <uses-sdk
-        android:minSdkVersion="10"
-        android:targetSdkVersion="22" />
-
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -41,9 +37,9 @@
         <activity
             android:name=".ClusterMarkerOverlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
-        <activity
+        <!--<activity
             android:name=".JeoIndoorMapActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize" />
+            android:configChanges="keyboardHidden|orientation|screenSize" />-->
         <activity
             android:name=".LayerGroupActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
@@ -52,9 +48,6 @@
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".LocationActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize" />
-        <activity
-            android:name=".MapboxMapActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".MapFragmentActivity"
@@ -72,6 +65,12 @@
             android:name=".MapsforgeStyleActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
+            android:name=".MapzenGeojsonMapActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".MapzenMvtMapActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
             android:name=".MarkerOverlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
@@ -81,7 +80,7 @@
             android:name=".NewGesturesActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
-            android:name=".OsmJsonMapActivity"
+            android:name=".OpenMapTilesGeojsonMapActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".PathOverlayActivity"

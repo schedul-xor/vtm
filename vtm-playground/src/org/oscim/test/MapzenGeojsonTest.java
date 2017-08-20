@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 devemux86
+ * Copyright 2017 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -21,15 +21,33 @@ import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.source.OkHttpEngine;
 import org.oscim.tiling.source.UrlTileSource;
-import org.oscim.tiling.source.mvt.MapboxTileSource;
+import org.oscim.tiling.source.geojson.MapzenGeojsonTileSource;
 
-public class MapboxTest extends GdxMapApp {
+import java.io.File;
+import java.util.UUID;
+
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
+
+public class MapzenGeojsonTest extends GdxMapApp {
+
+    private static final boolean USE_CACHE = false;
 
     @Override
     public void createLayers() {
-        UrlTileSource tileSource = MapboxTileSource.builder()
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        if (USE_CACHE) {
+            // Cache the tiles into file system
+            File cacheDirectory = new File(System.getProperty("java.io.tmpdir"), UUID.randomUUID().toString());
+            int cacheSize = 10 * 1024 * 1024; // 10 MB
+            Cache cache = new Cache(cacheDirectory, cacheSize);
+            builder.cache(cache);
+        }
+        OkHttpEngine.OkHttpFactory factory = new OkHttpEngine.OkHttpFactory(builder);
+
+        UrlTileSource tileSource = MapzenGeojsonTileSource.builder()
                 .apiKey("mapzen-xxxxxxx") // Put a proper API key
-                .httpFactory(new OkHttpEngine.OkHttpFactory())
+                .httpFactory(factory)
                 //.locale("en")
                 .build();
 
@@ -42,6 +60,6 @@ public class MapboxTest extends GdxMapApp {
 
     public static void main(String[] args) {
         GdxMapApp.init();
-        GdxMapApp.run(new MapboxTest());
+        GdxMapApp.run(new MapzenGeojsonTest());
     }
 }

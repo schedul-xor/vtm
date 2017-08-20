@@ -1,5 +1,7 @@
 /*
- * Copyright 2016 devemux86
+ * Copyright 2014 Hannes Janetzek
+ * Copyright 2016-2017 devemux86
+ * Copyright 2017 Akarsh Seggemu
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -42,13 +44,11 @@ import java.util.HashMap;
 public class OSMIndoorLayer extends JeoVectorLayer {
 
     protected TextBucket mTextLayer;
-    protected TextStyle mText = TextStyle.builder()
-            .fontSize(16).color(Color.BLACK)
-            .strokeWidth(2.2f).strokeColor(Color.WHITE)
-            .build();
+    protected TextStyle mText;
 
-    public OSMIndoorLayer(Map map, VectorDataset data, Style style) {
+    public OSMIndoorLayer(Map map, VectorDataset data, Style style, TextStyle textStyle) {
         super(map, data, style);
+        mText = textStyle;
     }
 
     public boolean[] activeLevels = new boolean[10];
@@ -63,7 +63,6 @@ public class OSMIndoorLayer extends JeoVectorLayer {
 
         //render TextItems to a bitmap and prepare vertex buffer data.
         mTextLayer.prepare();
-        mTextLayer.clearLabels();
     }
 
     protected void addLine(Task t, Feature f, Rule rule, Geometry g) {
@@ -98,8 +97,8 @@ public class OSMIndoorLayer extends JeoVectorLayer {
             float width = rule.number(f, CartoCSS.LINE_WIDTH, 1.2f);
             int color = Color.rainbow((level + 1) / 10f);
 
-            if (level > -2 && !active)
-                color = Color.fade(color, 0.1f);
+            if (/*level > -2 && */!active)
+                color = getInactiveColor(color);
 
             ll.line = new LineStyle(0, color, width);
             ll.heightOffset = level * 4;
@@ -109,8 +108,8 @@ public class OSMIndoorLayer extends JeoVectorLayer {
         MeshBucket mesh = t.buckets.getMeshBucket(level * 3);
         if (mesh.area == null) {
             int color = JeoUtils.color(rule.color(f, CartoCSS.POLYGON_FILL, RGB.red));
-            if (level > -2 && !active)
-                color = Color.fade(color, 0.1f);
+            if (/*level > -2 && */!active)
+                color = getInactiveColor(color);
 
             mesh.area = new AreaStyle(color);
             //mesh.area = new Area(Color.fade(Color.DKGRAY, 0.1f));
@@ -125,15 +124,17 @@ public class OSMIndoorLayer extends JeoVectorLayer {
                 float x = 0;
                 float y = 0;
                 int n = mGeom.index[0];
-                for (int i = 0; i < n; ) {
-                    x += mGeom.points[i++];
-                    y += mGeom.points[i++];
+                if (n > 0) {
+                    for (int i = 0; i < n; ) {
+                        x += mGeom.points[i++];
+                        y += mGeom.points[i++];
+                    }
+
+                    TextItem ti = TextItem.pool.get();
+                    ti.set(x / (n / 2), y / (n / 2), (String) o, mText);
+
+                    mTextLayer.addText(ti);
                 }
-
-                TextItem ti = TextItem.pool.get();
-                ti.set(x / (n / 2) / 8, y / (n / 2) / 8, (String) o, mText);
-
-                mTextLayer.addText(ti);
             }
         }
     }
@@ -141,6 +142,10 @@ public class OSMIndoorLayer extends JeoVectorLayer {
     @Override
     protected void addPoint(Task t, Feature f, Rule rule, Geometry g) {
 
+    }
+
+    protected int getInactiveColor(int color) {
+        return Color.fade(color, 0.1f);
     }
 
     private int getLevel(Feature f) {
@@ -160,7 +165,12 @@ public class OSMIndoorLayer extends JeoVectorLayer {
                 }
             }
         }
+
+        o = f.get("level");
+        if (o instanceof String) {
+            return (int) Double.parseDouble((String) o);
+        }
+
         return 0;
     }
-
 }
