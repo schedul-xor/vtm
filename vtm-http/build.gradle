@@ -11,7 +11,6 @@ sourceSets {
     main.java.srcDirs = ['src']
 }
 
-// Automated Gradle project deployment to Sonatype OSSRH
 if (project.hasProperty("SONATYPE_USERNAME")) {
     afterEvaluate {
         project.apply from: "${rootProject.projectDir}/deploy.gradle"
