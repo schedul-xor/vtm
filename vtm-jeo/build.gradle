@@ -17,6 +17,8 @@ sourceSets {
 }
 
 // Automated Gradle project deployment to Sonatype OSSRH
-afterEvaluate {
-    project.apply from: "${rootProject.projectDir}/vtm-jeo/deploy.gradle"
+if (project.hasProperty("SONATYPE_USERNAME")) {
+    afterEvaluate {
+        project.apply from: "${rootProject.projectDir}/deploy.gradle"
+    }
 }

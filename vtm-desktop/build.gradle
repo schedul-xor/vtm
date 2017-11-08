@@ -1,6 +1,5 @@
 apply plugin: 'java-library'
 apply plugin: 'maven'
-apply plugin: 'application'
 
 dependencies {
     api project(':vtm-gdx')
@@ -30,10 +29,9 @@ file('natives').eachDir() { dir ->
     }
 }
 
-mainClassName = 'org.oscim.gdx.GdxMapApp'
-run { ignoreExitValue = true }
-
 // Automated Gradle project deployment to Sonatype OSSRH
-afterEvaluate {
-    project.apply from: "${rootProject.projectDir}/vtm-desktop/deploy.gradle"
+if (project.hasProperty("SONATYPE_USERNAME")) {
+    afterEvaluate {
+        project.apply from: "${rootProject.projectDir}/deploy.gradle"
+    }
 }
