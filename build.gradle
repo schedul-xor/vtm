@@ -10,7 +10,7 @@ buildscript {
 }
 
 allprojects {
-    group = 'com.ogiqvo.vtm'
+    group = 'com.ogiqvo'
     version = 'master-SNAPSHOT'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
