@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -16,8 +16,8 @@ package org.oscim.test;
 
 import org.oscim.core.MapPosition;
 import org.oscim.core.Tile;
-import org.oscim.gdx.GdxMap;
 import org.oscim.gdx.GdxMapApp;
+import org.oscim.gdx.GdxMapImpl;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
@@ -29,7 +29,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsforgeMultiTest extends GdxMap {
+public class MapsforgeMultiTest extends GdxMapImpl {
 
     private final List<File> mapFiles;
 
@@ -45,7 +45,7 @@ public class MapsforgeMultiTest extends GdxMap {
             mapFileTileSource.setMapFile(mapFile.getAbsolutePath());
             tileSource.add(mapFileTileSource);
         }
-        tileSource.setPreferredLanguage("en");
+        //tileSource.setPreferredLanguage("en");
 
         VectorTileLayer l = mMap.setBaseMap(tileSource);
         mMap.setTheme(VtmThemes.DEFAULT);

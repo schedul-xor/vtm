@@ -1,17 +1,54 @@
 # Changelog
 
-## New since 0.7.0
+## New since 0.8.0
+
+- Mapsforge maps **v5**: variable tag values [#429](https://github.com/mapsforge/vtm/issues/429)
+- Mapsforge themes compatibility [#100](https://github.com/mapsforge/vtm/issues/100)
+- Render themes: line symbol [#124](https://github.com/mapsforge/vtm/issues/124)
+- Render themes: stroke dash array [#131](https://github.com/mapsforge/vtm/issues/131)
+- PathLayer overlay touch events [#316](https://github.com/mapsforge/vtm/issues/316)
+- VectorLayer (polygon) overlay touch events [#424](https://github.com/mapsforge/vtm/issues/424)
+- Two finger tap zoom out gesture [#423](https://github.com/mapsforge/vtm/issues/423)
+- POI Search example [#394](https://github.com/mapsforge/vtm/issues/394)
+- Mapsforge Reverse Geocoding [#383](https://github.com/mapsforge/vtm/issues/383)
+- Core utilities [#396](https://github.com/mapsforge/vtm/issues/396)
+  - MercatorProjection.groundResolution renamed to groundResolutionWithScale
+- Map scaling improvements [#401](https://github.com/mapsforge/vtm/issues/401)
+- Mapsforge fix artifacts zoom >17 [#231](https://github.com/mapsforge/vtm/issues/231)
+- Mapzen building extrusions [#419](https://github.com/mapsforge/vtm/issues/419)
+  - BuildingLayer expects height tags in meters
+- Polygon symbol positioning [#405](https://github.com/mapsforge/vtm/issues/405)
+- PolyLabel default disabled [#402](https://github.com/mapsforge/vtm/issues/402)
+- vtm-theme-comparator module [#387](https://github.com/mapsforge/vtm/issues/387)
+- Feature parameters [#403](https://github.com/mapsforge/vtm/issues/403)
+- vtm-android-gdx module enhancements [#435](https://github.com/mapsforge/vtm/issues/435)
+- Gradle 4 / Android plugin 3 support [#433](https://github.com/mapsforge/vtm/issues/433)
+- libGDX 1.9.7 [#434](https://github.com/mapsforge/vtm/issues/434)
+- Internal render themes various improvements [#41](https://github.com/mapsforge/vtm/issues/41)
+- Many other minor improvements and bug fixes
+- [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.9.0)
+
+## Version 0.8.0 (2017-07-19)
 
 - Real time (SVG) texture atlas [#63](https://github.com/mapsforge/vtm/issues/63)
 - Marker clustering [#312](https://github.com/mapsforge/vtm/issues/312)
 - Osmagray theme [#300](https://github.com/mapsforge/vtm/issues/300)
 - Symbol rotation [#294](https://github.com/mapsforge/vtm/issues/294)
-- Location custom shaders & improvements [#317](https://github.com/mapsforge/vtm/issues/317) [#321](https://github.com/mapsforge/vtm/issues/321)
+- Location renderer improvements [#317](https://github.com/mapsforge/vtm/issues/317)
 - POT textures [#334](https://github.com/mapsforge/vtm/issues/334)
 - OkHttp external cache [#135](https://github.com/mapsforge/vtm/issues/135)
 - Texture atlas improvements [#301](https://github.com/mapsforge/vtm/pull/301) [#304](https://github.com/mapsforge/vtm/pull/304)
+- vtm-json module [#367](https://github.com/mapsforge/vtm/issues/367)
+- Mapzen GeoJSON vector tiles [#55](https://github.com/mapsforge/vtm/issues/55)
 - vtm-ios-example module [#326](https://github.com/mapsforge/vtm/issues/326)
+- Handle layers enabled state [#342](https://github.com/mapsforge/vtm/issues/342)
+- Fix coord scale short overflow [#343](https://github.com/mapsforge/vtm/issues/343)
+- Mapsforge map read improvements [#357](https://github.com/mapsforge/vtm/issues/357) [#370](https://github.com/mapsforge/vtm/issues/370)
+- Improve canvas DPI setting [#349](https://github.com/mapsforge/vtm/issues/349)
+- OSM indoor layer enhancements [#366](https://github.com/mapsforge/vtm/issues/366)
 - Gretty plugin at web modules [#338](https://github.com/mapsforge/vtm/issues/338)
+- libGDX 1.9.6 [#333](https://github.com/mapsforge/vtm/issues/333)
+- Internal render themes various improvements [#41](https://github.com/mapsforge/vtm/issues/41)
 - Many other minor improvements and bug fixes
 - [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.8.0)
 
@@ -21,7 +58,7 @@
 - Improved gestures implementation [#253](https://github.com/mapsforge/vtm/issues/253)
 - Polygon label position enhancements [#80](https://github.com/mapsforge/vtm/issues/80)
 - vtm-web modules update [#51](https://github.com/mapsforge/vtm/issues/51)
-- Mapbox (Mapzen) vector tiles [#57](https://github.com/mapsforge/vtm/issues/57)
+- Mapzen MVT vector tiles [#57](https://github.com/mapsforge/vtm/issues/57)
 - SVG resources scaling in themes [#214](https://github.com/mapsforge/vtm/issues/214)
 - Circle map style [#122](https://github.com/mapsforge/vtm/issues/122)
 - Oneway arrows in themes [#275](https://github.com/mapsforge/vtm/issues/275)
@@ -37,6 +74,7 @@
 - Tile grid layer scaling [#238](https://github.com/mapsforge/vtm/issues/238)
 - Internal render themes new SVG resources [#251](https://github.com/mapsforge/vtm/issues/251)
 - Fix theme parsing in non-Latin locales [#297](https://github.com/mapsforge/vtm/issues/297)
+- libGDX 1.9.5 [#270](https://github.com/mapsforge/vtm/issues/270)
 - Internal render themes various improvements [#41](https://github.com/mapsforge/vtm/issues/41)
 - Many other minor improvements and bug fixes
 - [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.7.0)
@@ -44,7 +82,7 @@
 ## Version 0.6.0 (2016-10-28) - VTM revive
 
 - Render theme SVG resources [#60](https://github.com/mapsforge/vtm/issues/60)
-- Mapsforge multilingual maps [#34](https://github.com/mapsforge/vtm/issues/34)
+- Mapsforge multilingual maps **v4** [#34](https://github.com/mapsforge/vtm/issues/34)
 - Render theme styles [#93](https://github.com/mapsforge/vtm/issues/93)
 - vtm-ios module update [#29](https://github.com/mapsforge/vtm/issues/29)
 - Native libraries for all platforms [#14](https://github.com/mapsforge/vtm/issues/14)
@@ -59,9 +97,10 @@
 - GeoPoint & BoundingBox improvements [#201](https://github.com/mapsforge/vtm/issues/201) [#200](https://github.com/mapsforge/vtm/issues/200)
 - vtm-jts module [#53](https://github.com/mapsforge/vtm/issues/53)
 - vtm-http module [#140](https://github.com/mapsforge/vtm/issues/140)
-- Internal render themes various improvements [#41](https://github.com/mapsforge/vtm/issues/41)
 - LWJGL desktop libGDX backend [#129](https://github.com/mapsforge/vtm/issues/129)
-- SNAPSHOT builds publish to Sonatype OSSRH [#165](https://github.com/mapsforge/vtm/issues/165)
 - Available on [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.mapsforge%22)
+- SNAPSHOT builds publish to Sonatype OSSRH [#165](https://github.com/mapsforge/vtm/issues/165)
+- libGDX 1.9.4 [#164](https://github.com/mapsforge/vtm/issues/164)
+- Internal render themes various improvements [#41](https://github.com/mapsforge/vtm/issues/41)
 - Many other minor improvements and bug fixes
 - [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.6.0)

@@ -21,7 +21,7 @@ dependencies {
     providedCompile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
     providedCompile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
     providedCompile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
-    providedCompile 'org.slf4j:slf4j-api:1.7.21'
+    providedCompile "org.slf4j:slf4j-api:$slf4jVersion"
     providedCompile 'ru.finam:slf4j-gwt:1.7.7.1'
 }
 
@@ -42,9 +42,9 @@ gwt {
         noPrecompile = true
     }
     compiler {
-        enableClosureCompiler = false; // activates -XenableClosureCompiler
-        disableClassMetadata = true; // activates -XdisableClassMetadata
-        disableCastChecking = true; // activates -XdisableCastChecking
+        enableClosureCompiler = false // activates -XenableClosureCompiler
+        disableClassMetadata = true // activates -XdisableClassMetadata
+        disableCastChecking = true // activates -XdisableCastChecking
     }
 
     src += files(sourceSets.main.java.srcDirs)
@@ -96,4 +96,5 @@ tasks.withType(JavaCompile) { compileTask ->
 
 clean {
     delete "assets"
+    delete "war/WEB-INF"
 }

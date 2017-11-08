@@ -1,5 +1,6 @@
 /*
- * Copyright 2016 devemux86
+ * Copyright 2014 Hannes Janetzek
+ * Copyright 2016-2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -25,9 +26,13 @@ import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 import org.oscim.backend.canvas.Color;
 import org.oscim.core.Box;
+import org.oscim.core.GeoPoint;
 import org.oscim.core.GeometryBuffer;
 import org.oscim.core.MapPosition;
 import org.oscim.core.Tile;
+import org.oscim.event.Gesture;
+import org.oscim.event.GestureListener;
+import org.oscim.event.MotionEvent;
 import org.oscim.layers.vector.geometries.Drawable;
 import org.oscim.layers.vector.geometries.LineDrawable;
 import org.oscim.layers.vector.geometries.PointDrawable;
@@ -40,6 +45,7 @@ import org.oscim.theme.styles.LineStyle;
 import org.oscim.utils.FastMath;
 import org.oscim.utils.QuadTree;
 import org.oscim.utils.SpatialIndex;
+import org.oscim.utils.geom.GeomBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +62,7 @@ import static org.oscim.core.MercatorProjection.longitudeToX;
  * package and
  * JTS geometries together with a GeometryStyle
  */
-public class VectorLayer extends AbstractVectorLayer<Drawable> {
+public class VectorLayer extends AbstractVectorLayer<Drawable> implements GestureListener {
 
     public static final Logger log = LoggerFactory.getLogger(VectorLayer.class);
 
@@ -256,21 +262,20 @@ public class VectorLayer extends AbstractVectorLayer<Drawable> {
         else
             ll = t.buckets.getLineTexBucket(level);
         if (ll.line == null) {
-            if (style.stipple == 0 && style.texture == null)
-                ll.line = new LineStyle(style.strokeColor, style.strokeWidth, style.cap);
-            else
-                ll.line = LineStyle.builder()
-                        .cap(style.cap)
-                        .color(style.strokeColor)
-                        .fixed(style.fixed)
-                        .level(0)
-                        .randomOffset(style.randomOffset)
-                        .stipple(style.stipple)
-                        .stippleColor(style.stippleColor)
-                        .stippleWidth(style.stippleWidth)
-                        .strokeWidth(style.strokeWidth)
-                        .texture(style.texture)
-                        .build();
+            ll.line = LineStyle.builder()
+                    .reset()
+                    .cap(style.cap)
+                    .color(style.strokeColor)
+                    .fixed(style.fixed)
+                    .heightOffset(style.heightOffset)
+                    .level(0)
+                    .randomOffset(style.randomOffset)
+                    .stipple(style.stipple)
+                    .stippleColor(style.stippleColor)
+                    .stippleWidth(style.stippleWidth)
+                    .strokeWidth(style.strokeWidth)
+                    .texture(style.texture)
+                    .build();
         }
 
         if (style.generalization != Style.GENERALIZATION_NONE) {
@@ -350,5 +355,20 @@ public class VectorLayer extends AbstractVectorLayer<Drawable> {
             g.addPoint((float) (x + radius * Math.cos(i * step)),
                     (float) (y + radius * Math.sin(i * step)));
         }
+    }
+
+    public synchronized boolean contains(float x, float y) {
+        GeoPoint geoPoint = mMap.viewport().fromScreenPoint(x, y);
+        Point point = new GeomBuilder().point(geoPoint.getLongitude(), geoPoint.getLatitude()).toPoint();
+        for (Drawable drawable : tmpDrawables) {
+            if (drawable.getGeometry().contains(point))
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onGesture(Gesture g, MotionEvent e) {
+        return false;
     }
 }

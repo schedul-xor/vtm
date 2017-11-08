@@ -183,11 +183,16 @@ public class AwtCanvas implements Canvas {
 
     @Override
     public void fillColor(int color) {
+        fillRectangle(0, 0, getWidth(), getHeight(), color);
+    }
+
+    @Override
+    public void fillRectangle(float x, float y, float width, float height, int color) {
         java.awt.Color awtColor = color == Color.TRANSPARENT ? TRANSPARENT : new java.awt.Color(color);
         Composite originalComposite = this.canvas.getComposite();
         this.canvas.setComposite(AlphaComposite.getInstance(color == Color.TRANSPARENT ? AlphaComposite.CLEAR : AlphaComposite.SRC_OVER));
         this.canvas.setColor(awtColor);
-        this.canvas.fillRect(0, 0, getWidth(), getHeight());
+        this.canvas.fillRect((int) x, (int) y, (int) width, (int) height);
         this.canvas.setComposite(originalComposite);
     }
 

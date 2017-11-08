@@ -1,6 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -26,12 +26,12 @@ import org.oscim.renderer.GLShader;
 import org.oscim.renderer.GLState;
 import org.oscim.renderer.GLUtils;
 import org.oscim.renderer.GLViewport;
-import org.oscim.renderer.MapRenderer;
 import org.oscim.theme.styles.LineStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.oscim.backend.GLAdapter.gl;
+import static org.oscim.renderer.MapRenderer.COORD_SCALE;
 
 /**
  * Note:
@@ -42,7 +42,6 @@ import static org.oscim.backend.GLAdapter.gl;
 public class LineBucket extends RenderBucket {
     static final Logger log = LoggerFactory.getLogger(LineBucket.class);
 
-    private static final float COORD_SCALE = MapRenderer.COORD_SCALE;
     /**
      * scale factor mapping extrusion vector to short values
      */
@@ -307,10 +306,10 @@ public class LineBucket extends RenderBucket {
             float tx = vPrevX;
             float ty = vPrevY;
 
-            if (squared) {
+            if (!rounded && !squared) {
                 tx = 0;
                 ty = 0;
-            } else if (!outside) {
+            } else if (rounded) {
                 tx *= 0.5;
                 ty *= 0.5;
             }
@@ -476,10 +475,10 @@ public class LineBucket extends RenderBucket {
             dy = (short) (0 | ddy & DIR_MASK);
 
         } else {
-            if (squared) {
+            if (!rounded && !squared) {
                 vPrevX = 0;
                 vPrevY = 0;
-            } else if (!outside) {
+            } else if (rounded) {
                 vPrevX *= 0.5;
                 vPrevY *= 0.5;
             }
@@ -537,7 +536,7 @@ public class LineBucket extends RenderBucket {
 
         /* factor to normalize extrusion vector and scale to coord scale */
         private final static float COORD_SCALE_BY_DIR_SCALE =
-                MapRenderer.COORD_SCALE / LineBucket.DIR_SCALE;
+                COORD_SCALE / LineBucket.DIR_SCALE;
 
         private final static int CAP_THIN = 0;
         private final static int CAP_BUTT = 1;
@@ -634,6 +633,8 @@ public class LineBucket extends RenderBucket {
                 LineBucket lb = (LineBucket) b;
                 LineStyle line = lb.line.current();
 
+                if (line.heightOffset != lb.heightOffset)
+                    lb.heightOffset = line.heightOffset;
                 if (lb.heightOffset != heightOffset) {
                     heightOffset = lb.heightOffset;
 
@@ -678,13 +679,12 @@ public class LineBucket extends RenderBucket {
                     }
 
                     /* Cap mode */
-                    //if (line.width < 1.5/* || line.fixed*/) {
-                    //    if (capMode != CAP_THIN) {
-                    //        capMode = CAP_THIN;
-                    //        gl.uniform1f(uLineMode, capMode);
-                    //    }
-                    //} else
-                    if (lb.roundCap) {
+                    if (lb.scale < 1.5/* || lb.line.fixed*/) {
+                        if (capMode != CAP_THIN) {
+                            capMode = CAP_THIN;
+                            gl.uniform1f(uLineMode, capMode);
+                        }
+                    } else if (lb.roundCap) {
                         if (capMode != CAP_ROUND) {
                             capMode = CAP_ROUND;
                             gl.uniform1f(uLineMode, capMode);

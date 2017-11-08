@@ -1,4 +1,5 @@
 /*
+ * Copyright 2014 Hannes Janetzek
  * Copyright 2016-2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
@@ -18,12 +19,14 @@ package org.oscim.test.jeo;
 
 import org.jeo.map.Style;
 import org.jeo.vector.VectorDataset;
-import org.oscim.gdx.GdxMap;
+import org.oscim.backend.canvas.Color;
 import org.oscim.gdx.GdxMapApp;
+import org.oscim.gdx.GdxMapImpl;
 import org.oscim.layers.JeoVectorLayer;
 import org.oscim.layers.OSMIndoorLayer;
 import org.oscim.layers.tile.bitmap.BitmapTileLayer;
 import org.oscim.test.JeoTest;
+import org.oscim.theme.styles.TextStyle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,9 +35,10 @@ import java.net.URLConnection;
 
 import static org.oscim.tiling.source.bitmap.DefaultSources.STAMEN_TONER;
 
-public class LayerTest extends GdxMap {
+public class LayerTest extends GdxMapImpl {
 
-    private String PATH = "https://gist.github.com/anonymous/8960337/raw/overpass.geojson";
+    // from http://overpass-turbo.eu/s/2vp
+    String PATH = "https://gist.githubusercontent.com/anonymous/09062103a66844a96048f25626078c8d/raw/1d3af6a5a55e9ea4adc9551fa633a051a44a5a9c/overpass.geojson";
 
     private OSMIndoorLayer mIndoorLayer;
 
@@ -52,7 +56,12 @@ public class LayerTest extends GdxMap {
 
                     VectorDataset data = JeoTest.readGeoJson(is);
                     Style style = JeoTest.getStyle();
-                    mIndoorLayer = new OSMIndoorLayer(mMap, data, style);
+                    TextStyle textStyle = TextStyle.builder()
+                            .isCaption(true)
+                            .fontSize(16).color(Color.BLACK)
+                            .strokeWidth(2.2f).strokeColor(Color.WHITE)
+                            .build();
+                    mIndoorLayer = new OSMIndoorLayer(mMap, data, style, textStyle);
                     mIndoorLayer.activeLevels[0] = true;
                     mIndoorLayer.activeLevels[1] = true;
                     mIndoorLayer.activeLevels[2] = true;

@@ -19,7 +19,6 @@ import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.canvas.Bitmap;
 import org.oscim.backend.canvas.Canvas;
 import org.oscim.renderer.bucket.TextureItem;
-import org.oscim.theme.ThemeLoader;
 import org.oscim.utils.math.MathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,7 @@ public final class Utils {
             if (bitmap != null) {
                 log.debug("loading {}", src);
 
-                if (ThemeLoader.POT_TEXTURES) {
+                if (Parameters.POT_TEXTURES) {
                     int potWidth = MathUtils.nextPowerOfTwo(bitmap.getWidth());
                     int potHeight = MathUtils.nextPowerOfTwo(bitmap.getHeight());
                     if (potWidth != bitmap.getWidth() || potHeight != bitmap.getHeight()) {
@@ -62,7 +61,7 @@ public final class Utils {
                 return new TextureItem(bitmap, true);
             }
         } catch (Exception e) {
-            log.debug("missing file / {}", e.getMessage());
+            log.error("{}: missing file / {}", src, e.getMessage());
         }
         return null;
     }

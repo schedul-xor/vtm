@@ -23,6 +23,9 @@ import org.oscim.gdx.GdxMapApp;
 import org.oscim.layers.marker.ClusterMarkerRenderer;
 import org.oscim.layers.marker.ItemizedLayer;
 import org.oscim.layers.marker.MarkerItem;
+import org.oscim.layers.marker.MarkerLayer;
+import org.oscim.layers.marker.MarkerRenderer;
+import org.oscim.layers.marker.MarkerRendererFactory;
 import org.oscim.layers.marker.MarkerSymbol;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
@@ -30,6 +33,7 @@ import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,43 +44,59 @@ public class ClusterMarkerLayerTest extends MarkerLayerTest {
 
     @Override
     public void createLayers() {
-        // Map events receiver
-        mMap.layers().add(new MapEventsReceiver(mMap));
+        try {
+            // Map events receiver
+            mMap.layers().add(new MapEventsReceiver(mMap));
 
-        VectorTileLayer l = mMap.setBaseMap(new OSciMap4TileSource());
-        mMap.layers().add(new BuildingLayer(mMap, l));
-        mMap.layers().add(new LabelLayer(mMap, l));
-        mMap.setTheme(VtmThemes.DEFAULT);
+            VectorTileLayer l = mMap.setBaseMap(new OSciMap4TileSource());
+            mMap.layers().add(new BuildingLayer(mMap, l));
+            mMap.layers().add(new LabelLayer(mMap, l));
+            mMap.setTheme(VtmThemes.DEFAULT);
 
-        mMap.setMapPosition(53.08, 8.83, 1 << 15);
+            mMap.setMapPosition(53.08, 8.83, 1 << 15);
 
-        Bitmap bitmapPoi = CanvasAdapter.decodeBitmap(getClass().getResourceAsStream("/res/marker_poi.png"));
-        MarkerSymbol symbol;
-        if (BILLBOARDS)
-            symbol = new MarkerSymbol(bitmapPoi, MarkerSymbol.HotspotPlace.BOTTOM_CENTER);
-        else
-            symbol = new MarkerSymbol(bitmapPoi, MarkerSymbol.HotspotPlace.CENTER, false);
+            Bitmap bitmapPoi = CanvasAdapter.decodeBitmap(getClass().getResourceAsStream("/res/marker_poi.png"));
+            final MarkerSymbol symbol;
+            if (BILLBOARDS)
+                symbol = new MarkerSymbol(bitmapPoi, MarkerSymbol.HotspotPlace.BOTTOM_CENTER);
+            else
+                symbol = new MarkerSymbol(bitmapPoi, MarkerSymbol.HotspotPlace.CENTER, false);
 
-        mMarkerLayer = new ItemizedLayer<>(
-                mMap,
-                new ArrayList<MarkerItem>(),
-                ClusterMarkerRenderer.factory(symbol, new ClusterMarkerRenderer.ClusterStyle(Color.WHITE, Color.BLUE)),
-                this);
-        mMap.layers().add(mMarkerLayer);
+            MarkerRendererFactory markerRendererFactory = new MarkerRendererFactory() {
+                @Override
+                public MarkerRenderer create(MarkerLayer markerLayer) {
+                    return new ClusterMarkerRenderer(markerLayer, symbol, new ClusterMarkerRenderer.ClusterStyle(Color.WHITE, Color.BLUE)) {
+                        @Override
+                        protected Bitmap getClusterBitmap(int size) {
+                            // Can customize cluster bitmap here
+                            return super.getClusterBitmap(size);
+                        }
+                    };
+                }
+            };
+            mMarkerLayer = new ItemizedLayer<>(
+                    mMap,
+                    new ArrayList<MarkerItem>(),
+                    markerRendererFactory,
+                    this);
+            mMap.layers().add(mMarkerLayer);
 
-        // Create some markers spaced STEP degrees
-        List<MarkerItem> pts = new ArrayList<>();
-        GeoPoint center = mMap.getMapPosition().getGeoPoint();
-        for (int x = -COUNT; x < COUNT; x++) {
-            for (int y = -COUNT; y < COUNT; y++) {
-                double random = STEP * Math.random() * 2;
-                MarkerItem item = new MarkerItem(y + ", " + x, "",
-                        new GeoPoint(center.getLatitude() + y * STEP + random, center.getLongitude() + x * STEP + random)
-                );
-                pts.add(item);
+            // Create some markers spaced STEP degrees
+            List<MarkerItem> pts = new ArrayList<>();
+            GeoPoint center = mMap.getMapPosition().getGeoPoint();
+            for (int x = -COUNT; x < COUNT; x++) {
+                for (int y = -COUNT; y < COUNT; y++) {
+                    double random = STEP * Math.random() * 2;
+                    MarkerItem item = new MarkerItem(y + ", " + x, "",
+                            new GeoPoint(center.getLatitude() + y * STEP + random, center.getLongitude() + x * STEP + random)
+                    );
+                    pts.add(item);
+                }
             }
+            mMarkerLayer.addItems(pts);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        mMarkerLayer.addItems(pts);
     }
 
     public static void main(String[] args) {

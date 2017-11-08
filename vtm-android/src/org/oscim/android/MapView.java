@@ -31,7 +31,9 @@ import org.oscim.android.input.AndroidMotionEvent;
 import org.oscim.android.input.GestureHandler;
 import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.GLAdapter;
+import org.oscim.core.Tile;
 import org.oscim.map.Map;
+import org.oscim.utils.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +83,9 @@ public class MapView extends GLSurfaceView {
         GLAdapter.init(new AndroidGL());
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
-        CanvasAdapter.dpi = (int) Math.max(metrics.xdpi, metrics.ydpi);
+        CanvasAdapter.dpi = (int) (metrics.scaledDensity * CanvasAdapter.DEFAULT_DPI);
+        if (!Parameters.CUSTOM_TILE_SIZE)
+            Tile.SIZE = Tile.calculateTileSize();
 
         /* Initialize the Map */
         mMap = new AndroidMap(this);
@@ -100,7 +104,7 @@ public class MapView extends GLSurfaceView {
         mMap.clearMap();
         mMap.updateMap(false);
 
-        if (!Map.NEW_GESTURES) {
+        if (!Parameters.MAP_EVENT_LAYER2) {
             GestureHandler gestureHandler = new GestureHandler(mMap);
             mGestureDetector = new GestureDetector(context, gestureHandler);
             mGestureDetector.setOnDoubleTapListener(gestureHandler);

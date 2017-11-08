@@ -1,7 +1,7 @@
 /*
  * Copyright 2013 Ahmad Saleem
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -16,6 +16,7 @@
  */
 package org.oscim.layers;
 
+import org.oscim.backend.CanvasAdapter;
 import org.oscim.core.MercatorProjection;
 import org.oscim.map.Map;
 import org.oscim.renderer.LocationRenderer;
@@ -24,9 +25,13 @@ public class LocationLayer extends Layer {
     public final LocationRenderer locationRenderer;
 
     public LocationLayer(Map map) {
+        this(map, CanvasAdapter.getScale());
+    }
+
+    public LocationLayer(Map map, float scale) {
         super(map);
 
-        mRenderer = locationRenderer = new LocationRenderer(mMap, this);
+        mRenderer = locationRenderer = new LocationRenderer(mMap, this, scale);
     }
 
     @Override
@@ -43,7 +48,7 @@ public class LocationLayer extends Layer {
     public void setPosition(double latitude, double longitude, double accuracy) {
         double x = MercatorProjection.longitudeToX(longitude);
         double y = MercatorProjection.latitudeToY(latitude);
-        double radius = accuracy / MercatorProjection.groundResolution(latitude, 1);
+        double radius = accuracy / MercatorProjection.groundResolutionWithScale(latitude, 1);
         locationRenderer.setLocation(x, y, radius);
         locationRenderer.animate(true);
     }

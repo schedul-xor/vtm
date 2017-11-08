@@ -2,6 +2,7 @@
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016-2017 devemux86
  * Copyright 2017 nebular
+ * Copyright 2017 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -112,6 +113,11 @@ public class GwtCanvas implements org.oscim.backend.canvas.Canvas {
 
     @Override
     public void fillColor(int color) {
+        // TODO
+    }
+
+    @Override
+    public void fillRectangle(float x, float y, float width, float height, int color) {
         // TODO
     }
 

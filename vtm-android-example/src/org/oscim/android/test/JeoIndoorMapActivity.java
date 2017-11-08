@@ -1,4 +1,5 @@
 /*
+ * Copyright 2014 Hannes Janetzek
  * Copyright 2016-2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
@@ -24,11 +25,13 @@ import android.widget.ToggleButton;
 
 import org.jeo.map.Style;
 import org.jeo.vector.VectorDataset;
+import org.oscim.backend.canvas.Color;
 import org.oscim.layers.OSMIndoorLayer;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.test.JeoTest;
 import org.oscim.theme.VtmThemes;
+import org.oscim.theme.styles.TextStyle;
 import org.oscim.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +46,7 @@ public class JeoIndoorMapActivity extends BaseMapActivity {
     public static final Logger log = LoggerFactory.getLogger(JeoIndoorMapActivity.class);
 
     // from http://overpass-turbo.eu/s/2vp
-    String PATH = "https://gist.github.com/anonymous/8960337/raw/overpass.geojson";
-    //String PATH = "https://gist.github.com/hjanetzek/9280925/raw/overpass.geojson";
+    String PATH = "https://gist.githubusercontent.com/anonymous/09062103a66844a96048f25626078c8d/raw/1d3af6a5a55e9ea4adc9551fa633a051a44a5a9c/overpass.geojson";
 
     private OSMIndoorLayer mIndoorLayer;
 
@@ -94,7 +96,13 @@ public class JeoIndoorMapActivity extends BaseMapActivity {
 
         VectorDataset data = JeoTest.readGeoJson(is);
         Style style = JeoTest.getStyle();
-        mIndoorLayer = new OSMIndoorLayer(mMap, data, style);
+        float scale = getResources().getDisplayMetrics().density;
+        TextStyle textStyle = TextStyle.builder()
+                .isCaption(true)
+                .fontSize(16 * scale).color(Color.BLACK)
+                .strokeWidth(2.2f * scale).strokeColor(Color.WHITE)
+                .build();
+        mIndoorLayer = new OSMIndoorLayer(mMap, data, style, textStyle);
         mMap.layers().add(mIndoorLayer);
 
         showToast("data ready");

@@ -1,5 +1,7 @@
 /*
  * Copyright 2010, 2011, 2012 mapsforge.org
+ * Copyright 2017 devemux86
+ * Copyright 2017 Gustl22
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -18,10 +20,13 @@ package org.oscim.tiling.source.mapfile;
 
 import org.oscim.core.Tag;
 import org.oscim.core.TagSet;
+import org.oscim.utils.Parameters;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -31,14 +36,11 @@ public class ReadBuffer {
     private static final String CHARSET_UTF8 = "UTF-8";
     private static final Logger LOG = Logger.getLogger(ReadBuffer.class.getName());
 
-    /**
-     * Maximum buffer size which is supported by this implementation.
-     */
-    static final int MAXIMUM_BUFFER_SIZE = 8000000;
-
     private byte[] mBufferData;
     private int mBufferPosition;
     private final RandomAccessFile mInputFile;
+
+    private final List<Integer> mTagIds = new ArrayList<>();
 
     ReadBuffer(RandomAccessFile inputFile) {
         mInputFile = inputFile;
@@ -51,6 +53,17 @@ public class ReadBuffer {
      */
     public byte readByte() {
         return mBufferData[mBufferPosition++];
+    }
+
+    /**
+     * Converts four bytes from the read buffer to a float.
+     * <p/>
+     * The byte order is big-endian.
+     *
+     * @return the float value.
+     */
+    public float readFloat() {
+        return Float.intBitsToFloat(readInt());
     }
 
     /**
@@ -67,7 +80,7 @@ public class ReadBuffer {
         // ensure that the read buffer is large enough
         if (mBufferData == null || mBufferData.length < length) {
             // ensure that the read buffer is not too large
-            if (length > MAXIMUM_BUFFER_SIZE) {
+            if (length > Parameters.MAXIMUM_BUFFER_SIZE) {
                 LOG.warning("invalid read length: " + length);
                 return false;
             }
@@ -395,19 +408,46 @@ public class ReadBuffer {
         mBufferPosition += bytes;
     }
 
-    boolean readTags(TagSet tags, Tag[] wayTags, byte numberOfTags) {
+    boolean readTags(TagSet tags, Tag[] tagsArray, byte numberOfTags) {
         tags.clear();
+        mTagIds.clear();
 
-        int maxTag = wayTags.length;
+        int maxTag = tagsArray.length;
 
         for (byte i = 0; i < numberOfTags; i++) {
             int tagId = readUnsignedInt();
             if (tagId < 0 || tagId >= maxTag) {
                 LOG.warning("invalid tag ID: " + tagId);
-                return true;
+                break;
             }
-            tags.add(wayTags[tagId]);
+            mTagIds.add(tagId);
         }
+
+        for (int tagId : mTagIds) {
+            Tag tag = tagsArray[tagId];
+            // Decode variable values of tags
+            if (tag.value.charAt(0) == '%' && tag.value.length() == 2) {
+                String value = tag.value;
+                if (value.charAt(1) == 'b') {
+                    value = String.valueOf(readByte());
+                } else if (value.charAt(1) == 'i') {
+                    if (tag.key.contains(":colour")) {
+                        value = "#" + Integer.toHexString(readInt());
+                    } else {
+                        value = String.valueOf(readInt());
+                    }
+                } else if (value.charAt(1) == 'f') {
+                    value = String.valueOf(readFloat());
+                } else if (value.charAt(1) == 'h') {
+                    value = String.valueOf(readShort());
+                } else if (value.charAt(1) == 's') {
+                    value = readUTF8EncodedString();
+                }
+                tag = new Tag(tag.key, value);
+            }
+            tags.add(tag);
+        }
+
         return true;
     }
 

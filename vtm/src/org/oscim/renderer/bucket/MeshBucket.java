@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -25,7 +26,6 @@ import org.oscim.renderer.GLShader;
 import org.oscim.renderer.GLState;
 import org.oscim.renderer.GLUtils;
 import org.oscim.renderer.GLViewport;
-import org.oscim.renderer.MapRenderer;
 import org.oscim.renderer.bucket.VertexData.Chunk;
 import org.oscim.theme.styles.AreaStyle;
 import org.oscim.utils.ColorUtil;
@@ -134,8 +134,7 @@ public class MeshBucket extends RenderBucket {
 
             Chunk chunk = vertexItems.obtainChunk();
 
-            tess.getVertices(chunk.vertices, offset, size,
-                    MapRenderer.COORD_SCALE);
+            tess.getVertices(chunk.vertices, offset, size, COORD_SCALE);
             offset += size;
 
             vertexItems.releaseChunk(size);
@@ -184,7 +183,10 @@ public class MeshBucket extends RenderBucket {
 
             for (; l != null && l.type == MESH; l = l.next) {
                 MeshBucket ml = (MeshBucket) l;
+                AreaStyle area = ml.area.current();
 
+                if (area.heightOffset != ml.heightOffset)
+                    ml.heightOffset = area.heightOffset;
                 if (ml.heightOffset != heightOffset) {
                     heightOffset = ml.heightOffset;
 
@@ -195,7 +197,7 @@ public class MeshBucket extends RenderBucket {
                 if (ml.area == null)
                     GLUtils.setColor(s.uColor, Color.BLUE, 0.4f);
                 else {
-                    setColor(ml.area.current(), s, v.pos);
+                    setColor(area, s, v.pos);
                 }
                 gl.vertexAttribPointer(s.aPos, 2, GL.SHORT,
                         false, 0, ml.vertexOffset);

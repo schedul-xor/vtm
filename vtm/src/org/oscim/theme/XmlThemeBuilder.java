@@ -23,6 +23,7 @@ package org.oscim.theme;
 import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.XMLReaderAdapter;
 import org.oscim.backend.canvas.Bitmap;
+import org.oscim.backend.canvas.Canvas;
 import org.oscim.backend.canvas.Color;
 import org.oscim.backend.canvas.Paint.Cap;
 import org.oscim.backend.canvas.Paint.FontFamily;
@@ -30,6 +31,7 @@ import org.oscim.backend.canvas.Paint.FontStyle;
 import org.oscim.renderer.atlas.TextureAtlas;
 import org.oscim.renderer.atlas.TextureAtlas.Rect;
 import org.oscim.renderer.atlas.TextureRegion;
+import org.oscim.renderer.bucket.TextureItem;
 import org.oscim.theme.IRenderTheme.ThemeException;
 import org.oscim.theme.rule.Rule;
 import org.oscim.theme.rule.Rule.Closed;
@@ -68,6 +70,7 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 
 public class XmlThemeBuilder extends DefaultHandler {
+
     private static final Logger log = LoggerFactory.getLogger(XmlThemeBuilder.class);
 
     private static final int RENDER_THEME_VERSION = 1;
@@ -145,6 +148,7 @@ public class XmlThemeBuilder extends DefaultHandler {
 
     int mLevels = 0;
     int mMapBackground = 0xffffffff;
+    private float mStrokeScale = 1;
     float mTextScale = 1;
 
     final ThemeFile mTheme;
@@ -164,8 +168,8 @@ public class XmlThemeBuilder extends DefaultHandler {
     public XmlThemeBuilder(ThemeFile theme, ThemeCallback themeCallback) {
         mTheme = theme;
         mThemeCallback = themeCallback;
-        mScale = CanvasAdapter.scale + (CanvasAdapter.dpi / CanvasAdapter.DEFAULT_DPI - 1);
-        mScale2 = CanvasAdapter.scale + (CanvasAdapter.dpi / CanvasAdapter.DEFAULT_DPI - 1) * 0.5f;
+        mScale = CanvasAdapter.getScale();
+        mScale2 = CanvasAdapter.getScale() * 0.5f;
     }
 
     @Override
@@ -249,11 +253,11 @@ public class XmlThemeBuilder extends DefaultHandler {
 
             } else if ("style-line".equals(localName)) {
                 checkState(localName, Element.STYLE);
-                handleLineElement(localName, attributes, true);
+                handleLineElement(localName, attributes, true, false);
 
             } else if ("outline-layer".equals(localName)) {
                 checkState(localName, Element.RENDERING_INSTRUCTION);
-                LineStyle line = createLine(null, localName, attributes, mLevels++, true);
+                LineStyle line = createLine(null, localName, attributes, mLevels++, true, false);
                 mStyles.put(OUTLINE_STYLE + line.style, line);
 
             } else if ("area".equals(localName)) {
@@ -272,9 +276,9 @@ public class XmlThemeBuilder extends DefaultHandler {
 
             } else if ("line".equals(localName)) {
                 checkState(localName, Element.RENDERING_INSTRUCTION);
-                handleLineElement(localName, attributes, false);
+                handleLineElement(localName, attributes, false, false);
 
-            } else if ("text".equals(localName)) {
+            } else if ("text".equals(localName) || "pathText".equals(localName)) {
                 checkState(localName, Element.RENDERING_INSTRUCTION);
                 handleTextElement(localName, attributes, false, false);
 
@@ -298,7 +302,7 @@ public class XmlThemeBuilder extends DefaultHandler {
 
             } else if ("lineSymbol".equals(localName)) {
                 checkState(localName, Element.RENDERING_INSTRUCTION);
-                log.error("unknown element: {}", localName);
+                handleLineElement(localName, attributes, false, true);
 
             } else if ("atlas".equals(localName)) {
                 checkState(localName, Element.ATLAS);
@@ -405,7 +409,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                 if ("when-matched".equals(value))
                     selector |= Selector.WHEN_MATCHED;
             } else {
-                XmlThemeBuilder.logUnknownAttribute(localName, name, value, i);
+                logUnknownAttribute(localName, name, value, i);
             }
         }
 
@@ -414,8 +418,8 @@ public class XmlThemeBuilder extends DefaultHandler {
         else if (closed == Closed.NO)
             element = Rule.Element.LINE;
 
-        XmlThemeBuilder.validateNonNegative("zoom-min", zoomMin);
-        XmlThemeBuilder.validateNonNegative("zoom-max", zoomMax);
+        validateNonNegative("zoom-min", zoomMin);
+        validateNonNegative("zoom-max", zoomMax);
         if (zoomMin > zoomMax)
             throw new ThemeException("zoom-min must be less or equal zoom-max: " + zoomMin);
 
@@ -439,7 +443,7 @@ public class XmlThemeBuilder extends DefaultHandler {
         return texture;
     }
 
-    private void handleLineElement(String localName, Attributes attributes, boolean isStyle)
+    private void handleLineElement(String localName, Attributes attributes, boolean isStyle, boolean hasSymbol)
             throws SAXException {
 
         String use = attributes.getValue("use");
@@ -453,7 +457,7 @@ public class XmlThemeBuilder extends DefaultHandler {
             }
         }
 
-        LineStyle line = createLine(style, localName, attributes, mLevels++, false);
+        LineStyle line = createLine(style, localName, attributes, mLevels++, false, hasSymbol);
 
         if (isStyle) {
             mStyles.put(LINE_STYLE + line.style, line);
@@ -462,9 +466,12 @@ public class XmlThemeBuilder extends DefaultHandler {
                 mCurrentRule.addStyle(line);
                 /* Note 'outline' will not be inherited, it's just a
                  * shortcut to add the outline RenderInstruction. */
-                LineStyle outline = createOutline(attributes.getValue("outline"), attributes);
-                if (outline != null)
-                    mCurrentRule.addStyle(outline);
+                String outlineValue = attributes.getValue("outline");
+                if (outlineValue != null) {
+                    LineStyle outline = createOutline(outlineValue, attributes);
+                    if (outline != null)
+                        mCurrentRule.addStyle(outline);
+                }
             }
         }
     }
@@ -476,7 +483,7 @@ public class XmlThemeBuilder extends DefaultHandler {
      * @return a new Line with the given rendering attributes.
      */
     private LineStyle createLine(LineStyle line, String elementName, Attributes attributes,
-                                 int level, boolean isOutline) {
+                                 int level, boolean isOutline, boolean hasSymbol) {
         LineBuilder<?> b = mLineBuilder.set(line);
         b.isOutline(isOutline);
         b.level(level);
@@ -506,7 +513,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                 b.color(value);
 
             else if ("width".equals(name) || "stroke-width".equals(name)) {
-                b.strokeWidth = parseFloat(value) * mScale2;
+                b.strokeWidth = parseFloat(value) * mScale2 * mStrokeScale;
                 if (line == null) {
                     if (!isOutline)
                         validateNonNegative("width", b.strokeWidth);
@@ -523,7 +530,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                 b.fixed = parseBoolean(value);
 
             else if ("stipple".equals(name))
-                b.stipple = Math.round(parseInt(value) * mScale2);
+                b.stipple = Math.round(parseInt(value) * mScale2 * mStrokeScale);
 
             else if ("stipple-stroke".equals(name))
                 b.stippleColor(value);
@@ -543,10 +550,13 @@ public class XmlThemeBuilder extends DefaultHandler {
             else if ("style".equals(name))
                 ; // ignore
 
-            else if ("dasharray".equals(name))
-                ; // TBD
+            else if ("dasharray".equals(name) || "stroke-dasharray".equals(name)) {
+                b.dashArray = parseFloatArray(value);
+                for (int j = 0; j < b.dashArray.length; ++j) {
+                    b.dashArray[j] = b.dashArray[j] * mScale * mStrokeScale;
+                }
 
-            else if ("symbol-width".equals(name))
+            } else if ("symbol-width".equals(name))
                 b.symbolWidth = (int) (Integer.parseInt(value) * mScale);
 
             else if ("symbol-height".equals(name))
@@ -555,13 +565,76 @@ public class XmlThemeBuilder extends DefaultHandler {
             else if ("symbol-percent".equals(name))
                 b.symbolPercent = Integer.parseInt(value);
 
+            else if ("symbol-scaling".equals(name))
+                ; // no-op
+
+            else if ("repeat-start".equals(name))
+                b.repeatStart = Float.parseFloat(value) * mScale;
+
+            else if ("repeat-gap".equals(name))
+                b.repeatGap = Float.parseFloat(value) * mScale;
+
             else
                 logUnknownAttribute(elementName, name, value, i);
         }
 
-        b.texture = Utils.loadTexture(mTheme.getRelativePathPrefix(), src, b.symbolWidth, b.symbolHeight, b.symbolPercent);
-        /*if (b.texture != null)
-            b.texture.mipmap = true;*/
+        if (b.dashArray != null) {
+            // Stroke dash array
+            if (b.dashArray.length % 2 != 0) {
+                // Odd number of entries is duplicated
+                float[] newDashArray = new float[b.dashArray.length * 2];
+                System.arraycopy(b.dashArray, 0, newDashArray, 0, b.dashArray.length);
+                System.arraycopy(b.dashArray, 0, newDashArray, b.dashArray.length, b.dashArray.length);
+                b.dashArray = newDashArray;
+            }
+            int width = 0;
+            int height = (int) (b.strokeWidth);
+            if (height < 1)
+                height = 1;
+            for (float f : b.dashArray) {
+                if (f < 1)
+                    f = 1;
+                width += f;
+            }
+            Bitmap bitmap = CanvasAdapter.newBitmap(width, height, 0);
+            Canvas canvas = CanvasAdapter.newCanvas();
+            canvas.setBitmap(bitmap);
+            int x = 0;
+            boolean transparent = false;
+            for (float f : b.dashArray) {
+                if (f < 1)
+                    f = 1;
+                canvas.fillRectangle(x, 0, f, height, transparent ? Color.TRANSPARENT : Color.WHITE);
+                x += f;
+                transparent = !transparent;
+            }
+            b.texture = new TextureItem(bitmap);
+            b.texture.mipmap = true;
+            b.randomOffset = false;
+            b.stipple = width;
+            b.stippleWidth = 1;
+            b.stippleColor = b.fillColor;
+        } else {
+            b.texture = Utils.loadTexture(mTheme.getRelativePathPrefix(), src, b.symbolWidth, b.symbolHeight, b.symbolPercent);
+
+            if (hasSymbol) {
+                // Line symbol
+                int width = (int) (b.texture.width + b.repeatGap);
+                int height = b.texture.height;
+                Bitmap bitmap = CanvasAdapter.newBitmap(width, height, 0);
+                Canvas canvas = CanvasAdapter.newCanvas();
+                canvas.setBitmap(bitmap);
+                canvas.drawBitmap(b.texture.bitmap, b.repeatStart, 0);
+                b.texture = new TextureItem(bitmap);
+                b.texture.mipmap = true;
+                b.fixed = true;
+                b.randomOffset = false;
+                b.stipple = width;
+                b.stippleWidth = 1;
+                b.strokeWidth = height * 0.5f;
+                b.stippleColor = Color.WHITE;
+            }
+        }
 
         return b.build();
     }
@@ -625,7 +698,7 @@ public class XmlThemeBuilder extends DefaultHandler {
             else if ("stroke-width".equals(name)) {
                 float strokeWidth = Float.parseFloat(value);
                 validateNonNegative("stroke-width", strokeWidth);
-                b.strokeWidth = strokeWidth * mScale2;
+                b.strokeWidth = strokeWidth * mScale * mStrokeScale;
 
             } else if ("fade".equals(name))
                 b.fadeScale = Integer.parseInt(value);
@@ -647,6 +720,9 @@ public class XmlThemeBuilder extends DefaultHandler {
 
             else if ("symbol-percent".equals(name))
                 b.symbolPercent = Integer.parseInt(value);
+
+            else if ("symbol-scaling".equals(name))
+                ; // no-op
 
             else
                 logUnknownAttribute(elementName, name, value, i);
@@ -691,7 +767,7 @@ public class XmlThemeBuilder extends DefaultHandler {
             if ("img".equals(name)) {
                 img = value;
             } else {
-                XmlThemeBuilder.logUnknownAttribute(elementName, name, value, i);
+                logUnknownAttribute(elementName, name, value, i);
             }
         }
         validateExists("img", img, elementName);
@@ -723,7 +799,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                             Integer.parseInt(pos[3]));
                 }
             } else {
-                XmlThemeBuilder.logUnknownAttribute(elementName, name, value, i);
+                logUnknownAttribute(elementName, name, value, i);
             }
         }
         validateExists("id", regionName, elementName);
@@ -803,27 +879,28 @@ public class XmlThemeBuilder extends DefaultHandler {
                 mapBackground = Color.parseColor(value);
                 if (mThemeCallback != null)
                     mapBackground = mThemeCallback.getColor(mapBackground);
+
             } else if ("base-stroke-width".equals(name))
                 baseStrokeWidth = Float.parseFloat(value);
 
-            else if ("base-text-scale".equals(name))
+            else if ("base-text-scale".equals(name) || "base-text-size".equals(name))
                 baseTextScale = Float.parseFloat(value);
 
             else
-                XmlThemeBuilder.logUnknownAttribute(elementName, name, value, i);
+                logUnknownAttribute(elementName, name, value, i);
 
         }
 
         validateExists("version", version, elementName);
 
-        if (version != RENDER_THEME_VERSION)
-            throw new ThemeException("invalid render theme version:"
-                    + version);
+        if (version > RENDER_THEME_VERSION)
+            throw new ThemeException("invalid render theme version:" + version);
 
         validateNonNegative("base-stroke-width", baseStrokeWidth);
         validateNonNegative("base-text-scale", baseTextScale);
 
         mMapBackground = mapBackground;
+        mStrokeScale = baseStrokeWidth;
         mTextScale = baseTextScale;
     }
 
@@ -883,10 +960,10 @@ public class XmlThemeBuilder extends DefaultHandler {
             else if ("font-family".equals(name))
                 b.fontFamily = FontFamily.valueOf(value.toUpperCase(Locale.ENGLISH));
 
-            else if ("style".equals(name))
+            else if ("style".equals(name) || "font-style".equals(name))
                 b.fontStyle = FontStyle.valueOf(value.toUpperCase(Locale.ENGLISH));
 
-            else if ("size".equals(name))
+            else if ("size".equals(name) || "font-size".equals(name))
                 b.fontSize = Float.parseFloat(value);
 
             else if ("fill".equals(name))
@@ -896,7 +973,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                 b.strokeColor = Color.parseColor(value);
 
             else if ("stroke-width".equals(name))
-                b.strokeWidth = Float.parseFloat(value) * mScale2;
+                b.strokeWidth = Float.parseFloat(value) * mScale;
 
             else if ("caption".equals(name))
                 b.caption = Boolean.parseBoolean(value);
@@ -926,6 +1003,9 @@ public class XmlThemeBuilder extends DefaultHandler {
             else if ("symbol-percent".equals(name))
                 b.symbolPercent = Integer.parseInt(value);
 
+            else if ("symbol-scaling".equals(name))
+                ; // no-op
+
             else
                 logUnknownAttribute(elementName, name, value, i);
         }
@@ -940,7 +1020,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                 try {
                     b.bitmap = CanvasAdapter.getBitmapAsset(mTheme.getRelativePathPrefix(), symbol, b.symbolWidth, b.symbolHeight, b.symbolPercent);
                 } catch (Exception e) {
-                    log.debug(e.getMessage());
+                    log.error("{}: {}", symbol, e.getMessage());
                 }
             } else
                 b.texture = getAtlasRegion(symbol);
@@ -963,7 +1043,7 @@ public class XmlThemeBuilder extends DefaultHandler {
             String value = attributes.getValue(i);
 
             if ("r".equals(name) || "radius".equals(name))
-                b.radius(Float.parseFloat(value) * mScale2);
+                b.radius(Float.parseFloat(value) * mScale * mStrokeScale);
 
             else if ("cat".equals(name))
                 b.cat(value);
@@ -978,7 +1058,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                 b.strokeColor(Color.parseColor(value));
 
             else if ("stroke-width".equals(name))
-                b.strokeWidth(Float.parseFloat(value) * mScale2);
+                b.strokeWidth(Float.parseFloat(value) * mScale * mStrokeScale);
 
             else
                 logUnknownAttribute(elementName, name, value, i);
@@ -1017,6 +1097,9 @@ public class XmlThemeBuilder extends DefaultHandler {
             else if ("symbol-percent".equals(name))
                 b.symbolPercent = Integer.parseInt(value);
 
+            else if ("symbol-scaling".equals(name))
+                ; // no-op
+
             else
                 logUnknownAttribute(elementName, name, value, i);
         }
@@ -1030,7 +1113,7 @@ public class XmlThemeBuilder extends DefaultHandler {
                 if (bitmap != null)
                     return buildSymbol(b, src, bitmap);
             } catch (Exception e) {
-                log.debug(e.getMessage());
+                log.error("{}: {}", src, e.getMessage());
             }
             return null;
         }
@@ -1095,6 +1178,15 @@ public class XmlThemeBuilder extends DefaultHandler {
      */
     private boolean isVisible(RuleBuilder rule) {
         return mCategories == null || rule.cat == null || mCategories.contains(rule.cat);
+    }
+
+    private static float[] parseFloatArray(String dashString) {
+        String[] dashEntries = dashString.split(",");
+        float[] dashIntervals = new float[dashEntries.length];
+        for (int i = 0; i < dashEntries.length; ++i) {
+            dashIntervals[i] = Float.parseFloat(dashEntries[i]);
+        }
+        return dashIntervals;
     }
 
     private static void validateNonNegative(String name, float value) {
