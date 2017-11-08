@@ -11,7 +11,7 @@ buildscript {
 
 allprojects {
     group = 'com.ogiqvo.vtm'
-    version = '0.0.15'
+    version = 'master-SNAPSHOT'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     ext.androidBuildVersionTools = "27.0.0"

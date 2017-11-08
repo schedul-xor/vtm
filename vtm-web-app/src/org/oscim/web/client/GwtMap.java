@@ -119,7 +119,8 @@ class GwtMap extends GdxMap {
             l = mMap.setBaseMap(ts);
 
             if (themeName == null) {
-                mMap.setTheme(VtmThemes.DEFAULT);
+                // Local theme with texture atlas using png
+                mMap.setTheme(new StreamRenderTheme("", AssetAdapter.readFileAsStream("vtm/default_atlas.xml")));
             } else {
                 if ("osmarender".equals(themeName))
                     mMap.setTheme(VtmThemes.OSMARENDER);

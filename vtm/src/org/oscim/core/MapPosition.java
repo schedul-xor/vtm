@@ -154,7 +154,7 @@ public class MapPosition {
         this.zoomLevel = FastMath.log2((int) scale);
     }
 
-    static private float clampBearing(float bearing){
+    private static float clampBearing(float bearing) {
         while (bearing > 180)
             bearing -= 360;
         while (bearing < -180)
