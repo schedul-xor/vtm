@@ -1,6 +1,7 @@
 /*
  * Copyright 2014 Hannes Janetzek
  * Copyright 2016-2017 devemux86
+ * Copyright 2017 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -25,28 +26,46 @@ import android.view.MenuItem;
 import org.oscim.android.filepicker.FilePicker;
 import org.oscim.android.filepicker.FilterByFileExtension;
 import org.oscim.android.filepicker.ValidMapFile;
+import org.oscim.android.filepicker.ValidRenderTheme;
+import org.oscim.core.MapElement;
 import org.oscim.core.MapPosition;
+import org.oscim.core.Tag;
 import org.oscim.core.Tile;
 import org.oscim.layers.TileGridLayer;
+import org.oscim.layers.tile.MapTile;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.renderer.BitmapRenderer;
 import org.oscim.renderer.GLViewport;
+import org.oscim.renderer.bucket.RenderBuckets;
 import org.oscim.scalebar.DefaultMapScaleBar;
 import org.oscim.scalebar.ImperialUnitAdapter;
 import org.oscim.scalebar.MapScaleBar;
 import org.oscim.scalebar.MapScaleBarLayer;
 import org.oscim.scalebar.MetricUnitAdapter;
+import org.oscim.theme.ExternalRenderTheme;
+import org.oscim.theme.ThemeUtils;
 import org.oscim.theme.VtmThemes;
+import org.oscim.theme.styles.AreaStyle;
+import org.oscim.theme.styles.RenderStyle;
 import org.oscim.tiling.source.mapfile.MapFileTileSource;
 import org.oscim.tiling.source.mapfile.MapInfo;
 
 public class MapsforgeMapActivity extends MapActivity {
-    private static final int SELECT_MAP_FILE = 0;
+
+    static final int SELECT_MAP_FILE = 0;
+    static final int SELECT_THEME_FILE = SELECT_MAP_FILE + 1;
+
+    private static final Tag ISSEA_TAG = new Tag("natural", "issea");
+    private static final Tag NOSEA_TAG = new Tag("natural", "nosea");
+    private static final Tag SEA_TAG = new Tag("natural", "sea");
 
     private TileGridLayer mGridLayer;
     private DefaultMapScaleBar mMapScaleBar;
+    private Menu mMenu;
+    private VectorTileLayer mTileLayer;
+    MapFileTileSource mTileSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +90,17 @@ public class MapsforgeMapActivity extends MapActivity {
         }
     }
 
+    public static class ThemeFilePicker extends FilePicker {
+        public ThemeFilePicker() {
+            setFileDisplayFilter(new FilterByFileExtension(".xml"));
+            setFileSelectFilter(new ValidRenderTheme());
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.theme_menu, menu);
+        mMenu = menu;
         return true;
     }
 
@@ -106,6 +133,11 @@ public class MapsforgeMapActivity extends MapActivity {
                 item.setChecked(true);
                 return true;
 
+            case R.id.theme_external:
+                startActivityForResult(new Intent(this, ThemeFilePicker.class),
+                        SELECT_THEME_FILE);
+                return true;
+
             case R.id.gridlayer:
                 if (item.isChecked()) {
                     item.setChecked(false);
@@ -133,16 +165,16 @@ public class MapsforgeMapActivity extends MapActivity {
                 return;
             }
 
-            MapFileTileSource tileSource = new MapFileTileSource();
-            tileSource.setPreferredLanguage("en");
+            mTileSource = new MapFileTileSource();
+            //mTileSource.setPreferredLanguage("en");
             String file = intent.getStringExtra(FilePicker.SELECTED_FILE);
-            if (tileSource.setMapFile(file)) {
+            if (mTileSource.setMapFile(file)) {
 
-                VectorTileLayer l = mMap.setBaseMap(tileSource);
+                mTileLayer = mMap.setBaseMap(mTileSource);
                 loadTheme(null);
 
-                mMap.layers().add(new BuildingLayer(mMap, l));
-                mMap.layers().add(new LabelLayer(mMap, l));
+                mMap.layers().add(new BuildingLayer(mMap, mTileLayer));
+                mMap.layers().add(new LabelLayer(mMap, mTileLayer));
 
                 mMapScaleBar = new DefaultMapScaleBar(mMap);
                 mMapScaleBar.setScaleBarMode(DefaultMapScaleBar.ScaleBarMode.BOTH);
@@ -156,13 +188,41 @@ public class MapsforgeMapActivity extends MapActivity {
                 renderer.setOffset(5 * getResources().getDisplayMetrics().density, 0);
                 mMap.layers().add(mapScaleBarLayer);
 
-                MapInfo info = tileSource.getMapInfo();
+                MapInfo info = mTileSource.getMapInfo();
                 MapPosition pos = new MapPosition();
                 pos.setByBoundingBox(info.boundingBox, Tile.SIZE * 4, Tile.SIZE * 4);
                 mMap.setMapPosition(pos);
 
                 mPrefs.clear();
             }
+        } else if (requestCode == SELECT_THEME_FILE) {
+            if (resultCode != RESULT_OK || intent == null || intent.getStringExtra(FilePicker.SELECTED_FILE) == null) {
+                return;
+            }
+
+            String file = intent.getStringExtra(FilePicker.SELECTED_FILE);
+            ExternalRenderTheme externalRenderTheme = new ExternalRenderTheme(file);
+
+            // Use tessellation with sea and land for Mapsforge themes
+            if (ThemeUtils.isMapsforgeTheme(externalRenderTheme)) {
+                mTileLayer.addHook(new VectorTileLayer.TileLoaderThemeHook() {
+                    @Override
+                    public boolean process(MapTile tile, RenderBuckets buckets, MapElement element, RenderStyle style, int level) {
+                        if (element.tags.contains(ISSEA_TAG) || element.tags.contains(SEA_TAG) || element.tags.contains(NOSEA_TAG)) {
+                            if (style instanceof AreaStyle)
+                                ((AreaStyle) style).mesh = true;
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public void complete(MapTile tile, boolean success) {
+                    }
+                });
+            }
+
+            mMap.setTheme(externalRenderTheme);
+            mMenu.findItem(R.id.theme_external).setChecked(true);
         }
     }
 

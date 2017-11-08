@@ -1,6 +1,7 @@
 /*
  * Copyright 2010, 2011, 2012 mapsforge.org
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
+ * Copyright 2017 Longri
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -17,10 +18,13 @@ package org.oscim.android.filepicker;
 
 import org.oscim.theme.ExternalRenderTheme;
 import org.oscim.theme.ThemeFile;
+import org.oscim.theme.ThemeUtils;
+import org.oscim.theme.XmlMapsforgeThemeBuilder;
 import org.oscim.theme.XmlThemeBuilder;
 import org.oscim.tiling.TileSource.OpenResult;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.File;
 
@@ -34,9 +38,14 @@ public final class ValidRenderTheme implements ValidFileFilter {
 
     @Override
     public boolean accept(File file) {
+
         try {
             ThemeFile theme = new ExternalRenderTheme(file.getAbsolutePath());
-            XmlThemeBuilder renderThemeHandler = new XmlThemeBuilder(theme);
+            DefaultHandler renderThemeHandler;
+            if (ThemeUtils.isMapsforgeTheme(theme))
+                renderThemeHandler = new XmlMapsforgeThemeBuilder(theme);
+            else
+                renderThemeHandler = new XmlThemeBuilder(theme);
             XMLReader xmlReader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
             xmlReader.setContentHandler(renderThemeHandler);
             xmlReader.parse(new InputSource(theme.getRenderThemeAsStream()));

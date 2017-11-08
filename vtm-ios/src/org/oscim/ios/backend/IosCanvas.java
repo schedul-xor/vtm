@@ -174,6 +174,14 @@ public class IosCanvas implements Canvas {
     }
 
     @Override
+    public void fillRectangle(float x, float y, float width, float height, int color) {
+        CGRect rect = new CGRect(x, y, width, height);
+        setFillColor(this.cgBitmapContext, (color));
+        this.cgBitmapContext.setBlendMode(CGBlendMode.Normal);
+        this.cgBitmapContext.fillRect(rect);
+    }
+
+    @Override
     public int getHeight() {
         return this.cgBitmapContext != null ? (int) this.cgBitmapContext.getHeight() : 0;
     }

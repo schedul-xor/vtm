@@ -1,18 +1,13 @@
 buildscript {
     repositories {
         jcenter()
-        mavenCentral()
     }
     dependencies {
         classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
     }
 }
 
-repositories {
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-}
-
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven'
 apply plugin: 'gwt-base'
 
@@ -21,13 +16,13 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':vtm-gdx')
-    compile project(':vtm-extras')
-    compile "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
-    compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
-    compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
-    compile "org.slf4j:slf4j-api:$slf4jVersion"
-    compile 'ru.finam:slf4j-gwt:1.7.7.1'
+    api project(':vtm-gdx')
+    api project(':vtm-extras')
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
+    implementation "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
+    implementation "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    implementation 'ru.finam:slf4j-gwt:1.7.7.1'
 }
 
 // explicit dependencies for org.gradle.configureondemand=true
@@ -44,9 +39,9 @@ gwt {
         noPrecompile = true
     }
     compiler {
-        enableClosureCompiler = false; // activates -XenableClosureCompiler
-        disableClassMetadata = true; // activates -XdisableClassMetadata
-        disableCastChecking = true; // activates -XdisableCastChecking
+        enableClosureCompiler = false // activates -XenableClosureCompiler
+        disableClassMetadata = true // activates -XdisableClassMetadata
+        disableCastChecking = true // activates -XdisableCastChecking
     }
 
     src += files(sourceSets.main.java.srcDirs)
@@ -80,6 +75,9 @@ gwt {
 //  compileTask.dependsOn copyVtmAssets
 //}
 
+javadoc {
+    options.addStringOption("sourcepath", "")
+}
 
 // Automated Gradle project deployment to Sonatype OSSRH
 afterEvaluate {

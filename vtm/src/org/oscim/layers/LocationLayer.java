@@ -25,7 +25,7 @@ public class LocationLayer extends Layer {
     public final LocationRenderer locationRenderer;
 
     public LocationLayer(Map map) {
-        this(map, CanvasAdapter.dpi / CanvasAdapter.DEFAULT_DPI);
+        this(map, CanvasAdapter.getScale());
     }
 
     public LocationLayer(Map map, float scale) {
@@ -48,7 +48,7 @@ public class LocationLayer extends Layer {
     public void setPosition(double latitude, double longitude, double accuracy) {
         double x = MercatorProjection.longitudeToX(longitude);
         double y = MercatorProjection.latitudeToY(latitude);
-        double radius = accuracy / MercatorProjection.groundResolution(latitude, 1);
+        double radius = accuracy / MercatorProjection.groundResolutionWithScale(latitude, 1);
         locationRenderer.setLocation(x, y, radius);
         locationRenderer.animate(true);
     }

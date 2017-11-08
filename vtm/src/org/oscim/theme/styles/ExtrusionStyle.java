@@ -1,6 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -44,6 +44,7 @@ public class ExtrusionStyle extends RenderStyle<ExtrusionStyle> {
     }
 
     public ExtrusionStyle(ExtrusionBuilder<?> b) {
+        this.cat = b.cat;
         this.level = b.level;
 
         this.colorSide = b.themeCallback != null ? b.themeCallback.getColor(b.colorSide) : b.colorSide;
@@ -105,6 +106,7 @@ public class ExtrusionStyle extends RenderStyle<ExtrusionStyle> {
             if (extrusion == null)
                 return reset();
 
+            this.cat = extrusion.cat;
             this.level = extrusion.level;
             this.colorSide = themeCallback != null ? themeCallback.getColor(extrusion.colorSide) : extrusion.colorSide;
             this.colorTop = themeCallback != null ? themeCallback.getColor(extrusion.colorTop) : extrusion.colorTop;
@@ -150,11 +152,12 @@ public class ExtrusionStyle extends RenderStyle<ExtrusionStyle> {
         }
 
         public T reset() {
+            cat = null;
             level = -1;
             colorSide = Color.TRANSPARENT;
             colorTop = Color.TRANSPARENT;
             colorLine = Color.TRANSPARENT;
-            defaultHeight = 0;
+            defaultHeight = 12; // 12m default
             return self();
         }
 

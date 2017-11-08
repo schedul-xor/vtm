@@ -37,9 +37,12 @@
         <activity
             android:name=".ClusterMarkerOverlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
-        <!--<activity
+        <activity
+            android:name=".GdxMapActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
             android:name=".JeoIndoorMapActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize" />-->
+            android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".LayerGroupActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
@@ -50,16 +53,16 @@
             android:name=".LocationActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
-            android:name=".MapFragmentActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize" />
-        <activity
-            android:name=".MapPositionActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize" />
-        <activity
             android:name=".MapsforgeMapActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".MapsforgeMapActivity$MapFilePicker"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".MapsforgeMapActivity$ThemeFilePicker"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".MapsforgePolyLabelActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".MapsforgeStyleActivity"
@@ -86,7 +89,16 @@
             android:name=".PathOverlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
+            android:name=".PoiSearchActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".PoiSearchActivity$PoiFilePicker"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
             android:name=".POTTextureActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".ReverseGeocodeActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".RotateMarkerOverlayActivity"

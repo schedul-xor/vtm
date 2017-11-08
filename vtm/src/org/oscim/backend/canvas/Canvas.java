@@ -57,6 +57,8 @@ public interface Canvas {
 
     void fillColor(int color);
 
+    void fillRectangle(float x, float y, float width, float height, int color);
+
     int getHeight();
 
     int getWidth();

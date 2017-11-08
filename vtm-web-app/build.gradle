@@ -47,9 +47,9 @@ gwt {
         noPrecompile = true
     }
     compiler {
-        enableClosureCompiler = false; // activates -XenableClosureCompiler
-        disableClassMetadata = true; // activates -XdisableClassMetadata
-        disableCastChecking = true; // activates -XdisableCastChecking
+        enableClosureCompiler = false // activates -XenableClosureCompiler
+        disableClassMetadata = true // activates -XdisableClassMetadata
+        disableCastChecking = true // activates -XdisableCastChecking
     }
 
     src += files(sourceSets.main.java.srcDirs)
@@ -101,4 +101,5 @@ tasks.withType(JavaCompile) { compileTask ->
 
 clean {
     delete "assets"
+    delete "war/WEB-INF"
 }

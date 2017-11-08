@@ -21,6 +21,7 @@ package org.oscim.android.canvas;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
 
 import org.oscim.backend.canvas.Bitmap;
 import org.oscim.backend.canvas.Canvas;
@@ -90,6 +91,14 @@ public class AndroidCanvas implements Canvas {
     @Override
     public void fillColor(int color) {
         canvas.drawColor(color, color == Color.TRANSPARENT ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER);
+    }
+
+    @Override
+    public void fillRectangle(float x, float y, float width, float height, int color) {
+        RectF rect = new RectF(x, y, x + width, y + height);
+        android.graphics.Paint paint = new android.graphics.Paint();
+        paint.setColor(color);
+        canvas.drawRect(rect, paint);
     }
 
     @Override

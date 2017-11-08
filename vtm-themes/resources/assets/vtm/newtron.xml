@@ -11,8 +11,10 @@
 
     <style-text style="bold" fill="#de3935" id="major-road" k="name" priority="1" size="19"
         stroke="#f2df6d" stroke-width="2.5" />
+
     <style-text style="bold" fill="#606060" id="ref" k="ref" priority="2" size="12" stroke="#ffffff"
         stroke-width="2.0" />
+    <style-text caption="true" id="ref-caption" use="ref" />
 
     <style-area fade="10" fill="#ff0000" id="residential" />
 
@@ -42,11 +44,11 @@
 
 
     <style-line blur="1.0" fade="13" id="residential" stroke="#ffffff" width="1.0" />
-    <style-line cap="square" id="residential:bridge" use="residential" />
+    <style-line cap="butt" id="residential:bridge" use="residential" />
 
     <!-- when inheriting another style with 'from' then 'width' is meant relative to the parent -->
     <style-line id="pedestrian" use="residential" width="-0.4" />
-    <style-line cap="square" id="pedestrian:bridge" use="pedestrian" />
+    <style-line cap="butt" id="pedestrian:bridge" use="pedestrian" />
 
     <style-line blur="0.9" id="highway:z11" stroke="#de3935" width="1.8" />
     <!-- <style-line id="highway:z11:bridge" use="highway:z11" cap="butt" /> -->
@@ -436,7 +438,12 @@
                     <line use="primary:z11" />
                     <outline use="0" />
                     <text use="major-road" />
-                    <text use="ref" />
+                    <m zoom-max="12">
+                        <text use="ref-caption" />
+                    </m>
+                    <m zoom-min="13">
+                        <text use="ref" />
+                    </m>
                 </m>
 
                 <m v="trunk">
@@ -444,7 +451,12 @@
                     <outline use="0" />
                     <!-- <outline use="glow"/> -->
                     <text use="major-road" />
-                    <text use="ref" />
+                    <m zoom-max="12">
+                        <text use="ref-caption" />
+                    </m>
+                    <m zoom-min="13">
+                        <text use="ref" />
+                    </m>
                 </m>
 
                 <m v="motorway">
@@ -452,7 +464,12 @@
                     <outline use="0" />
                     <!-- <outline use="glow"/> -->
                     <text use="major-road" />
-                    <text use="ref" />
+                    <m zoom-max="12">
+                        <text use="ref-caption" />
+                    </m>
+                    <m zoom-min="13">
+                        <text use="ref" />
+                    </m>
                 </m>
             </m>
 
@@ -695,21 +712,36 @@
                             <line use="primary:z11" />
                             <outline use="primary" />
                             <text use="major-road" />
-                            <text use="ref" />
+                            <m zoom-max="12">
+                                <text use="ref-caption" />
+                            </m>
+                            <m zoom-min="13">
+                                <text use="ref" />
+                            </m>
                         </m>
 
                         <m v="trunk">
                             <line use="trunk" />
                             <outline use="motorway" />
                             <text use="major-road" />
-                            <text use="ref" />
+                            <m zoom-max="12">
+                                <text use="ref-caption" />
+                            </m>
+                            <m zoom-min="13">
+                                <text use="ref" />
+                            </m>
                         </m>
 
                         <m v="motorway">
                             <line use="highway:z11" />
                             <outline use="motorway" />
                             <text use="major-road" />
-                            <text use="ref" />
+                            <m zoom-max="12">
+                                <text use="ref-caption" />
+                            </m>
+                            <m zoom-min="13">
+                                <text use="ref" />
+                            </m>
                         </m>
                     </m> <!-- end area=~|no|false -->
                 </m> <!-- end tunnel|bridge=~|no|false -->
@@ -745,12 +777,12 @@
                             </m>
 
                             <m v="construction">
-                                <line cap="square" use="construction" />
+                                <line cap="butt" use="construction" />
                                 <outline use="bridge" />
                             </m>
 
                             <m v="service">
-                                <line cap="square" use="highway-service" />
+                                <line cap="butt" use="highway-service" />
                                 <outline use="bridge" />
                             </m>
                         </m>
@@ -769,43 +801,58 @@
                         </m>
 
                         <m v="tertiary|secondary_link">
-                            <line cap="square" use="tertiary" />
+                            <line cap="butt" use="tertiary" />
                             <outline use="bridge" />
                             <text use="road" />
                         </m>
 
                         <m v="trunk_link|motorway_link">
-                            <line cap="square" use="trunk_link" />
+                            <line cap="butt" use="trunk_link" />
                             <outline use="bridge" />
                             <text use="major-road" />
                         </m>
 
                         <m v="secondary|primary_link">
                             <!-- <line stroke="#fff939" width="1.6" cap="butt" /> -->
-                            <line cap="square" use="secondary:z11" />
+                            <line cap="butt" use="secondary:z11" />
                             <outline use="bridge" />
                             <text use="major-road" />
                         </m>
 
                         <m v="primary">
-                            <line cap="square" use="primary:z11" />
+                            <line cap="butt" use="primary:z11" />
                             <outline use="bridge" />
                             <text use="major-road" />
-                            <text use="ref" />
+                            <m zoom-max="12">
+                                <text use="ref-caption" />
+                            </m>
+                            <m zoom-min="13">
+                                <text use="ref" />
+                            </m>
                         </m>
 
                         <m v="trunk">
-                            <line cap="square" use="trunk" />
+                            <line cap="butt" use="trunk" />
                             <outline use="bridge" />
                             <text use="major-road" />
-                            <text use="ref" />
+                            <m zoom-max="12">
+                                <text use="ref-caption" />
+                            </m>
+                            <m zoom-min="13">
+                                <text use="ref" />
+                            </m>
                         </m>
 
                         <m v="motorway">
-                            <line cap="square" use="highway:z11" />
+                            <line cap="butt" use="highway:z11" />
                             <outline use="bridge" />
                             <text use="major-road" />
-                            <text use="ref" />
+                            <m zoom-max="12">
+                                <text use="ref-caption" />
+                            </m>
+                            <m zoom-min="13">
+                                <text use="ref" />
+                            </m>
                         </m>
                     </m> <!-- end area=~|no|false -->
 
@@ -996,8 +1043,7 @@
             <m k="area" v="~|false|no">
                 <m k="highway">
                     <m k="oneway" v="yes|true" zoom-min="16">
-                        <line fix="true" src="assets:patterns/oneway.svg" stipple="160"
-                            stipple-stroke="#666666" width="6" />
+                        <lineSymbol src="assets:symbols/oneway.svg" />
                     </m>
                 </m>
             </m>
@@ -1131,10 +1177,13 @@
             </m>
         </m>
 
-        <m k="barrier" v="bollard">
-            <circle fill="#707070" radius="1.5" />
+        <m k="barrier">
+            <m zoom-min="16">
+                <m v="bollard">
+                    <symbol src="assets:symbols/barrier/bollard.svg" />
+                </m>
+            </m>
         </m>
-
 
         <m k="highway">
             <m v="bus_stop" zoom-min="16">
@@ -1168,7 +1217,7 @@
         </m>
 
 
-        <!--<m k="natural">
+        <m k="natural">
             <m select="first">
                 <m v="cave_entrance" zoom-min="15">
                     <symbol src="assets:symbols/poi/cave.svg" />
@@ -1178,20 +1227,20 @@
                 </m>
                 <m v="peak" zoom-min="12">
                     <symbol src="assets:symbols/peak.svg" />
-                    <caption style="bold" dy="12" fill="#4D2F08" k="ele" size="12" stroke="#ffffff"
+                    <caption style="bold" dy="12" fill="#4D2F08" k="name" size="14" stroke="#ffffff"
                         stroke-width="2.0" />
-                    <caption style="bold" dy="-12" fill="#4D2F08" k="name" size="14"
-                        stroke="#ffffff" stroke-width="2.0" />
+                    <caption style="bold" dy="-12" fill="#4D2F08" k="ele" size="12" stroke="#ffffff"
+                        stroke-width="2.0" />
                 </m>
                 <m v="volcano" zoom-min="12">
                     <symbol src="assets:symbols/volcano.svg" />
-                    <caption style="bold" dy="12" fill="#4D2F08" k="ele" size="12" stroke="#ffffff"
+                    <caption style="bold" dy="12" fill="#4D2F08" k="name" size="14" stroke="#ffffff"
                         stroke-width="2.0" />
-                    <caption style="bold" dy="-12" fill="#4D2F08" k="name" size="14"
-                        stroke="#ffffff" stroke-width="2.0" />
+                    <caption style="bold" dy="-12" fill="#4D2F08" k="ele" size="12" stroke="#ffffff"
+                        stroke-width="2.0" />
                 </m>
             </m>
-        </m>-->
+        </m>
 
 
         <m k="place" select="first">
@@ -1232,12 +1281,12 @@
             </m>
             <m v="station" zoom-min="14">
                 <symbol src="assets:symbols/transport/train_station2.svg" />
-                <caption style="bold" dy="-20" fill="#ec2d2d" k="name" size="14" stroke="#ffffff"
+                <caption style="bold" dy="20" fill="#ec2d2d" k="name" size="14" stroke="#ffffff"
                     stroke-width="2.0" />
             </m>
             <m v="halt|tram_stop" zoom-min="15">
                 <symbol src="assets:symbols/transport/tram_stop.svg" />
-                <caption style="bold" dy="-20" fill="#ec2d2d" k="name" size="14" stroke="#ffffff"
+                <caption style="bold" dy="20" fill="#ec2d2d" k="name" size="14" stroke="#ffffff"
                     stroke-width="2.0" />
             </m>
         </m>

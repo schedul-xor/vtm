@@ -60,14 +60,14 @@ public abstract class CanvasAdapter {
     public static Platform platform = Platform.UNKNOWN;
 
     /**
-     * The scale.
-     */
-    public static float scale = 1;
-
-    /**
      * The text scale.
      */
     public static float textScale = 1;
+
+    /**
+     * The user scale.
+     */
+    public static float userScale = 1;
 
     /**
      * Create a Canvas.
@@ -111,9 +111,9 @@ public abstract class CanvasAdapter {
      * @param inputStream the input stream
      * @return the bitmap
      */
-    protected abstract Bitmap decodeBitmapImpl(InputStream inputStream);
+    protected abstract Bitmap decodeBitmapImpl(InputStream inputStream) throws IOException;
 
-    public static Bitmap decodeBitmap(InputStream inputStream) {
+    public static Bitmap decodeBitmap(InputStream inputStream) throws IOException {
         return g.decodeBitmapImpl(inputStream);
     }
 
@@ -123,9 +123,9 @@ public abstract class CanvasAdapter {
      * @param inputStream the input stream
      * @return the SVG bitmap
      */
-    protected abstract Bitmap decodeSvgBitmapImpl(InputStream inputStream, int width, int height, int percent);
+    protected abstract Bitmap decodeSvgBitmapImpl(InputStream inputStream, int width, int height, int percent) throws IOException;
 
-    public static Bitmap decodeSvgBitmap(InputStream inputStream, int width, int height, int percent) {
+    public static Bitmap decodeSvgBitmap(InputStream inputStream, int width, int height, int percent) throws IOException {
         return g.decodeSvgBitmapImpl(inputStream, width, height, percent);
     }
 
@@ -136,13 +136,13 @@ public abstract class CanvasAdapter {
      * @param src                the resource
      * @return the bitmap
      */
-    protected abstract Bitmap loadBitmapAssetImpl(String relativePathPrefix, String src, int width, int height, int percent);
+    protected abstract Bitmap loadBitmapAssetImpl(String relativePathPrefix, String src, int width, int height, int percent) throws IOException;
 
-    public static Bitmap getBitmapAsset(String relativePathPrefix, String src) {
+    public static Bitmap getBitmapAsset(String relativePathPrefix, String src) throws IOException {
         return getBitmapAsset(relativePathPrefix, src, 0, 0, 100);
     }
 
-    public static Bitmap getBitmapAsset(String relativePathPrefix, String src, int width, int height, int percent) {
+    public static Bitmap getBitmapAsset(String relativePathPrefix, String src, int width, int height, int percent) throws IOException {
         return g.loadBitmapAssetImpl(relativePathPrefix, src, width, height, percent);
     }
 
@@ -208,6 +208,10 @@ public abstract class CanvasAdapter {
             return new File(pathName);
         }
         return new File(parentPath, pathName);
+    }
+
+    public static float getScale() {
+        return (CanvasAdapter.dpi / CanvasAdapter.DEFAULT_DPI) * userScale;
     }
 
     protected static void init(CanvasAdapter adapter) {

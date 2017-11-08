@@ -1,7 +1,8 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  * Copyright 2016 Robin Boldt
+ * Copyright 2017 Gustl22
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -46,7 +47,6 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
 
     private final static boolean POST_AA = false;
     public static boolean TRANSLUCENT = true;
-    public static int DEFAULT_HEIGHT = 12;
 
     private static final Object BUILDING_DATA = BuildingLayer.class.getName();
 
@@ -83,20 +83,25 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
 
         ExtrusionStyle extrusion = (ExtrusionStyle) style.current();
 
-        int height = 0;
-        int minHeight = 0;
+        int height = 0; // cm
+        int minHeight = 0; // cm
 
         String v = element.tags.getValue(Tag.KEY_HEIGHT);
         if (v != null)
-            height = (int) Float.parseFloat(v);
+            height = (int) (Float.parseFloat(v) * 100);
+        else {
+            // FIXME load from theme or decode tags to generalize level/height tags
+            if ((v = element.tags.getValue(Tag.KEY_BUILDING_LEVELS)) != null)
+                height = (int) (Float.parseFloat(v) * 280); // 2.8m level height
+        }
 
         v = element.tags.getValue(Tag.KEY_MIN_HEIGHT);
         if (v != null)
-            minHeight = (int) Float.parseFloat(v);
+            minHeight = (int) (Float.parseFloat(v) * 100);
 
-        /* 12m default */
         if (height == 0)
-            height = DEFAULT_HEIGHT * 100;
+            // FIXME ignore buildings containing building parts
+            height = extrusion.defaultHeight * 100;
 
         ExtrusionBuckets ebs = get(tile);
 
@@ -109,7 +114,7 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
 
         double lat = MercatorProjection.toLatitude(tile.y);
         float groundScale = (float) MercatorProjection
-                .groundResolution(lat, 1 << tile.zoomLevel);
+                .groundResolutionWithScale(lat, 1 << tile.zoomLevel);
 
         float[] overriddenColors = explicitColorForMapElement(tile, extrusion, element);
         ebs.buckets = Inlist.push(ebs.buckets,

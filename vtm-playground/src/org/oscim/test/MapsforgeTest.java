@@ -18,8 +18,8 @@ package org.oscim.test;
 
 import org.oscim.core.MapPosition;
 import org.oscim.core.Tile;
-import org.oscim.gdx.GdxMap;
 import org.oscim.gdx.GdxMapApp;
+import org.oscim.gdx.GdxMapImpl;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
@@ -36,18 +36,22 @@ import org.oscim.tiling.source.mapfile.MapInfo;
 
 import java.io.File;
 
-public class MapsforgeTest extends GdxMap {
+public class MapsforgeTest extends GdxMapImpl {
 
-    private static File mapFile;
+    private File mapFile;
+
+    MapsforgeTest(File mapFile) {
+        this.mapFile = mapFile;
+    }
 
     @Override
     public void createLayers() {
         MapFileTileSource tileSource = new MapFileTileSource();
         tileSource.setMapFile(mapFile.getAbsolutePath());
-        tileSource.setPreferredLanguage("en");
+        //tileSource.setPreferredLanguage("en");
 
         VectorTileLayer l = mMap.setBaseMap(tileSource);
-        mMap.setTheme(VtmThemes.DEFAULT);
+        loadTheme(null);
 
         mMap.layers().add(new BuildingLayer(mMap, l));
         mMap.layers().add(new LabelLayer(mMap, l));
@@ -70,7 +74,7 @@ public class MapsforgeTest extends GdxMap {
         mMap.setMapPosition(pos);
     }
 
-    private static File getMapFile(String[] args) {
+    static File getMapFile(String[] args) {
         if (args.length == 0) {
             throw new IllegalArgumentException("missing argument: <mapFile>");
         }
@@ -86,10 +90,12 @@ public class MapsforgeTest extends GdxMap {
         return file;
     }
 
-    public static void main(String[] args) {
-        mapFile = getMapFile(args);
+    protected void loadTheme(final String styleId) {
+        mMap.setTheme(VtmThemes.DEFAULT);
+    }
 
+    public static void main(String[] args) {
         GdxMapApp.init();
-        GdxMapApp.run(new MapsforgeTest());
+        GdxMapApp.run(new MapsforgeTest(getMapFile(args)));
     }
 }

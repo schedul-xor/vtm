@@ -1,6 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  * Copyright 2017 Longri
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
@@ -20,11 +20,9 @@ package org.oscim.theme;
 
 import org.oscim.backend.CanvasAdapter;
 import org.oscim.theme.IRenderTheme.ThemeException;
+import org.oscim.utils.Parameters;
 
 public class ThemeLoader {
-
-    public static boolean USE_ATLAS;
-    public static boolean POT_TEXTURES;
 
     public static IRenderTheme load(String renderThemePath) throws ThemeException {
         return load(new ExternalRenderTheme(renderThemePath));
@@ -47,9 +45,13 @@ public class ThemeLoader {
     }
 
     public static IRenderTheme load(ThemeFile theme, ThemeCallback themeCallback) throws ThemeException {
-        IRenderTheme t = USE_ATLAS ? XmlAtlasThemeBuilder.read(theme, themeCallback) : XmlThemeBuilder.read(theme, themeCallback);
+        IRenderTheme t;
+        if (ThemeUtils.isMapsforgeTheme(theme))
+            t = Parameters.TEXTURE_ATLAS ? XmlMapsforgeAtlasThemeBuilder.read(theme, themeCallback) : XmlMapsforgeThemeBuilder.read(theme, themeCallback);
+        else
+            t = Parameters.TEXTURE_ATLAS ? XmlAtlasThemeBuilder.read(theme, themeCallback) : XmlThemeBuilder.read(theme, themeCallback);
         if (t != null)
-            t.scaleTextSize(CanvasAdapter.textScale + (CanvasAdapter.dpi / CanvasAdapter.DEFAULT_DPI - 1));
+            t.scaleTextSize(CanvasAdapter.getScale() * CanvasAdapter.textScale);
         return t;
     }
 }
