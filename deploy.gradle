@@ -49,7 +49,7 @@ uploadArchives {
 
                 name 'vtm'
                 description 'OpenGL vector map library written in Java - running on Android, iOS, Desktop and within the browser.'
-                url 'https://github.com/mapsforge/vtm'
+                url 'https://github.com/schedul-xor/vtm'
 
                 licenses {
                     license {
@@ -60,9 +60,9 @@ uploadArchives {
                 }
 
                 scm {
-                    connection 'scm:git:https://github.com/mapsforge/vtm'
-                    developerConnection 'scm:git:https://github.com/mapsforge/vtm'
-                    url 'https://github.com/mapsforge/vtm'
+                    connection 'scm:git:https://github.com/schedul-xor/vtm'
+                    developerConnection 'scm:git:https://github.com/schedul-xor/vtm'
+                    url 'https://github.com/schedul-xor/vtm'
                 }
 
                 developers {
@@ -75,6 +75,11 @@ uploadArchives {
                         id 'devemux86'
                         name 'Emux'
                         email 'devemux86@gmail.com'
+                    }
+                    developer {
+                        id 'schedul-xor'
+                        name 'Izumi Kawashima'
+                        email 'schedul.xor@gmail.com'
                     }
                 }
             }

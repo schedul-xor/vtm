@@ -17,7 +17,7 @@ env:
 script:
 - ./gradlew clean build
 after_success:
-- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+- if [ "$TRAVIS_BRANCH" == "ogiqvo-custom" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
     ./gradlew uploadArchives -PSONATYPE_USERNAME="${SONATYPE_USERNAME}" -PSONATYPE_PASSWORD="${SONATYPE_PASSWORD}";
   fi
 notifications:
