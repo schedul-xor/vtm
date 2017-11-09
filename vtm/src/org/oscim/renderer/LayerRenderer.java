@@ -31,7 +31,7 @@ public abstract class LayerRenderer {
     /**
      *
      */
-    boolean isVisible;
+    boolean isVisible = true;
 
     /**
      * Set 'ready for render' state when layer data is ready for rendering.
