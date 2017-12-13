@@ -1,86 +1,44 @@
+/*
+ * Copyright 2013 Hannes Janetzek
+ * Copyright 2017 Gustl22
+ *
+ * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
+ *
+ * This program is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.oscim.layers.tile.buildings;
 
 import org.oscim.backend.canvas.Color;
-import org.oscim.layers.tile.TileLayer;
-import org.oscim.layers.tile.TileManager;
-import org.oscim.layers.tile.TileRenderer;
-import org.oscim.map.Map;
-import org.oscim.renderer.GLViewport;
-import org.oscim.renderer.LayerRenderer;
-import org.oscim.renderer.OffscreenRenderer;
-import org.oscim.renderer.OffscreenRenderer.Mode;
-import org.oscim.tiling.TileSource;
 import org.oscim.utils.ColorUtil;
 import org.oscim.utils.ColorsCSS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3DBLayer extends TileLayer {
-    static final Logger log = LoggerFactory.getLogger(S3DBLayer.class);
-
-    private final static int MAX_CACHE = 32;
-    private final static int SRC_ZOOM = 16;
+/**
+ * Provides utils for S3DB layers.
+ */
+public final class S3DBUtils {
+    private static final Logger log = LoggerFactory.getLogger(S3DBUtils.class);
 
     /* TODO get from theme */
     private final static double HSV_S = 0.7;
     private final static double HSV_V = 1.2;
 
-    private final TileSource mTileSource;
-
-    public S3DBLayer(Map map, TileSource tileSource) {
-        this(map, tileSource, true, false);
-    }
-
-    public S3DBLayer(Map map, TileSource tileSource, boolean fxaa, boolean ssao) {
-        super(map, new TileManager(map, MAX_CACHE));
-        setRenderer(new S3DBRenderer(fxaa, ssao));
-
-        mTileManager.setZoomLevel(SRC_ZOOM, SRC_ZOOM);
-        mTileSource = tileSource;
-        initLoader(2);
-    }
-
-    @Override
-    protected S3DBTileLoader createLoader() {
-        return new S3DBTileLoader(getManager(), mTileSource);
-    }
-
-    public static class S3DBRenderer extends TileRenderer {
-        LayerRenderer mRenderer;
-
-        public S3DBRenderer(boolean fxaa, boolean ssao) {
-            mRenderer = new BuildingRenderer(this, SRC_ZOOM, SRC_ZOOM, true, false);
-
-            if (fxaa || ssao) {
-                Mode mode = Mode.FXAA;
-                if (fxaa && ssao)
-                    mode = Mode.SSAO_FXAA;
-                else if (ssao)
-                    mode = Mode.SSAO;
-                mRenderer = new OffscreenRenderer(mode, mRenderer);
-            }
-        }
-
-        @Override
-        public synchronized void update(GLViewport v) {
-            super.update(v);
-            mRenderer.update(v);
-            setReady(mRenderer.isReady());
-        }
-
-        @Override
-        public synchronized void render(GLViewport v) {
-            mRenderer.render(v);
-        }
-
-        @Override
-        public boolean setup() {
-            mRenderer.setup();
-            return super.setup();
-        }
-    }
-
-    static int getColor(String color, boolean roof) {
+    /**
+     * @param color the color as string (see http://wiki.openstreetmap.org/wiki/Key:colour)
+     * @param roof  declare if color is used for roofs
+     * @return the color as integer (8 bit each a, r, g, b)
+     */
+    public static int getColor(String color, boolean roof) {
 
         if (color.charAt(0) == '#') {
             int c = Color.parseColor(color, Color.CYAN);
@@ -129,7 +87,12 @@ public class S3DBLayer extends TileLayer {
         return 0;
     }
 
-    static int getMaterialColor(String material, boolean roof) {
+    /**
+     * @param material the material as string (see http://wiki.openstreetmap.org/wiki/Key:material and following pages)
+     * @param roof     declare if material is used for roofs
+     * @return the color as integer (8 bit each a, r, g, b)
+     */
+    public static int getMaterialColor(String material, boolean roof) {
 
         if (roof) {
             if ("glass".equals(material))
@@ -183,5 +146,8 @@ public class S3DBLayer extends TileLayer {
         log.debug("unknown material:{}", material);
 
         return 0;
+    }
+
+    private S3DBUtils() {
     }
 }

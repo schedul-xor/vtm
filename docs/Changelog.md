@@ -1,8 +1,14 @@
 # Changelog
 
-## New since 0.8.0
+## New since 0.9.0
 
-- Mapsforge maps **v5**: variable tag values [#429](https://github.com/mapsforge/vtm/issues/429)
+- S3DBLayer renamed to S3DBTileLayer [#452](https://github.com/mapsforge/vtm/issues/452)
+- Many other minor improvements and bug fixes
+- [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.10.0)
+
+## Version 0.9.0 (2017-12-03)
+
+- Mapsforge maps **v5 beta** support [#429](https://github.com/mapsforge/vtm/issues/429)
 - Mapsforge themes compatibility [#100](https://github.com/mapsforge/vtm/issues/100)
 - Render themes: line symbol [#124](https://github.com/mapsforge/vtm/issues/124)
 - Render themes: stroke dash array [#131](https://github.com/mapsforge/vtm/issues/131)
@@ -81,8 +87,8 @@
 
 ## Version 0.6.0 (2016-10-28) - VTM revive
 
+- Mapsforge maps **v4** support [#34](https://github.com/mapsforge/vtm/issues/34)
 - Render theme SVG resources [#60](https://github.com/mapsforge/vtm/issues/60)
-- Mapsforge multilingual maps **v4** [#34](https://github.com/mapsforge/vtm/issues/34)
 - Render theme styles [#93](https://github.com/mapsforge/vtm/issues/93)
 - vtm-ios module update [#29](https://github.com/mapsforge/vtm/issues/29)
 - Native libraries for all platforms [#14](https://github.com/mapsforge/vtm/issues/14)

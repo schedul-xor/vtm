@@ -137,7 +137,7 @@ public class TileDecoder implements ITileDecoder {
 
         //add tag information
         mTileSource.decodeTags(mMapElement, mTagMap);
-        if (mMapElement.tags.numTags == 0)
+        if (mMapElement.tags.size() == 0)
             return;
 
         mTileSource.postGeomHook(mMapElement);
@@ -266,8 +266,8 @@ public class TileDecoder implements ITileDecoder {
     }
 
     private void removeLastPoint() {
-        mMapElement.pointPos -= 2;
-        mMapElement.index[mMapElement.indexPos] -= 2;
+        mMapElement.pointNextPos -= 2;
+        mMapElement.index[mMapElement.indexCurrentPos] -= 2;
     }
 
     private void parseLineString(JsonParser jp) throws IOException {

@@ -4,17 +4,17 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0'
+        classpath 'com.android.tools.build:gradle:3.0.1'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
     }
 }
 
 allprojects {
     group = 'com.ogiqvo'
-    version = 'ogiqvo-custom-SNAPSHOT'
+    version = '0.0.1'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-    ext.androidBuildVersionTools = "27.0.0"
+    ext.androidBuildVersionTools = "27.0.2"
     ext.gdxVersion = "1.9.7"
     ext.gwtVersion = "2.8.0"
     ext.slf4jVersion = "1.7.25"
