@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -14,57 +14,41 @@
  * You should have received a copy of the GNU Lesser General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.oscim.android.test;
+package org.oscim.test;
 
-import android.os.Bundle;
-
-import org.oscim.android.cache.TileCache;
-import org.oscim.layers.tile.TileLayer;
-import org.oscim.layers.tile.buildings.S3DBLayer;
-import org.oscim.layers.tile.vector.labeling.LabelLayer;
+import org.oscim.gdx.GdxMapApp;
+import org.oscim.layers.tile.buildings.S3DBTileLayer;
 import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.TileSource;
+import org.oscim.tiling.source.OkHttpEngine;
 import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
 
-public class S3DBMapActivity extends BaseMapActivity {
-
-    TileCache mS3dbCache;
+public class OSciMapS3DBTest extends GdxMapApp {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void createLayers() {
+        TileSource tileSource = OSciMap4TileSource.builder()
+                .httpFactory(new OkHttpEngine.OkHttpFactory())
+                .build();
+        mMap.setBaseMap(tileSource);
         mMap.setTheme(VtmThemes.DEFAULT);
 
         TileSource ts = OSciMap4TileSource.builder()
+                .httpFactory(new OkHttpEngine.OkHttpFactory())
                 .url("http://opensciencemap.org/tiles/s3db")
                 .zoomMin(16)
                 .zoomMax(16)
                 .build();
 
-        if (USE_CACHE) {
-            mS3dbCache = new TileCache(this, null, "s3db.db");
-            mS3dbCache.setCacheSize(512 * (1 << 10));
-            ts.setCache(mS3dbCache);
-        }
-        TileLayer tl = new S3DBLayer(mMap, ts, true, false);
+        S3DBTileLayer tl = new S3DBTileLayer(mMap, ts);
         mMap.layers().add(tl);
-        mMap.layers().add(new LabelLayer(mMap, mBaseLayer));
+
+        mMap.setMapPosition(53.08, 8.82, 1 << 17);
+
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        if (mS3dbCache != null)
-            mS3dbCache.dispose();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        /* ignore saved position */
-        mMap.setMapPosition(53.5620092, 9.9866457, 1 << 16);
+    public static void main(String[] args) {
+        init();
+        run(new OSciMapS3DBTest());
     }
 }

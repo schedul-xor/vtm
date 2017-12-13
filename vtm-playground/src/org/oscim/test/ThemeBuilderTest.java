@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -23,13 +23,11 @@ import org.oscim.gdx.GdxMapImpl;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.theme.RenderTheme;
+import org.oscim.tiling.TileSource;
+import org.oscim.tiling.source.OkHttpEngine;
 import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ThemeBuilderTest extends GdxMapImpl {
-
-    final Logger log = LoggerFactory.getLogger(S3DBLayerTest.class);
 
     static class MyTheme extends ThemeBuilder {
         public MyTheme() {
@@ -57,7 +55,10 @@ public class ThemeBuilderTest extends GdxMapImpl {
     @Override
     public void createLayers() {
 
-        VectorTileLayer l = mMap.setBaseMap(new OSciMap4TileSource());
+        TileSource tileSource = OSciMap4TileSource.builder()
+                .httpFactory(new OkHttpEngine.OkHttpFactory())
+                .build();
+        VectorTileLayer l = mMap.setBaseMap(tileSource);
 
         RenderTheme t = new MyTheme().build();
 
