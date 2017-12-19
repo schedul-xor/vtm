@@ -41,6 +41,7 @@ public final class Utils {
         if (src == null || src.length() == 0)
             return null;
 
+        log.debug("load {}", src);
         try {
             Bitmap bitmap = CanvasAdapter.getBitmapAsset(relativePathPrefix, src, width, height, percent);
             if (bitmap != null) {
