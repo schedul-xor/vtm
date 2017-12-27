@@ -19,9 +19,7 @@
  */
 package org.oscim.layers.tile.buildings;
 
-import org.oscim.backend.canvas.Color;
 import org.oscim.core.MapElement;
-import org.oscim.core.MercatorProjection;
 import org.oscim.core.Tag;
 import org.oscim.layers.Layer;
 import org.oscim.layers.tile.MapTile;
@@ -30,14 +28,10 @@ import org.oscim.layers.tile.vector.VectorTileLayer.TileLoaderThemeHook;
 import org.oscim.map.Map;
 import org.oscim.renderer.OffscreenRenderer;
 import org.oscim.renderer.OffscreenRenderer.Mode;
-import org.oscim.renderer.bucket.ExtrusionBucket;
 import org.oscim.renderer.bucket.ExtrusionBuckets;
 import org.oscim.renderer.bucket.RenderBuckets;
 import org.oscim.theme.styles.ExtrusionStyle;
 import org.oscim.theme.styles.RenderStyle;
-import org.oscim.utils.pool.Inlist;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,19 +40,18 @@ import java.util.List;
 import java.util.Set;
 
 public class BuildingLayer extends Layer implements TileLoaderThemeHook {
-    static final Logger log = LoggerFactory.getLogger(BuildingLayer.class);
 
     private final static int BUILDING_LEVEL_HEIGHT = 280; // cm
 
     private final static int MIN_ZOOM = 17;
     private final static int MAX_ZOOM = 17;
 
-    private final static boolean POST_AA = false;
+    public static boolean POST_AA = false;
     public static boolean TRANSLUCENT = true;
 
     private static final Object BUILDING_DATA = BuildingLayer.class.getName();
 
-    // Can replace with Multimap in Java 8
+    // Can be replaced with Multimap in Java 8
     private HashMap<Integer, List<BuildingElement>> mBuildings = new HashMap<>();
 
     class BuildingElement {
@@ -74,10 +67,14 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
     }
 
     public BuildingLayer(Map map, VectorTileLayer tileLayer) {
-        this(map, tileLayer, MIN_ZOOM, MAX_ZOOM);
+        this(map, tileLayer, MIN_ZOOM, MAX_ZOOM, false);
     }
 
-    public BuildingLayer(Map map, VectorTileLayer tileLayer, int zoomMin, int zoomMax) {
+    public BuildingLayer(Map map, VectorTileLayer tileLayer, boolean mesh) {
+        this(map, tileLayer, MIN_ZOOM, MAX_ZOOM, mesh);
+    }
+
+    public BuildingLayer(Map map, VectorTileLayer tileLayer, int zoomMin, int zoomMax, boolean mesh) {
 
         super(map);
 
@@ -85,13 +82,9 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
 
         mRenderer = new BuildingRenderer(tileLayer.tileRenderer(),
                 zoomMin, zoomMax,
-                false, TRANSLUCENT);
+                mesh, !mesh && TRANSLUCENT); // alpha must be disabled for mesh renderer
         if (POST_AA)
             mRenderer = new OffscreenRenderer(Mode.SSAO_FXAA, mRenderer);
-    }
-
-    protected float[] explicitColorForMapElement(MapTile tile,ExtrusionStyle extrusion,MapElement element) {
-        return extrusion.colors;
     }
 
     /**
@@ -117,7 +110,7 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
                 buildingElements = new ArrayList<>();
                 mBuildings.put(tile.hashCode(), buildingElements);
             }
-            element = element.clone(); // Deep copy, because element will be cleared
+            element = new MapElement(element); // Deep copy, because element will be cleared
             buildingElements.add(new BuildingElement(element, extrusion, isBuildingPart));
             return true;
         }
@@ -161,24 +154,7 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
             height = extrusion.defaultHeight * 100;
 
         ExtrusionBuckets ebs = get(tile);
-
-        for (ExtrusionBucket b = ebs.buckets; b != null; b = b.next()) {
-            if (b.colors == extrusion.colors) {
-                b.add(element, height, minHeight);
-                return;
-            }
-        }
-
-        double lat = MercatorProjection.toLatitude(tile.y);
-        float groundScale = (float) MercatorProjection
-                .groundResolutionWithScale(lat, 1 << tile.zoomLevel);
-
-        float[] overriddenColors = explicitColorForMapElement(tile, extrusion, element);
-        ebs.buckets = Inlist.push(ebs.buckets,
-                new ExtrusionBucket(0, groundScale,
-                        overriddenColors));
-
-        ebs.buckets.add(element, height, minHeight);
+        ebs.addPolyElement(element, tile.getGroundScale(), extrusion.colors, height, minHeight);
     }
 
     /**
@@ -220,13 +196,17 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
         mBuildings.remove(tile.hashCode());
     }
 
+    /**
+     * @param tile the MapTile
+     * @return ExtrusionBuckets of the tile
+     */
     public static ExtrusionBuckets get(MapTile tile) {
-        ExtrusionBuckets eb = (ExtrusionBuckets) tile.getData(BUILDING_DATA);
-        if (eb == null) {
-            eb = new ExtrusionBuckets(tile);
-            tile.addData(BUILDING_DATA, eb);
+        ExtrusionBuckets ebs = (ExtrusionBuckets) tile.getData(BUILDING_DATA);
+        if (ebs == null) {
+            ebs = new ExtrusionBuckets(tile);
+            tile.addData(BUILDING_DATA, ebs);
         }
-        return eb;
+        return ebs;
     }
 
     @Override
@@ -235,7 +215,7 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
             processElements(tile);
             get(tile).prepare();
         } else
-            get(tile).setBuckets(null);
+            get(tile).resetBuckets(null);
     }
 
     //    private int multi;
