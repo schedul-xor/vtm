@@ -1,8 +1,9 @@
 /*
  * Copyright 2012 Hannes Janetzek
- * Copyright 2016 devemux86
+ * Copyright 2016-2018 devemux86
  * Copyright 2016 Erik Duisters
  * Copyright 2017 Luca Osten
+ * Copyright 2018 Izumi Kawashima
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -52,6 +53,9 @@ public class Viewport {
     protected float mMinBearing = -180;
     protected float mMaxBearing = 180;
 
+    protected float mMinRoll = -180;
+    protected float mMaxRoll = 180;
+
     protected double mMinX = 0;
     protected double mMaxX = 1;
     protected double mMinY = 0;
@@ -88,8 +92,10 @@ public class Viewport {
         mPos.scale = mMinScale;
         mPos.x = 0.5;
         mPos.y = 0.5;
+        mPos.zoomLevel = MIN_ZOOMLEVEL;
         mPos.bearing = 0;
         mPos.tilt = 0;
+        mPos.roll = 0;
     }
 
     public double limitScale(double scale) {
@@ -136,6 +142,14 @@ public class Viewport {
             changed = true;
         }
 
+        if (pos.roll > mMaxRoll) {
+            pos.roll = mMaxRoll;
+            changed = true;
+        } else if (pos.roll < mMinRoll) {
+            pos.roll = mMinRoll;
+            changed = true;
+        }
+
         if (pos.x > mMaxX) {
             pos.x = mMaxX;
             changed = true;
@@ -168,10 +182,12 @@ public class Viewport {
                 || pos.x != mPos.x
                 || pos.y != mPos.y
                 || pos.bearing != mPos.bearing
-                || pos.tilt != mPos.tilt);
+                || pos.tilt != mPos.tilt
+                || pos.roll != mPos.roll);
 
         pos.bearing = mPos.bearing;
         pos.tilt = mPos.tilt;
+        pos.roll = mPos.roll;
 
         pos.x = mPos.x;
         pos.y = mPos.y;
@@ -493,6 +509,22 @@ public class Viewport {
 
     public void setMinBearing(float minBearing) {
         this.mMinBearing = minBearing;
+    }
+
+    public float getMaxRoll() {
+        return mMaxRoll;
+    }
+
+    public void setMaxRoll(float maxRoll) {
+        this.mMaxRoll = maxRoll;
+    }
+
+    public float getMinRoll() {
+        return mMinRoll;
+    }
+
+    public void setMinRoll(float minRoll) {
+        this.mMinRoll = minRoll;
     }
 
     public double getMaxX() {

@@ -1,6 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016-2017 devemux86
+ * Copyright 2016-2018 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -35,7 +35,7 @@ import org.oscim.tiling.TileSource;
 import org.oscim.tiling.source.OkHttpEngine;
 import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
 
-public class GdxMapActivity extends AndroidApplication {
+public class GdxActivity extends AndroidApplication {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,7 +51,7 @@ public class GdxMapActivity extends AndroidApplication {
 
         AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
         cfg.stencil = 8;
-        cfg.numSamples = 2;
+        //cfg.numSamples = 2;
 
         new SharedLibraryLoader().load("vtm-jni");
 
@@ -64,7 +64,7 @@ public class GdxMapActivity extends AndroidApplication {
             TileSource ts = OSciMap4TileSource.builder()
                     .httpFactory(new OkHttpEngine.OkHttpFactory())
                     .build();
-            initDefaultLayers(ts, true, true, true, getResources().getDisplayMetrics().density);
+            initDefaultLayers(ts, false, true, true, getResources().getDisplayMetrics().density);
         }
     }
 }

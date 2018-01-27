@@ -1,22 +1,13 @@
 apply plugin: 'com.android.application'
 
-repositories {
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-}
-
 dependencies {
     implementation project(':vtm-android')
     implementation project(':vtm-http')
     implementation project(':vtm-jeo')
     implementation project(':vtm-json')
     implementation project(':vtm-jts')
+    implementation project(':vtm-mvt')
     implementation project(':vtm-themes')
-    implementation('org.jeo:jeo:0-SNAPSHOT') {
-        exclude group: 'org.slf4j', module: 'slf4j-jdk14'
-    }
-    implementation('org.jeo:jeo-render:0-SNAPSHOT') {
-        exclude group: 'org.slf4j', module: 'slf4j-jdk14'
-    }
     implementation "org.slf4j:slf4j-android:$slf4jVersion"
 
     implementation project(':vtm-android-gdx')
@@ -69,6 +60,14 @@ android {
         exclude 'META-INF/services/org.jeo.data.Driver'
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
+    }
+
+    buildTypes {
+        all {
+            minifyEnabled true
+            useProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
 }
 

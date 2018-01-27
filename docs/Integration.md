@@ -26,7 +26,7 @@ implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-x86_64'
 implementation 'com.caverock:androidsvg:1.2.2-beta-1'
 ```
 
-### Android (with libGDX)
+### Android (libGDX)
 ```groovy
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]'
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-arm64-v8a'
@@ -73,7 +73,7 @@ implementation 'com.metsci.ext.com.kitfox.svg:svg-salamander:0.1.19'
 
 ```groovy
 implementation 'org.mapsforge:vtm-jts:[CURRENT-VERSION]'
-implementation 'com.vividsolutions:jts:1.13'
+implementation 'org.locationtech.jts:jts-core:1.15.0'
 ```
 
 - Online tiles
@@ -84,7 +84,16 @@ implementation 'com.squareup.okhttp3:okhttp:3.8.0'
 implementation 'com.squareup.okio:okio:1.13.0'
 ```
 
-- GeoJSON tiles
+- Mapbox vector tiles
+
+```groovy
+implementation 'org.mapsforge:vtm-mvt:[CURRENT-VERSION]'
+implementation 'com.google.protobuf:protobuf-java:3.5.1'
+implementation 'com.wdtinc:mapbox-vector-tile:3.0.0'
+implementation 'org.locationtech.jts:jts-core:1.15.0'
+```
+
+- GeoJSON vector tiles
 
 ```groovy
 implementation 'org.mapsforge:vtm-json:[CURRENT-VERSION]'

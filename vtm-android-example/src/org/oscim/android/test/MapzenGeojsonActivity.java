@@ -24,9 +24,9 @@ import org.oscim.layers.tile.vector.labeling.LabelLayer;
 import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.source.OkHttpEngine;
 import org.oscim.tiling.source.UrlTileSource;
-import org.oscim.tiling.source.geojson.OpenMapTilesGeojsonTileSource;
+import org.oscim.tiling.source.geojson.MapzenGeojsonTileSource;
 
-public class OpenMapTilesGeojsonMapActivity extends MapActivity {
+public class MapzenGeojsonActivity extends MapActivity {
 
     private static final boolean USE_CACHE = false;
 
@@ -36,8 +36,8 @@ public class OpenMapTilesGeojsonMapActivity extends MapActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        UrlTileSource tileSource = OpenMapTilesGeojsonTileSource.builder()
-                .apiKey("xxxxxxx") // Put a proper API key
+        UrlTileSource tileSource = MapzenGeojsonTileSource.builder()
+                .apiKey("mapzen-xxxxxxx") // Put a proper API key
                 .httpFactory(new OkHttpEngine.OkHttpFactory())
                 //.locale("en")
                 .build();
@@ -50,7 +50,7 @@ public class OpenMapTilesGeojsonMapActivity extends MapActivity {
         }
 
         VectorTileLayer l = mMap.setBaseMap(tileSource);
-        mMap.setTheme(VtmThemes.OPENMAPTILES);
+        mMap.setTheme(VtmThemes.MAPZEN);
 
         mMap.layers().add(new BuildingLayer(mMap, l));
         mMap.layers().add(new LabelLayer(mMap, l));

@@ -1,6 +1,6 @@
 /*
  * Copyright 2014 Hannes Janetzek
- * Copyright 2017 devemux86
+ * Copyright 2017-2018 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -27,20 +27,20 @@ import org.oscim.tiling.source.bitmap.DefaultSources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BitmapTileMapActivity extends MapActivity {
+public class BitmapTileActivity extends MapActivity {
 
-    static final Logger log = LoggerFactory.getLogger(BitmapTileMapActivity.class);
+    static final Logger log = LoggerFactory.getLogger(BitmapTileActivity.class);
 
-    private final static boolean USE_CACHE = true;
+    private final static boolean USE_CACHE = false;
 
     private final BitmapTileSource mTileSource;
     protected BitmapTileLayer mBitmapLayer;
 
-    public BitmapTileMapActivity() {
+    public BitmapTileActivity() {
         this(DefaultSources.OPENSTREETMAP.build());
     }
 
-    public BitmapTileMapActivity(BitmapTileSource tileSource) {
+    public BitmapTileActivity(BitmapTileSource tileSource) {
         super(R.layout.activity_map);
         mTileSource = tileSource;
     }
@@ -103,6 +103,7 @@ public class BitmapTileMapActivity extends MapActivity {
 
                     p.setTilt((float) (Math.random() * 60));
                     p.setBearing((float) (Math.random() * 360));
+                    p.setRoll((float) (Math.random() * 360));
                     //mMapView.map().setMapPosition(p);
 
                     mMapView.map().animator().animateTo(time, p);

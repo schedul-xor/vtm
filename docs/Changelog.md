@@ -1,10 +1,27 @@
 # Changelog
 
-## New since 0.9.1
+## New since 0.9.2
 
-- libGDX 1.9.8 [#464](https://github.com/mapsforge/vtm/issues/464)
+- S3DB layer [#475](https://github.com/mapsforge/vtm/pull/475)
+- vtm-mvt module with MVT tile decoder [#481](https://github.com/mapsforge/vtm/pull/481)
+- OpenMapTiles MVT vector tiles [#482](https://github.com/mapsforge/vtm/issues/482)
+- Theme styles improvements [#479](https://github.com/mapsforge/vtm/pull/479)
+- Internal render themes improvements [#488](https://github.com/mapsforge/vtm/pull/488)
+- Map view roll [#474](https://github.com/mapsforge/vtm/pull/474)
+- Fling animation improvements [#489](https://github.com/mapsforge/vtm/pull/489)
+- Map fractional zoom [#487](https://github.com/mapsforge/vtm/issues/487)
+- Render theme fallback internal resources [#477](https://github.com/mapsforge/vtm/issues/477)
+- Fix FadeStep alpha interpolation [#486](https://github.com/mapsforge/vtm/issues/486)
+- Fix libGDX flickering [#148](https://github.com/mapsforge/vtm/issues/148) [#149](https://github.com/mapsforge/vtm/issues/149)
+- JTS (LocationTech) [#484](https://github.com/mapsforge/vtm/issues/484)
 - Many other minor improvements and bug fixes
 - [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.10.0)
+
+## Version 0.9.2 (2018-01-04)
+
+- Gradle fix transitive dependencies [#433](https://github.com/mapsforge/vtm/issues/433)
+- libGDX 1.9.8 [#464](https://github.com/mapsforge/vtm/issues/464)
+- [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.9.2)
 
 ## Version 0.9.1 (2017-12-29)
 
@@ -106,6 +123,7 @@
 - Tile size based on scale factor [#183](https://github.com/mapsforge/vtm/issues/183)
 - libGDX layer gestures [#151](https://github.com/mapsforge/vtm/issues/151)
 - Render theme area tessellation option [#37](https://github.com/mapsforge/vtm/issues/37)
+- Render theme resources optional location prefixes [#66](https://github.com/mapsforge/vtm/issues/66)
 - Graphics API platform enhancements [#92](https://github.com/mapsforge/vtm/issues/92)
 - GeoPoint & BoundingBox improvements [#201](https://github.com/mapsforge/vtm/issues/201) [#200](https://github.com/mapsforge/vtm/issues/200)
 - vtm-jts module [#53](https://github.com/mapsforge/vtm/issues/53)

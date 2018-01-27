@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 devemux86
+ * Copyright 2017-2018 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -18,12 +18,19 @@ import android.os.Bundle;
 
 import org.oscim.utils.Parameters;
 
-public class MapsforgePolyLabelActivity extends MapsforgeMapActivity {
+public class MapsforgePolyLabelActivity extends MapsforgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Parameters.POLY_LABEL = true;
 
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Parameters.POLY_LABEL = false;
     }
 }

@@ -1,6 +1,5 @@
 /*
- * Copyright 2017 Longri
- * Copyright 2017 devemux86
+ * Copyright 2018 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -13,19 +12,11 @@
  * You should have received a copy of the GNU Lesser General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.oscim.test;
+package org.oscim.android.test;
 
-import org.oscim.gdx.GdxMapApp;
-import org.oscim.utils.Parameters;
+public class MapsforgeS3DBActivity extends MapsforgeActivity {
 
-public class AtlasThemeMapTest extends MapTest {
-
-    private AtlasThemeMapTest() {
-        Parameters.TEXTURE_ATLAS = true;
-    }
-
-    public static void main(String[] args) {
-        GdxMapApp.init();
-        GdxMapApp.run(new AtlasThemeMapTest());
+    public MapsforgeS3DBActivity() {
+        super(true);
     }
 }
