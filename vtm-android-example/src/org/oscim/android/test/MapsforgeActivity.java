@@ -2,6 +2,7 @@
  * Copyright 2014 Hannes Janetzek
  * Copyright 2016-2018 devemux86
  * Copyright 2017 Longri
+ * Copyright 2018 Gustl22
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -27,6 +28,7 @@ import org.oscim.android.filepicker.FilePicker;
 import org.oscim.android.filepicker.FilterByFileExtension;
 import org.oscim.android.filepicker.ValidMapFile;
 import org.oscim.android.filepicker.ValidRenderTheme;
+import org.oscim.backend.CanvasAdapter;
 import org.oscim.core.MapElement;
 import org.oscim.core.MapPosition;
 import org.oscim.core.Tag;
@@ -156,7 +158,7 @@ public class MapsforgeActivity extends MapActivity {
                 } else {
                     item.setChecked(true);
                     if (mGridLayer == null)
-                        mGridLayer = new TileGridLayer(mMap, getResources().getDisplayMetrics().density);
+                        mGridLayer = new TileGridLayer(mMap);
 
                     mMap.layers().add(mGridLayer);
                 }
@@ -199,15 +201,16 @@ public class MapsforgeActivity extends MapActivity {
                 MapScaleBarLayer mapScaleBarLayer = new MapScaleBarLayer(mMap, mMapScaleBar);
                 BitmapRenderer renderer = mapScaleBarLayer.getRenderer();
                 renderer.setPosition(GLViewport.Position.BOTTOM_LEFT);
-                renderer.setOffset(5 * getResources().getDisplayMetrics().density, 0);
+                renderer.setOffset(5 * CanvasAdapter.getScale(), 0);
                 mMap.layers().add(mapScaleBarLayer);
 
                 MapInfo info = mTileSource.getMapInfo();
-                MapPosition pos = new MapPosition();
-                pos.setByBoundingBox(info.boundingBox, Tile.SIZE * 4, Tile.SIZE * 4);
-                mMap.setMapPosition(pos);
-
-                mPrefs.clear();
+                if (!info.boundingBox.contains(mMap.getMapPosition().getGeoPoint())) {
+                    MapPosition pos = new MapPosition();
+                    pos.setByBoundingBox(info.boundingBox, Tile.SIZE * 4, Tile.SIZE * 4);
+                    mMap.setMapPosition(pos);
+                    mPrefs.clear();
+                }
             }
         } else if (requestCode == SELECT_THEME_FILE) {
             if (resultCode != RESULT_OK || intent == null || intent.getStringExtra(FilePicker.SELECTED_FILE) == null) {

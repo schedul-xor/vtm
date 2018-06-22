@@ -1,7 +1,7 @@
 /*
  * Copyright 2010, 2011, 2012 mapsforge.org
  * Copyright 2013 Hannes Janetzek
- * Copyright 2016-2017 devemux86
+ * Copyright 2016-2018 devemux86
  * Copyright 2016-2017 Longri
  * Copyright 2016 Andrey Novikov
  *
@@ -28,6 +28,7 @@ import org.oscim.backend.canvas.Color;
 import org.oscim.backend.canvas.Paint.Cap;
 import org.oscim.backend.canvas.Paint.FontFamily;
 import org.oscim.backend.canvas.Paint.FontStyle;
+import org.oscim.core.Tag;
 import org.oscim.renderer.atlas.TextureAtlas;
 import org.oscim.renderer.atlas.TextureAtlas.Rect;
 import org.oscim.renderer.atlas.TextureRegion;
@@ -1123,6 +1124,15 @@ public class XmlMapsforgeThemeBuilder extends DefaultHandler {
             else if ("symbol-scaling".equals(name))
                 ; // no-op
 
+            else if ("repeat".equals(name))
+                b.repeat(Boolean.parseBoolean(value));
+
+            else if ("repeat-start".equals(name))
+                b.repeatStart = Float.parseFloat(value) * mScale;
+
+            else if ("repeat-gap".equals(name))
+                b.repeatGap = Float.parseFloat(value) * mScale;
+
             else
                 logUnknownAttribute(elementName, name, value, i);
         }
@@ -1234,7 +1244,7 @@ public class XmlMapsforgeThemeBuilder extends DefaultHandler {
         b.colorLine(0xffd9d8d6);
         b.colorSide(0xeaecebe9);
         b.colorTop(0xeaf9f8f6);
-        RuleBuilder rule = new RuleBuilder(RuleBuilder.RuleType.POSITIVE, new String[]{"building"}, new String[]{});
+        RuleBuilder rule = new RuleBuilder(RuleBuilder.RuleType.POSITIVE, new String[]{Tag.KEY_BUILDING, Tag.KEY_BUILDING_PART}, new String[]{});
         rule.element(Rule.Element.WAY).zoom((byte) 17, Byte.MAX_VALUE).style(b);
         return rule;
     }

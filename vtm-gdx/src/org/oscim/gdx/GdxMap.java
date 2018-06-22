@@ -1,6 +1,7 @@
 /*
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016-2018 devemux86
+ * Copyright 2018 Gustl22
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -48,11 +49,6 @@ public abstract class GdxMap implements ApplicationListener {
 
     protected void initDefaultLayers(TileSource tileSource, boolean tileGrid, boolean labels,
                                      boolean buildings) {
-        initDefaultLayers(tileSource, tileGrid, labels, buildings, 1);
-    }
-
-    protected void initDefaultLayers(TileSource tileSource, boolean tileGrid, boolean labels,
-                                     boolean buildings, float scale) {
         Layers layers = mMap.layers();
 
         if (tileSource != null) {
@@ -67,11 +63,16 @@ public abstract class GdxMap implements ApplicationListener {
         }
 
         if (tileGrid)
-            layers.add(new TileGridLayer(mMap, scale));
+            layers.add(new TileGridLayer(mMap));
     }
 
     @Override
     public void create() {
+        if (!Parameters.CUSTOM_COORD_SCALE) {
+            if (Math.min(Gdx.graphics.getDisplayMode().width, Gdx.graphics.getDisplayMode().height) > 1080)
+                MapRenderer.COORD_SCALE = 4.0f;
+        }
+
         mMap = new MapAdapter();
         mMapRenderer = new MapRenderer(mMap);
 
@@ -81,7 +82,7 @@ public abstract class GdxMap implements ApplicationListener {
         int w = Gdx.graphics.getWidth();
         int h = Gdx.graphics.getHeight();
 
-        mMap.viewport().setScreenSize(w, h);
+        mMap.viewport().setViewSize(w, h);
         mMapRenderer.onSurfaceCreated();
         mMapRenderer.onSurfaceChanged(w, h);
 
@@ -121,7 +122,7 @@ public abstract class GdxMap implements ApplicationListener {
 
     @Override
     public void resize(int w, int h) {
-        mMap.viewport().setScreenSize(w, h);
+        mMap.viewport().setViewSize(w, h);
         mMapRenderer.onSurfaceChanged(w, h);
         mMap.render();
     }
@@ -152,6 +153,16 @@ public abstract class GdxMap implements ApplicationListener {
         @Override
         public int getHeight() {
             return Gdx.graphics.getHeight();
+        }
+
+        @Override
+        public int getScreenWidth() {
+            return Gdx.graphics.getDisplayMode().width;
+        }
+
+        @Override
+        public int getScreenHeight() {
+            return Gdx.graphics.getDisplayMode().height;
         }
 
         private final Runnable mRedrawCb = new Runnable() {

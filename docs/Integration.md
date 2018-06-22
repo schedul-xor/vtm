@@ -15,6 +15,10 @@ implementation 'org.slf4j:slf4j-api:1.7.25'
 
 ### Android
 ```groovy
+repositories {
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]'
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-arm64-v8a'
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-armeabi'
@@ -23,11 +27,15 @@ implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-mips'
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-mips64'
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-x86'
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-x86_64'
-implementation 'com.caverock:androidsvg:1.2.2-beta-1'
+implementation 'com.caverock:androidsvg:1.3-SNAPSHOT'
 ```
 
 ### Android (libGDX)
 ```groovy
+repositories {
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+}
+
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]'
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-arm64-v8a'
 implementation 'org.mapsforge:vtm-android:[CURRENT-VERSION]:natives-armeabi'
@@ -43,7 +51,7 @@ implementation 'org.mapsforge:vtm-android-gdx:[CURRENT-VERSION]:natives-x86'
 implementation 'org.mapsforge:vtm-android-gdx:[CURRENT-VERSION]:natives-x86_64'
 implementation 'com.badlogicgames.gdx:gdx:1.9.8'
 implementation 'com.badlogicgames.gdx:gdx-backend-android:1.9.8'
-implementation 'com.caverock:androidsvg:1.2.2-beta-1'
+implementation 'com.caverock:androidsvg:1.3-SNAPSHOT'
 ```
 
 ### iOS
@@ -67,16 +75,14 @@ implementation 'org.lwjgl.lwjgl:lwjgl-platform:2.9.3:natives-windows'
 implementation 'com.metsci.ext.com.kitfox.svg:svg-salamander:0.1.19'
 ```
 
-### Optional
-
-- JTS geometries
+### JTS geometries
 
 ```groovy
 implementation 'org.mapsforge:vtm-jts:[CURRENT-VERSION]'
 implementation 'org.locationtech.jts:jts-core:1.15.0'
 ```
 
-- Online tiles
+### Online tiles
 
 ```groovy
 implementation 'org.mapsforge:vtm-http:[CURRENT-VERSION]'
@@ -84,7 +90,7 @@ implementation 'com.squareup.okhttp3:okhttp:3.8.0'
 implementation 'com.squareup.okio:okio:1.13.0'
 ```
 
-- Mapbox vector tiles
+### Mapbox vector tiles
 
 ```groovy
 implementation 'org.mapsforge:vtm-mvt:[CURRENT-VERSION]'
@@ -93,13 +99,40 @@ implementation 'com.wdtinc:mapbox-vector-tile:3.0.0'
 implementation 'org.locationtech.jts:jts-core:1.15.0'
 ```
 
-- GeoJSON vector tiles
+### GeoJSON vector tiles
 
 ```groovy
 implementation 'org.mapsforge:vtm-json:[CURRENT-VERSION]'
 implementation 'com.fasterxml.jackson.core:jackson-annotations:2.8.4'
 implementation 'com.fasterxml.jackson.core:jackson-core:2.8.4'
 implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.4'
+```
+
+### jeo (indoor maps)
+
+Add _first_ the Boundless repository:
+```groovy
+repositories {
+    maven { url 'https://repo.boundlessgeo.com/main/' }
+    jcenter()
+    ...
+}
+```
+
+```groovy
+implementation 'org.mapsforge:vtm-jeo:[CURRENT-VERSION]'
+implementation('org.jeo:jeo:0-SNAPSHOT') {
+    exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+}
+implementation('org.jeo:jeo-carto:0-SNAPSHOT') {
+    exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+}
+implementation('org.jeo:jeo-render:0-SNAPSHOT') {
+    exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+}
+implementation 'org.osgeo:proj4j:0.1.0:jeo'
+implementation 'com.metaweb:lessen:1.0'
+implementation 'com.vividsolutions:jts:1.13'
 ```
 
 ## Snapshots

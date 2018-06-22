@@ -47,7 +47,7 @@ public class S3DBLayer extends BuildingLayer {
     private boolean mColored = true;
 
     public S3DBLayer(Map map, VectorTileLayer tileLayer) {
-        this(map, tileLayer, MIN_ZOOM, MAX_ZOOM);
+        this(map, tileLayer, MIN_ZOOM, map.viewport().getMaxZoomLevel());
     }
 
     public S3DBLayer(Map map, VectorTileLayer tileLayer, int zoomMin, int zoomMax) {
@@ -94,8 +94,9 @@ public class S3DBLayer extends BuildingLayer {
                 }
             }
             if (bb != null) {
-                float maxSize = (int) Math.max(bb.getHeight(), bb.getWidth()) * TILE_SCALE;
-                roofHeight = (int) ((Float.parseFloat(v) / 45.f) * (maxSize * 15)); // Angle is simplified, 15 is some constant, may depend on lat
+                float minSize = (int) Math.min(bb.getHeight(), bb.getWidth()) * groundScale; // depends on lat
+                // Angle is simplified, 40 is an estimated constant
+                roofHeight = (int) ((Float.parseFloat(v) / 45.f) * (minSize * 40));
             }
         } else if ((v = element.tags.getValue(Tag.KEY_ROOF_SHAPE)) != null && !v.equals(Tag.VALUE_FLAT)) {
             roofHeight = (2 * BUILDING_LEVEL_HEIGHT);
@@ -159,7 +160,7 @@ public class S3DBLayer extends BuildingLayer {
         List<BuildingElement> tileBuildings = mBuildings.get(tile.hashCode());
         Set<BuildingElement> rootBuildings = new HashSet<>();
         for (BuildingElement partBuilding : tileBuildings) {
-            if (!partBuilding.isPart)
+            if (!partBuilding.element.isBuildingPart())
                 continue;
 
             TagSet partTags = partBuilding.element.tags;
@@ -170,7 +171,7 @@ public class S3DBLayer extends BuildingLayer {
 
             // Search buildings which inherit parts
             for (BuildingElement rootBuilding : tileBuildings) {
-                if (rootBuilding.isPart
+                if (rootBuilding.element.isBuildingPart()
                         || !(refId.equals(rootBuilding.element.tags.getValue(Tag.KEY_ID))))
                     continue;
 

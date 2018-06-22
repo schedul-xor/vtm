@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 devemux86
+ * Copyright 2018 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -12,21 +12,17 @@
  * You should have received a copy of the GNU Lesser General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.oscim.android.test;
+package org.oscim.test;
 
+import org.oscim.gdx.GdxMapApp;
 import org.oscim.utils.Parameters;
 
-public class NewGesturesActivity extends MarkerOverlayActivity {
+public class Animator2Test extends MarkerLayerTest {
 
-    public NewGesturesActivity() {
-        super();
-        Parameters.MAP_EVENT_LAYER2 = true;
-    }
+    public static void main(String[] args) {
+        Parameters.ANIMATOR2 = true;
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        Parameters.MAP_EVENT_LAYER2 = false;
+        GdxMapApp.init();
+        GdxMapApp.run(new Animator2Test());
     }
 }

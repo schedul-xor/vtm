@@ -11,8 +11,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name">
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".Samples"
             android:configChanges="keyboardHidden|orientation|screenSize">
@@ -21,6 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".Animator2Activity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".AtlasMarkerOverlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
@@ -37,6 +41,9 @@
             android:name=".ClusterMarkerOverlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
+            android:name=".GettingStarted"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
             android:name=".GdxActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
@@ -50,6 +57,12 @@
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".LocationActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".LocationTextureActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".MapEventLayer2Activity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".MapsforgeActivity"
@@ -82,7 +95,10 @@
             android:name=".MultiMapViewActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
-            android:name=".NewGesturesActivity"
+            android:name=".NextzenGeojsonActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".NextzenMvtActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".OpenMapTilesMvtActivity"

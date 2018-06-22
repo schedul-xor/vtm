@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 devemux86
+ * Copyright 2016-2017 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -12,11 +12,21 @@
  * You should have received a copy of the GNU Lesser General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.oscim.gdx;
+package org.oscim.android.test;
 
-public class GdxMapImpl extends GdxMap {
+import org.oscim.utils.Parameters;
+
+public class MapEventLayer2Activity extends MarkerOverlayActivity {
+
+    public MapEventLayer2Activity() {
+        super();
+        Parameters.MAP_EVENT_LAYER2 = true;
+    }
+
     @Override
-    public void dispose() {
-        System.exit(0);
+    protected void onDestroy() {
+        super.onDestroy();
+
+        Parameters.MAP_EVENT_LAYER2 = false;
     }
 }

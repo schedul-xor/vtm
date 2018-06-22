@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 devemux86
+ * Copyright 2017-2018 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -17,6 +17,16 @@ package org.oscim.utils;
 public final class Parameters {
 
     /**
+     * If true the <code>Animator2</code> will be used instead of default <code>Animator</code>.
+     */
+    public static boolean ANIMATOR2 = false;
+
+    /**
+     * Allow custom scale factor for short vertices instead of the calculated one.
+     */
+    public static boolean CUSTOM_COORD_SCALE = false;
+
+    /**
      * Allow custom tile size instead of the calculated one.
      */
     public static boolean CUSTOM_TILE_SIZE = false;
@@ -32,9 +42,14 @@ public final class Parameters {
     public static int MAXIMUM_BUFFER_SIZE = 8000000;
 
     /**
-     * Optimal placement of text labels on polygons.
+     * Optimal placement of labels or symbols on polygons.
      */
     public static boolean POLY_LABEL = false;
+
+    /**
+     * Placement of symbols on polygons.
+     */
+    public static boolean POLY_SYMBOL = false;
 
     /**
      * POT textures in themes.

@@ -24,7 +24,6 @@ import org.oscim.backend.canvas.Color;
 import org.oscim.backend.canvas.Paint.Cap;
 import org.oscim.core.GeometryBuffer;
 import org.oscim.gdx.GdxMapApp;
-import org.oscim.gdx.GdxMapImpl;
 import org.oscim.layers.GenericLayer;
 import org.oscim.renderer.BucketRenderer;
 import org.oscim.renderer.GLViewport;
@@ -36,7 +35,7 @@ import org.oscim.theme.styles.LineStyle;
 
 import java.io.IOException;
 
-public class LineRenderTest extends GdxMapImpl {
+public class LineRenderTest extends GdxMapApp {
 
     GeometryBuffer mGeom = new GeometryBuffer(2, 1);
     GeometryBuffer mLine = new GeometryBuffer(2, 1);
@@ -47,12 +46,6 @@ public class LineRenderTest extends GdxMapImpl {
     @Override
     public void createLayers() {
         MapRenderer.setBackgroundColor(0xff000000);
-
-        /*TileSource ts = OSciMap4TileSource.builder()
-                .httpFactory(new OkHttpEngine.OkHttpFactory())
-                .build();*/
-        // ts.setOption("url", "http://opensciencemap.org/tiles/vtm");
-        // initDefaultLayers(ts, false, false, false);
 
         mMap.setMapPosition(0, 0, 1 << 4);
 

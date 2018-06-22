@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 devemux86
+ * Copyright 2017-2018 devemux86
  * Copyright 2017 Gustl22
  *
  * This program is free software: you can redistribute it and/or modify it under the
@@ -18,7 +18,7 @@ package org.oscim.tiling.source.geojson;
 import org.oscim.core.MapElement;
 import org.oscim.core.Tag;
 import org.oscim.tiling.source.UrlTileSource;
-import org.oscim.utils.math.MathUtils;
+import org.oscim.utils.FastMath;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,8 +32,9 @@ public class MapzenGeojsonTileSource extends GeojsonTileSource {
         private String locale = "";
 
         public Builder() {
-            super(DEFAULT_URL, DEFAULT_PATH, 1, 17);
+            super(DEFAULT_URL, DEFAULT_PATH);
             keyName("api_key");
+            overZoom(16);
         }
 
         public T locale(String locale) {
@@ -116,7 +117,7 @@ public class MapzenGeojsonTileSource extends GeojsonTileSource {
                 Object area = properties.get(Tag.KEY_AREA);
                 String areaStr = (area instanceof String) ? (String) area : String.valueOf(area);
                 float height = Float.parseFloat(volumeStr) / Float.parseFloat(areaStr);
-                String heightStr = String.valueOf(MathUtils.round2(height));
+                String heightStr = String.valueOf(FastMath.round2(height));
                 mapElement.tags.add(new Tag(Tag.KEY_HEIGHT, heightStr, false));
             }
         }

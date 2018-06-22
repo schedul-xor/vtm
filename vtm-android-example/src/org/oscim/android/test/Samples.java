@@ -2,7 +2,7 @@
  * Copyright 2010, 2011, 2012, 2013 mapsforge.org
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016-2018 devemux86
- * Copyright 2017 Longri
+ * Copyright 2017-2018 Longri
  * Copyright 2017 nebular
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
@@ -79,10 +79,14 @@ public class Samples extends Activity {
 
         setContentView(R.layout.activity_samples);
         LinearLayout linearLayout = findViewById(R.id.samples);
+        linearLayout.addView(createButton(GettingStarted.class));
+        linearLayout.addView(createLabel(null));
         linearLayout.addView(createButton(SimpleMapActivity.class));
         linearLayout.addView(createButton(MapsforgeActivity.class));
         /*linearLayout.addView(createButton(MapzenMvtActivity.class));
         linearLayout.addView(createButton(MapzenGeojsonActivity.class));*/
+        linearLayout.addView(createButton(NextzenMvtActivity.class));
+        linearLayout.addView(createButton(NextzenGeojsonActivity.class));
         linearLayout.addView(createButton(OpenMapTilesMvtActivity.class));
         linearLayout.addView(createButton(GdxActivity.class));
 
@@ -93,6 +97,8 @@ public class Samples extends Activity {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/graphhopper/graphhopper/tree/master/android")));
             }
         }));
+        linearLayout.addView(createButton(LocationActivity.class));
+        linearLayout.addView(createButton(LocationTextureActivity.class));
         linearLayout.addView(createButton(PoiSearchActivity.class));
 
         linearLayout.addView(createLabel("Vector Features"));
@@ -114,10 +120,10 @@ public class Samples extends Activity {
         linearLayout.addView(createButton(PathOverlayActivity.class));
         linearLayout.addView(createButton(LineTexActivity.class));
         linearLayout.addView(createButton(VectorLayerActivity.class));
-        linearLayout.addView(createButton(LocationActivity.class));
 
         linearLayout.addView(createLabel("User Interaction"));
-        linearLayout.addView(createButton(NewGesturesActivity.class));
+        linearLayout.addView(createButton(Animator2Activity.class));
+        linearLayout.addView(createButton(MapEventLayer2Activity.class));
         linearLayout.addView(createButton(LayerGroupActivity.class));
 
         linearLayout.addView(createLabel("Dual Map Views"));

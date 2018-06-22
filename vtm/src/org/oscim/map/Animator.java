@@ -1,7 +1,7 @@
 /*
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016 Stephan Leuschner
- * Copyright 2016 devemux86
+ * Copyright 2016-2018 devemux86
  * Copyright 2016 Izumi Kawashima
  * Copyright 2017 Wolfgang Schramm
  * Copyright 2018 Gustl22
@@ -28,8 +28,8 @@ import org.oscim.core.MapPosition;
 import org.oscim.core.Point;
 import org.oscim.core.Tile;
 import org.oscim.renderer.MapRenderer;
-import org.oscim.utils.Easing;
 import org.oscim.utils.ThreadUtils;
+import org.oscim.utils.animation.Easing;
 import org.oscim.utils.async.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,24 +48,28 @@ public class Animator {
     public final static int ANIM_TILT = 1 << 3;
     public final static int ANIM_FLING = 1 << 4;
 
-    private final Map mMap;
+    final Map mMap;
 
-    private final MapPosition mCurPos = new MapPosition();
-    private final MapPosition mStartPos = new MapPosition();
-    private final MapPosition mDeltaPos = new MapPosition();
+    final MapPosition mCurPos = new MapPosition();
+    final MapPosition mStartPos = new MapPosition();
+    final MapPosition mDeltaPos = new MapPosition();
 
     private final Point mScroll = new Point();
-    private final Point mPivot = new Point();
+    final Point mPivot = new Point();
     private final Point mVelocity = new Point();
 
-    private float mDuration = 500;
-    private long mAnimEnd = -1;
-    private Easing.Type mEasingType = Easing.Type.LINEAR;
+    float mDuration = 500;
+    long mAnimEnd = -1;
+    Easing.Type mEasingType = Easing.Type.LINEAR;
 
-    private int mState = ANIM_NONE;
+    int mState = ANIM_NONE;
 
     public Animator(Map map) {
         mMap = map;
+    }
+
+    public synchronized void animateTo(BoundingBox bbox) {
+        animateTo(1000, bbox);
     }
 
     public synchronized void animateTo(long duration, BoundingBox bbox) {
@@ -106,8 +110,12 @@ public class Animator {
         animStart(duration, state, easingType);
     }
 
-    public void animateTo(BoundingBox bbox) {
-        animateTo(1000, bbox, Easing.Type.LINEAR);
+    public void animateTo(GeoPoint p) {
+        animateTo(500, p);
+    }
+
+    public void animateTo(long duration, GeoPoint p) {
+        animateTo(duration, p, 1, true);
     }
 
     /**
@@ -166,8 +174,8 @@ public class Animator {
         animStart(duration, state, easingType);
     }
 
-    public void animateTo(GeoPoint p) {
-        animateTo(500, p, 1, true, Easing.Type.LINEAR);
+    public void animateTo(MapPosition pos) {
+        animateTo(500, pos);
     }
 
     public void animateTo(long duration, MapPosition pos) {
@@ -251,7 +259,7 @@ public class Animator {
         animStart(duration, ANIM_FLING, Easing.Type.SINE_OUT);
     }
 
-    private void animStart(float duration, int state, Easing.Type easingType) {
+    void animStart(float duration, int state, Easing.Type easingType) {
         if (!isActive())
             mMap.events.fire(Map.ANIM_START, mMap.mMapPosition);
         mCurPos.copy(mStartPos);
@@ -332,7 +340,7 @@ public class Animator {
         }
     }
 
-    private Task updateTask = new Task() {
+    Task updateTask = new Task() {
         @Override
         public int go(boolean canceled) {
             if (!canceled)
@@ -341,7 +349,7 @@ public class Animator {
         }
     };
 
-    private double doScale(ViewController v, float adv) {
+    double doScale(ViewController v, float adv) {
         double newScale = mStartPos.scale + mDeltaPos.scale * Math.sqrt(adv);
 
         v.scaleMap((float) (newScale / mCurPos.scale),

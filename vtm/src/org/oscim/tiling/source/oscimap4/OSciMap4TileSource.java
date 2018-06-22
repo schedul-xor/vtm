@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Hannes Janetzek
+ * Copyright 2018 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -17,6 +18,7 @@
 package org.oscim.tiling.source.oscimap4;
 
 import org.oscim.tiling.ITileDataSource;
+import org.oscim.tiling.OverzoomTileDataSource;
 import org.oscim.tiling.source.UrlTileDataSource;
 import org.oscim.tiling.source.UrlTileSource;
 
@@ -28,7 +30,8 @@ public class OSciMap4TileSource extends UrlTileSource {
     public static class Builder<T extends Builder<T>> extends UrlTileSource.Builder<T> {
 
         public Builder() {
-            super(DEFAULT_URL, DEFAULT_PATH, 1, 17);
+            super(DEFAULT_URL, DEFAULT_PATH);
+            overZoom(17);
         }
 
         public OSciMap4TileSource build() {
@@ -55,6 +58,6 @@ public class OSciMap4TileSource extends UrlTileSource {
 
     @Override
     public ITileDataSource getDataSource() {
-        return new UrlTileDataSource(this, new TileDecoder(), getHttpEngine());
+        return new OverzoomTileDataSource(new UrlTileDataSource(this, new TileDecoder(), getHttpEngine()), mOverZoom);
     }
 }

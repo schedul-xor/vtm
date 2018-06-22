@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 devemux86
+ * Copyright 2017-2018 devemux86
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -37,7 +37,7 @@ public class MapzenGeojsonActivity extends MapActivity {
         super.onCreate(savedInstanceState);
 
         UrlTileSource tileSource = MapzenGeojsonTileSource.builder()
-                .apiKey("mapzen-xxxxxxx") // Put a proper API key
+                .apiKey("xxxxxxx") // Put a proper API key
                 .httpFactory(new OkHttpEngine.OkHttpFactory())
                 //.locale("en")
                 .build();
@@ -55,7 +55,7 @@ public class MapzenGeojsonActivity extends MapActivity {
         mMap.layers().add(new BuildingLayer(mMap, l));
         mMap.layers().add(new LabelLayer(mMap, l));
 
-        mMap.layers().add(new TileGridLayer(mMap, getResources().getDisplayMetrics().density));
+        mMap.layers().add(new TileGridLayer(mMap));
     }
 
     @Override
