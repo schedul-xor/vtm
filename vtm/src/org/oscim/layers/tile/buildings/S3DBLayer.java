@@ -15,6 +15,7 @@
  */
 package org.oscim.layers.tile.buildings;
 
+import org.oscim.backend.canvas.Color;
 import org.oscim.core.Box;
 import org.oscim.core.GeometryBuffer;
 import org.oscim.core.MapElement;
@@ -45,11 +46,18 @@ public class S3DBLayer extends BuildingLayer {
     private final float TILE_SCALE = (ExtrusionUtils.REF_TILE_SIZE / (Tile.SIZE * COORD_SCALE));
 
     private boolean mColored = true;
+    private boolean mTransparent = true;
 
     public S3DBLayer(Map map, VectorTileLayer tileLayer) {
         this(map, tileLayer, MIN_ZOOM, map.viewport().getMaxZoomLevel());
     }
 
+    /**
+     * @param map       The map data to add
+     * @param tileLayer The vector tile layer which contains the tiles and map elements
+     * @param zoomMin   The minimum zoom at which the layer appears
+     * @param zoomMax   The maximum zoom at which the layer appears
+     */
     public S3DBLayer(Map map, VectorTileLayer tileLayer, int zoomMin, int zoomMax) {
         super(map, tileLayer, zoomMin, zoomMax, true);
     }
@@ -58,8 +66,24 @@ public class S3DBLayer extends BuildingLayer {
         return mColored;
     }
 
+    /**
+     * @param colored true: use colour written in '*:colour' tag,
+     *                false: use top colour of extrusion style
+     */
     public void setColored(boolean colored) {
         mColored = colored;
+    }
+
+    public boolean isTransparent() {
+        return mTransparent;
+    }
+
+    /**
+     * @param transparent if true coloured buildings blend transparency of extrusion style
+     *                    (only in combination with isColored = true)
+     */
+    public void setTransparent(boolean transparent) {
+        mTransparent = transparent;
     }
 
     @Override
@@ -137,6 +161,9 @@ public class S3DBLayer extends BuildingLayer {
 
         if (bColor == null) {
             bColor = extrusion.colorTop;
+        } else if (mTransparent) {
+            // Multiply alpha channel of extrusion style
+            bColor = ExtrusionStyle.blendAlpha(bColor, Color.aToFloat(extrusion.colorTop));
         }
 
         // Scale x, y and z axis
@@ -238,9 +265,14 @@ public class S3DBLayer extends BuildingLayer {
 
         GeometryBuffer gElement = new GeometryBuffer(element);
         GeometryBuffer specialParts = null;
-        if (roofColor == null) roofColor = buildingColor;
-        boolean success = false;
+        if (roofColor == null)
+            roofColor = buildingColor;
+        else if (mTransparent) {
+            // For simplicity use transparency of building, which is identical in nearly all cases
+            roofColor = ExtrusionStyle.blendAlpha(roofColor, Color.aToFloat(buildingColor));
+        }
 
+        boolean success;
         switch (v) {
             case Tag.VALUE_DOME:
             case Tag.VALUE_ONION:
