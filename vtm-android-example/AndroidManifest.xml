@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -65,14 +64,17 @@
             android:name=".MapsforgePolyLabelActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
-            android:name=".MapsforgeStyleActivity"
+            android:name=".MapsforgeS3DBActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
+            android:name=".MapsforgeStyleActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <!--<activity
             android:name=".MapzenGeojsonMapActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".MapzenMvtMapActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize" />
+            android:configChanges="keyboardHidden|orientation|screenSize" />-->
         <activity
             android:name=".MarkerOverlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />

@@ -1,5 +1,7 @@
 /*
  * Copyright 2017 devemux86
+ * Copyright 2017 Gustl22
+ * Copyright 2018 boldtrn
  *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free Software
@@ -17,20 +19,21 @@ package org.oscim.tiling.source.geojson;
 import org.oscim.core.MapElement;
 import org.oscim.core.Tag;
 import org.oscim.tiling.source.UrlTileSource;
+import org.oscim.utils.math.MathUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class OpenMapTilesGeojsonTileSource extends GeojsonTileSource {
 
-    private final static String DEFAULT_URL = "https://free-0.tilehosting.com/data/v3";
+    private final static String DEFAULT_URL = "https://free.tilehosting.com/data/v3";
     private final static String DEFAULT_PATH = "/{Z}/{X}/{Y}.geojson";
 
     public static class Builder<T extends Builder<T>> extends UrlTileSource.Builder<T> {
         private String locale = "";
 
         public Builder() {
-            super(DEFAULT_URL, DEFAULT_PATH, 1, 17);
+            super(DEFAULT_URL, DEFAULT_PATH, 1, 14);
         }
 
         public T locale(String locale) {
@@ -104,5 +107,18 @@ public class OpenMapTilesGeojsonTileSource extends GeojsonTileSource {
 
         if (!hasName && fallbackName != null)
             mapElement.tags.add(new Tag(Tag.KEY_NAME, fallbackName, false));
+
+        // Calculate height of building parts
+        if (!properties.containsKey(Tag.KEY_HEIGHT)) {
+            if (properties.containsKey(Tag.KEY_VOLUME) && properties.containsKey(Tag.KEY_AREA)) {
+                Object volume = properties.get(Tag.KEY_VOLUME);
+                String volumeStr = (volume instanceof String) ? (String) volume : String.valueOf(volume);
+                Object area = properties.get(Tag.KEY_AREA);
+                String areaStr = (area instanceof String) ? (String) area : String.valueOf(area);
+                float height = Float.parseFloat(volumeStr) / Float.parseFloat(areaStr);
+                String heightStr = String.valueOf(MathUtils.round2(height));
+                mapElement.tags.add(new Tag(Tag.KEY_HEIGHT, heightStr, false));
+            }
+        }
     }
 }
