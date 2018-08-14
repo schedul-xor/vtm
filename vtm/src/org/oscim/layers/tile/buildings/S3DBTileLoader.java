@@ -21,7 +21,6 @@ import org.oscim.backend.canvas.Color;
 import org.oscim.core.GeometryBuffer;
 import org.oscim.core.GeometryBuffer.GeometryType;
 import org.oscim.core.MapElement;
-import org.oscim.core.MercatorProjection;
 import org.oscim.core.Tag;
 import org.oscim.layers.tile.MapTile;
 import org.oscim.layers.tile.TileLoader;
@@ -96,9 +95,7 @@ class S3DBTileLoader extends TileLoader {
     }
 
     private void initTile(MapTile tile) {
-        double lat = MercatorProjection.toLatitude(tile.y);
-        mGroundScale = (float) MercatorProjection
-                .groundResolutionWithScale(lat, 1 << mTile.zoomLevel);
+        mGroundScale = tile.getGroundScale();
 
         mRoofs = new ExtrusionBucket(0, mGroundScale, Color.get(247, 249, 250));
 
@@ -106,7 +103,7 @@ class S3DBTileLoader extends TileLoader {
         //mRoofs = new ExtrusionLayer(0, mGroundScale, Color.get(207, 209, 210));
         mRoofs.next = mParts;
 
-        BuildingLayer.get(tile).setBuckets(mRoofs);
+        BuildingLayer.get(tile).resetBuckets(mRoofs);
 
         process(mTilePlane);
     }
@@ -139,15 +136,16 @@ class S3DBTileLoader extends TileLoader {
             String roofShape = element.tags.getValue(Tag.KEY_ROOF_SHAPE);
 
             if (isRoof && (roofShape == null || Tag.VALUE_FLAT.equals(roofShape)))
-                mRoofs.add(element);
+                mRoofs.addMesh(element);
             else
-                mParts.add(element);
+                mParts.addMesh(element);
             return;
         }
 
+        // May replace with ExtrusionBucket.addMeshElement()
         for (ExtrusionBucket l = mParts; l != null; l = l.next()) {
-            if (l.color == c) {
-                l.add(element);
+            if (l.getColor() == c) {
+                l.addMesh(element);
                 return;
             }
         }
@@ -156,7 +154,7 @@ class S3DBTileLoader extends TileLoader {
         l.next = mParts.next;
         mParts.next = l;
 
-        l.add(element);
+        l.addMesh(element);
     }
 
     @Override
