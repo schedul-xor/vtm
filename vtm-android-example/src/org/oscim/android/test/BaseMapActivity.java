@@ -113,7 +113,7 @@ public class BaseMapActivity extends MapActivity {
                 } else {
                     item.setChecked(true);
                     if (mGridLayer == null)
-                        mGridLayer = new TileGridLayer(mMap, getResources().getDisplayMetrics().density);
+                        mGridLayer = new TileGridLayer(mMap);
 
                     mMap.layers().add(mGridLayer);
                 }

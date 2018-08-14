@@ -79,6 +79,8 @@ public class Samples extends Activity {
 
         setContentView(R.layout.activity_samples);
         LinearLayout linearLayout = findViewById(R.id.samples);
+        linearLayout.addView(createButton(GettingStarted.class));
+        linearLayout.addView(createLabel(null));
         linearLayout.addView(createButton(SimpleMapActivity.class));
         linearLayout.addView(createButton(MapsforgeActivity.class));
         /*linearLayout.addView(createButton(MapzenMvtActivity.class));
@@ -95,6 +97,7 @@ public class Samples extends Activity {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/graphhopper/graphhopper/tree/master/android")));
             }
         }));
+        linearLayout.addView(createButton(LocationActivity.class));
         linearLayout.addView(createButton(PoiSearchActivity.class));
 
         linearLayout.addView(createLabel("Vector Features"));
@@ -116,7 +119,6 @@ public class Samples extends Activity {
         linearLayout.addView(createButton(PathOverlayActivity.class));
         linearLayout.addView(createButton(LineTexActivity.class));
         linearLayout.addView(createButton(VectorLayerActivity.class));
-        linearLayout.addView(createButton(LocationActivity.class));
 
         linearLayout.addView(createLabel("User Interaction"));
         linearLayout.addView(createButton(Animator2Activity.class));

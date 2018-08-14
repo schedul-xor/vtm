@@ -2,9 +2,9 @@
  * Copyright 2010, 2011, 2012 mapsforge.org
  * Copyright 2013, 2014 Hannes Janetzek
  * Copyright 2014-2015 Ludwig M Brinckmann
- * Copyright 2016-2017 devemux86
+ * Copyright 2016-2018 devemux86
  * Copyright 2016 Andrey Novikov
- * Copyright 2017 Gustl22
+ * Copyright 2017-2018 Gustl22
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -30,8 +30,10 @@ import org.oscim.core.MercatorProjection;
 import org.oscim.core.Tag;
 import org.oscim.core.Tile;
 import org.oscim.layers.tile.MapTile;
+import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.tiling.ITileDataSink;
 import org.oscim.tiling.ITileDataSource;
+import org.oscim.tiling.TileSource;
 import org.oscim.tiling.source.mapfile.header.SubFileParameter;
 import org.oscim.utils.Parameters;
 import org.oscim.utils.geom.TileClipper;
@@ -414,7 +416,7 @@ public class MapDatabase implements ITileDataSource {
 
         // At large query zoom levels use enlarged buffer
         int buffer;
-        if (queryParameters.queryZoomLevel > MapFileTileSource.MAX_ZOOM_LEVEL)
+        if (queryParameters.queryZoomLevel > TileSource.MAX_ZOOM)
             buffer = Tile.SIZE / 2;
         else
             buffer = (int) (16 * CanvasAdapter.getScale() + 0.5f);
@@ -953,10 +955,11 @@ public class MapDatabase implements ITileDataSource {
                     e.setLabelPosition(e.points[0] + labelPosition[0], e.points[1] + labelPosition[1]);
                 mTileProjection.project(e);
 
-                // At large query zoom levels clip everything
+                // Avoid clipping for buildings, which slows rendering.
+                // But clip everything if buildings are displayed.
                 if ((!e.tags.containsKey(Tag.KEY_BUILDING)
                         && !e.tags.containsKey(Tag.KEY_BUILDING_PART))
-                        || queryParameters.queryZoomLevel > MapFileTileSource.MAX_ZOOM_LEVEL) {
+                        || queryParameters.queryZoomLevel >= BuildingLayer.MIN_ZOOM) {
                     if (!mTileClipper.clip(e)) {
                         continue;
                     }
