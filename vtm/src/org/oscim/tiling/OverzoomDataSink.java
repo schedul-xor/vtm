@@ -55,7 +55,7 @@ class OverzoomDataSink implements ITileDataSink {
 
     @Override
     public void setWildCardObject(Object obj) {
-        
+
     }
 
     @Override
