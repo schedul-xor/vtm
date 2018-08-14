@@ -83,6 +83,8 @@ public class Samples extends Activity {
         linearLayout.addView(createButton(MapsforgeActivity.class));
         /*linearLayout.addView(createButton(MapzenMvtActivity.class));
         linearLayout.addView(createButton(MapzenGeojsonActivity.class));*/
+        linearLayout.addView(createButton(NextzenMvtActivity.class));
+        linearLayout.addView(createButton(NextzenGeojsonActivity.class));
         linearLayout.addView(createButton(OpenMapTilesMvtActivity.class));
         linearLayout.addView(createButton(GdxActivity.class));
 
@@ -117,7 +119,8 @@ public class Samples extends Activity {
         linearLayout.addView(createButton(LocationActivity.class));
 
         linearLayout.addView(createLabel("User Interaction"));
-        linearLayout.addView(createButton(NewGesturesActivity.class));
+        linearLayout.addView(createButton(Animator2Activity.class));
+        linearLayout.addView(createButton(MapEventLayer2Activity.class));
         linearLayout.addView(createButton(LayerGroupActivity.class));
 
         linearLayout.addView(createLabel("Dual Map Views"));

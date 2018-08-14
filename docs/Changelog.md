@@ -4,12 +4,13 @@
 
 - S3DB layer [#475](https://github.com/mapsforge/vtm/pull/475)
 - vtm-mvt module with MVT tile decoder [#481](https://github.com/mapsforge/vtm/pull/481)
+- Nextzen MVT / GeoJSON vector tiles [#498](https://github.com/mapsforge/vtm/issues/498)
 - OpenMapTiles MVT vector tiles [#482](https://github.com/mapsforge/vtm/issues/482)
 - Render themes: symbols on lines [#495](https://github.com/mapsforge/vtm/issues/495)
 - Render themes: styles improvements [#479](https://github.com/mapsforge/vtm/pull/479)
 - Internal render themes improvements [#488](https://github.com/mapsforge/vtm/pull/488)
 - Map view roll [#474](https://github.com/mapsforge/vtm/pull/474)
-- Fling animation improvements [#489](https://github.com/mapsforge/vtm/pull/489)
+- Physical fling implementation [#497](https://github.com/mapsforge/vtm/pull/497)
 - Polygon symbols default disabled [#405](https://github.com/mapsforge/vtm/issues/405)
 - Map fractional zoom [#487](https://github.com/mapsforge/vtm/issues/487)
 - Render theme fallback internal resources [#477](https://github.com/mapsforge/vtm/issues/477)
@@ -87,7 +88,7 @@
 ## Version 0.7.0 (2017-02-26)
 
 - Mapsforge multiple map files [#208](https://github.com/mapsforge/vtm/issues/208)
-- Improved gestures implementation [#253](https://github.com/mapsforge/vtm/issues/253)
+- New gestures implementation [#253](https://github.com/mapsforge/vtm/issues/253)
 - Polygon label position enhancements [#80](https://github.com/mapsforge/vtm/issues/80)
 - vtm-web modules update [#51](https://github.com/mapsforge/vtm/issues/51)
 - Mapzen MVT vector tiles [#57](https://github.com/mapsforge/vtm/issues/57)

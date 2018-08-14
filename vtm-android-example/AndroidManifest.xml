@@ -22,6 +22,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".Animator2Activity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
             android:name=".AtlasMarkerOverlayActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
@@ -50,6 +53,9 @@
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".LocationActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".MapEventLayer2Activity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".MapsforgeActivity"
@@ -82,7 +88,10 @@
             android:name=".MultiMapViewActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
-            android:name=".NewGesturesActivity"
+            android:name=".NextzenGeojsonActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".NextzenMvtActivity"
             android:configChanges="keyboardHidden|orientation|screenSize" />
         <activity
             android:name=".OpenMapTilesMvtActivity"
