@@ -54,6 +54,11 @@ class OverzoomDataSink implements ITileDataSink {
     }
 
     @Override
+    public void setWildCardObject(Object obj) {
+        
+    }
+
+    @Override
     public void completed(QueryResult result) {
         sink.completed(result);
     }

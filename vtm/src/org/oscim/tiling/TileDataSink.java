@@ -42,7 +42,7 @@ public class TileDataSink implements ITileDataSink {
 
     @Override
     public void setWildCardObject(Object obj) {
-        tileDataSink.setWildCardObject(obj);
+        sink.setWildCardObject(obj);
     }
 
     @Override
