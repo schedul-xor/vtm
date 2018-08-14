@@ -4,10 +4,12 @@
 
 - Map overzoom [#393](https://github.com/mapsforge/vtm/issues/393)
 - Buildings overzoom [#503](https://github.com/mapsforge/vtm/issues/503)
+- Labels / symbols overzoom [#544](https://github.com/mapsforge/vtm/pull/544)
 - S3DB layer [#475](https://github.com/mapsforge/vtm/pull/475)
 - vtm-mvt module with MVT tile decoder [#481](https://github.com/mapsforge/vtm/pull/481)
 - Nextzen MVT / GeoJSON vector tiles [#498](https://github.com/mapsforge/vtm/issues/498)
 - OpenMapTiles MVT vector tiles [#482](https://github.com/mapsforge/vtm/issues/482)
+- Location texture renderer [#547](https://github.com/mapsforge/vtm/issues/547)
 - Render themes: symbols on lines [#495](https://github.com/mapsforge/vtm/issues/495)
 - Render themes: styles improvements [#479](https://github.com/mapsforge/vtm/pull/479)
 - Internal render themes improvements [#488](https://github.com/mapsforge/vtm/pull/488)
@@ -28,6 +30,7 @@
 - ViewController refactor [#523](https://github.com/mapsforge/vtm/pull/523)
   - `ViewController.setScreenSize` renamed to `setViewSize`
   - `ViewController.setMapScreenCenter` renamed to `setMapViewCenter`
+- Android 9 compatibility [#550](https://github.com/mapsforge/vtm/issues/550)
 - JTS (LocationTech) [#484](https://github.com/mapsforge/vtm/issues/484)
 - Many other minor improvements and bug fixes
 - [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.10.0)
