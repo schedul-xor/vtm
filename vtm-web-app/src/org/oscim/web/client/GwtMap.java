@@ -73,7 +73,6 @@ class GwtMap extends GdxMap {
 
         log.debug("GLAdapter.init");
         GLAdapter.init((GL) Gdx.graphics.getGL20());
-        GLAdapter.GDX_WEBGL_QUIRKS = true;
         MapRenderer.setBackgroundColor(0xffffff);
         //Gdx.app.setLogLevel(Application.LOG_DEBUG);
 

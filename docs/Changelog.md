@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.9.2 (2018-01-04)
+
+- Gradle fix transitive dependencies [#433](https://github.com/mapsforge/vtm/issues/433)
+- libGDX 1.9.8 [#464](https://github.com/mapsforge/vtm/issues/464)
+- [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.9.2)
+
 ## Version 0.9.1 (2017-12-29)
 
 - LwHttp engine fix http headers [#460](https://github.com/mapsforge/vtm/issues/460)
