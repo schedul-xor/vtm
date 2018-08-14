@@ -2,7 +2,7 @@
  * Copyright 2013 Hannes Janetzek
  * Copyright 2016-2018 devemux86
  * Copyright 2016 Robin Boldt
- * Copyright 2017 Gustl22
+ * Copyright 2017-2018 Gustl22
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -91,8 +91,7 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
     @Override
     public boolean process(MapTile tile, RenderBuckets buckets, MapElement element,
                            RenderStyle style, int level) {
-        // FIXME check why some buildings are processed up to 4 times (should avoid overhead)
-        // FIXME fix artifacts at tile borders
+        // FIXME artifacts at tile borders in last extraction zoom as they're clipped
 
         if (!(style instanceof ExtrusionStyle))
             return false;
@@ -129,21 +128,23 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook {
         int height = 0; // cm
         int minHeight = 0; // cm
 
-        String v = element.tags.getValue(Tag.KEY_HEIGHT);
-        if (v != null)
-            height = (int) (Float.parseFloat(v) * 100);
+        Float f = element.getHeight();
+        if (f != null)
+            height = (int) (f * 100);
         else {
             // #TagFromTheme: generalize level/height tags
-            if ((v = element.tags.getValue(Tag.KEY_BUILDING_LEVELS)) != null)
+            String v = element.tags.getValue(Tag.KEY_BUILDING_LEVELS);
+            if (v != null)
                 height = (int) (Float.parseFloat(v) * BUILDING_LEVEL_HEIGHT);
         }
 
-        v = element.tags.getValue(Tag.KEY_MIN_HEIGHT);
-        if (v != null)
-            minHeight = (int) (Float.parseFloat(v) * 100);
+        f = element.getMinHeight();
+        if (f != null)
+            minHeight = (int) (f * 100);
         else {
             // #TagFromTheme: level/height tags
-            if ((v = element.tags.getValue(Tag.KEY_BUILDING_MIN_LEVEL)) != null)
+            String v = element.tags.getValue(Tag.KEY_BUILDING_MIN_LEVEL);
+            if (v != null)
                 minHeight = (int) (Float.parseFloat(v) * BUILDING_LEVEL_HEIGHT);
         }
 

@@ -5,6 +5,7 @@
  * Copyright 2016-2018 devemux86
  * Copyright 2016 Andrey Novikov
  * Copyright 2017-2018 Gustl22
+ * Copyright 2018 Bezzu
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -37,6 +38,7 @@ import org.oscim.tiling.TileSource;
 import org.oscim.tiling.source.mapfile.header.SubFileParameter;
 import org.oscim.utils.Parameters;
 import org.oscim.utils.geom.TileClipper;
+import org.oscim.utils.geom.TileSeparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -206,6 +208,7 @@ public class MapDatabase implements ITileDataSource {
 
     private final TileProjection mTileProjection;
     private final TileClipper mTileClipper;
+    private final TileSeparator mTileSeparator;
 
     private final MapFileTileSource mTileSource;
 
@@ -229,6 +232,7 @@ public class MapDatabase implements ITileDataSource {
 
         mTileProjection = new TileProjection();
         mTileClipper = new TileClipper(0, 0, 0, 0);
+        mTileSeparator = new TileSeparator(0, 0, 0, 0);
     }
 
     public MapFileTileSource getTileSource() {
@@ -406,8 +410,6 @@ public class MapDatabase implements ITileDataSource {
     //    private long mCurrentRow;
     //    private long mCurrentCol;
 
-    private int xmin, ymin, xmax, ymax;
-
     private void setTileClipping(QueryParameters queryParameters, long mCurrentRow, long mCurrentCol) {
         long numRows = queryParameters.toBlockY - queryParameters.fromBlockY;
         long numCols = queryParameters.toBlockX - queryParameters.fromBlockX;
@@ -421,28 +423,34 @@ public class MapDatabase implements ITileDataSource {
         else
             buffer = (int) (16 * CanvasAdapter.getScale() + 0.5f);
 
-        xmin = -buffer;
-        ymin = -buffer;
-        xmax = Tile.SIZE + buffer;
-        ymax = Tile.SIZE + buffer;
+        int xmin = -buffer;
+        int ymin = -buffer;
+        int xmax = Tile.SIZE + buffer;
+        int ymax = Tile.SIZE + buffer;
+
+        int xSmin = 0;
+        int ySmin = 0;
+        int xSmax = Tile.SIZE;
+        int ySmax = Tile.SIZE;
 
         if (numRows > 0) {
             int w = (int) (Tile.SIZE / (numCols + 1));
             int h = (int) (Tile.SIZE / (numRows + 1));
 
             if (mCurrentCol > 0)
-                xmin = (int) (mCurrentCol * w);
+                xSmin = xmin = (int) (mCurrentCol * w);
 
             if (mCurrentCol < numCols)
-                xmax = (int) (mCurrentCol * w + w);
+                xSmax = xmax = (int) (mCurrentCol * w + w);
 
             if (mCurrentRow > 0)
-                ymin = (int) (mCurrentRow * h);
+                ySmin = ymin = (int) (mCurrentRow * h);
 
             if (mCurrentRow < numRows)
-                ymax = (int) (mCurrentRow * h + h);
+                ySmax = ymax = (int) (mCurrentRow * h + h);
         }
         mTileClipper.setRect(xmin, ymin, xmax, ymax);
+        mTileSeparator.setRect(xSmin, ySmin, xSmax, ySmax);
     }
 
     //private final static Tag mWaterTag = new Tag("natural", "water");
@@ -752,7 +760,7 @@ public class MapDatabase implements ITileDataSource {
             lon += deltaLon;
 
             if (pos == length - 2) {
-                boolean line = isLine || (lon != firstLon && lat != firstLat);
+                boolean line = isLine || (lon != firstLon || lat != firstLat);
 
                 if (line) {
                     outBuffer[outPos++] = lon;
@@ -957,12 +965,13 @@ public class MapDatabase implements ITileDataSource {
 
                 // Avoid clipping for buildings, which slows rendering.
                 // But clip everything if buildings are displayed.
-                if ((!e.tags.containsKey(Tag.KEY_BUILDING)
-                        && !e.tags.containsKey(Tag.KEY_BUILDING_PART))
-                        || queryParameters.queryZoomLevel >= BuildingLayer.MIN_ZOOM) {
-                    if (!mTileClipper.clip(e)) {
+                if (!e.tags.containsKey(Tag.KEY_BUILDING)
+                        && !e.tags.containsKey(Tag.KEY_BUILDING_PART)) {
+                    if (!mTileClipper.clip(e))
                         continue;
-                    }
+                } else if (queryParameters.queryZoomLevel >= BuildingLayer.MIN_ZOOM) {
+                    if (!mTileSeparator.separate(e))
+                        continue;
                 }
                 e.simplify(1, true);
 
