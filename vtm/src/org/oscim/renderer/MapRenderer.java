@@ -1,6 +1,7 @@
 /*
  * Copyright 2012, 2013 Hannes Janetzek
  * Copyright 2016 Longri
+ * Copyright 2018 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -17,6 +18,7 @@
  */
 package org.oscim.renderer;
 
+import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.GL;
 import org.oscim.backend.GLAdapter;
 import org.oscim.backend.canvas.Color;
@@ -73,6 +75,17 @@ public class MapRenderer {
          * clear all previous vbo refs */
         BufferObject.clear();
         setBackgroundColor(Color.DKGRAY);
+    }
+
+    /**
+     * Calculate scale factor for short vertices.
+     * <p>
+     * CanvasAdapter.dpi must be set before!
+     */
+    public static float calculateCoordScale() {
+        if (CanvasAdapter.dpi > 420)
+            return 4.0f;
+        return 8.0f;
     }
 
     public static void setBackgroundColor(int color) {
@@ -189,7 +202,7 @@ public class MapRenderer {
 
         mNewSurface = false;
 
-        /** initialize quad indices used by Texture- and LineTexRenderer */
+        /* initialize quad indices used by Texture- and LineTexRenderer */
         int[] vboIds = GLUtils.glGenBuffers(2);
 
         mQuadIndicesID = vboIds[0];
@@ -214,7 +227,7 @@ public class MapRenderer {
                 GL.STATIC_DRAW);
         GLState.bindElementBuffer(0);
 
-        /** initialize default quad */
+        /* initialize default quad */
         FloatBuffer floatBuffer = MapRenderer.getFloatBuffer(8);
         float[] quad = new float[]{-1, -1, -1, 1, 1, -1, 1, 1};
         floatBuffer.put(quad);

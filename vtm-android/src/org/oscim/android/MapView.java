@@ -1,6 +1,7 @@
 /*
  * Copyright 2012 Hannes Janetzek
- * Copyright 2016-2017 devemux86
+ * Copyright 2016-2018 devemux86
+ * Copyright 2018 Gustl22
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -18,11 +19,16 @@
 package org.oscim.android;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Point;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.GestureDetector;
+import android.view.WindowManager;
 
 import org.oscim.android.canvas.AndroidGraphics;
 import org.oscim.android.gl.AndroidGL;
@@ -33,6 +39,7 @@ import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.GLAdapter;
 import org.oscim.core.Tile;
 import org.oscim.map.Map;
+import org.oscim.renderer.MapRenderer;
 import org.oscim.utils.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +52,7 @@ import javax.microedition.khronos.opengles.GL10;
  * <p/>
  * add it your App, have a map!
  * <p/>
- * Dont forget to call onPause / onResume!
+ * Don't forget to call onPause / onResume!
  */
 public class MapView extends GLSurfaceView {
 
@@ -86,6 +93,8 @@ public class MapView extends GLSurfaceView {
         CanvasAdapter.dpi = (int) (metrics.scaledDensity * CanvasAdapter.DEFAULT_DPI);
         if (!Parameters.CUSTOM_TILE_SIZE)
             Tile.SIZE = Tile.calculateTileSize();
+        if (!Parameters.CUSTOM_COORD_SCALE)
+            MapRenderer.COORD_SCALE = MapRenderer.calculateCoordScale();
 
         /* Initialize the Map */
         mMap = new AndroidMap(this);
@@ -160,14 +169,18 @@ public class MapView extends GLSurfaceView {
     static class AndroidMap extends Map {
 
         private final MapView mMapView;
+        private final WindowManager mWindowManager;
 
         private boolean mRenderRequest;
         private boolean mRenderWait;
         private boolean mPausing;
 
+        private final Point mScreenSize = new Point();
+
         public AndroidMap(MapView mapView) {
             super();
             mMapView = mapView;
+            mWindowManager = (WindowManager) mMapView.getContext().getSystemService(Context.WINDOW_SERVICE);
         }
 
         @Override
@@ -178,6 +191,29 @@ public class MapView extends GLSurfaceView {
         @Override
         public int getHeight() {
             return mMapView.getHeight();
+        }
+
+        @Override
+        public int getScreenWidth() {
+            return getScreenSize().x;
+        }
+
+        @Override
+        public int getScreenHeight() {
+            return getScreenSize().y;
+        }
+
+        @SuppressWarnings("deprecation")
+        @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+        private Point getScreenSize() {
+            Display display = mWindowManager.getDefaultDisplay();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2)
+                display.getSize(mScreenSize);
+            else {
+                mScreenSize.x = display.getWidth();
+                mScreenSize.y = display.getHeight();
+            }
+            return mScreenSize;
         }
 
         private final Runnable mRedrawCb = new Runnable() {
@@ -208,7 +244,7 @@ public class MapView extends GLSurfaceView {
             if (mPausing)
                 return;
 
-            /** TODO should not need to call prepareFrame in mRedrawCb */
+            /* TODO should not need to call prepareFrame in mRedrawCb */
             updateMap(false);
         }
 

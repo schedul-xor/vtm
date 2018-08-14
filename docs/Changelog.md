@@ -3,6 +3,7 @@
 ## New since 0.9.2
 
 - Map overzoom [#393](https://github.com/mapsforge/vtm/issues/393)
+- Buildings overzoom [#503](https://github.com/mapsforge/vtm/issues/503)
 - S3DB layer [#475](https://github.com/mapsforge/vtm/pull/475)
 - vtm-mvt module with MVT tile decoder [#481](https://github.com/mapsforge/vtm/pull/481)
 - Nextzen MVT / GeoJSON vector tiles [#498](https://github.com/mapsforge/vtm/issues/498)
@@ -13,11 +14,15 @@
 - Map view roll [#474](https://github.com/mapsforge/vtm/pull/474)
 - Physical fling and fling on rotation / scale [#497](https://github.com/mapsforge/vtm/pull/497) [#499](https://github.com/mapsforge/vtm/pull/499)
   - `Parameters.ANIMATOR2 = true;`
+- Scale factor for short vertices calculation [#537](https://github.com/mapsforge/vtm/issues/537)
+  - `Parameters.CUSTOM_COORD_SCALE = false;`
 - Polygon symbols default disabled [#405](https://github.com/mapsforge/vtm/issues/405)
   - `Parameters.POLY_SYMBOL = true;`
 - Map fractional zoom [#487](https://github.com/mapsforge/vtm/issues/487)
 - Render theme fallback internal resources [#477](https://github.com/mapsforge/vtm/issues/477)
 - Fix ItemizedLayer synchronization [#507](https://github.com/mapsforge/vtm/issues/507)
+- Fix Mapsforge clipping on small zooms [#264](https://github.com/mapsforge/vtm/issues/264)
+- Fix PathLayer (vtm) reverse segments [#220](https://github.com/mapsforge/vtm/issues/220)
 - Fix FadeStep alpha interpolation [#486](https://github.com/mapsforge/vtm/issues/486)
 - Fix libGDX flickering [#148](https://github.com/mapsforge/vtm/issues/148) [#149](https://github.com/mapsforge/vtm/issues/149)
 - ViewController refactor [#523](https://github.com/mapsforge/vtm/pull/523)
@@ -135,7 +140,7 @@
 - Location renderer and layer [#171](https://github.com/mapsforge/vtm/issues/171)
 - Map scale bar [#84](https://github.com/mapsforge/vtm/issues/84)
 - Tile size based on scale factor [#183](https://github.com/mapsforge/vtm/issues/183)
-  - `Parameters.CUSTOM_TILE_SIZE = true;`
+  - `Parameters.CUSTOM_TILE_SIZE = false;`
 - libGDX layer gestures [#151](https://github.com/mapsforge/vtm/issues/151)
 - Render theme area tessellation option [#37](https://github.com/mapsforge/vtm/issues/37)
 - Render theme resources optional location prefixes [#66](https://github.com/mapsforge/vtm/issues/66)
