@@ -35,7 +35,7 @@ import org.oscim.tiling.TileSource;
 import org.oscim.tiling.source.OkHttpEngine;
 import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
 
-public class GdxMapActivity extends AndroidApplication {
+public class GdxActivity extends AndroidApplication {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,7 +51,7 @@ public class GdxMapActivity extends AndroidApplication {
 
         AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
         cfg.stencil = 8;
-        cfg.numSamples = 2;
+        //cfg.numSamples = 2;
 
         new SharedLibraryLoader().load("vtm-jni");
 

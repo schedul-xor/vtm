@@ -84,7 +84,16 @@ implementation 'com.squareup.okhttp3:okhttp:3.8.0'
 implementation 'com.squareup.okio:okio:1.13.0'
 ```
 
-- GeoJSON tiles
+- Mapbox vector tiles
+
+```groovy
+implementation 'org.mapsforge:vtm-mvt:[CURRENT-VERSION]'
+implementation 'com.google.protobuf:protobuf-java:3.5.1'
+implementation 'com.vividsolutions:jts:1.13'
+implementation 'com.wdtinc:mapbox-vector-tile:2.0.0'
+```
+
+- GeoJSON vector tiles
 
 ```groovy
 implementation 'org.mapsforge:vtm-json:[CURRENT-VERSION]'
