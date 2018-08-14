@@ -32,6 +32,7 @@
   - `ViewController.setMapScreenCenter` renamed to `setMapViewCenter`
 - Android 9 compatibility [#550](https://github.com/mapsforge/vtm/issues/550)
 - JTS (LocationTech) [#484](https://github.com/mapsforge/vtm/issues/484)
+- SVG Salamander (JitPack) [#560](https://github.com/mapsforge/vtm/issues/560)
 - Many other minor improvements and bug fixes
 - [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.10.0)
 
@@ -50,7 +51,7 @@
 
 ## Version 0.9.0 (2017-12-03)
 
-- Mapsforge maps **v5 beta** support [#429](https://github.com/mapsforge/vtm/issues/429)
+- Mapsforge maps **v5** support [#429](https://github.com/mapsforge/vtm/issues/429)
 - Mapsforge themes compatibility [#100](https://github.com/mapsforge/vtm/issues/100)
 - Render themes: line symbol [#124](https://github.com/mapsforge/vtm/issues/124)
 - Render themes: stroke dash array [#131](https://github.com/mapsforge/vtm/issues/131)
@@ -152,7 +153,7 @@
 - vtm-jts module [#53](https://github.com/mapsforge/vtm/issues/53)
 - vtm-http module [#140](https://github.com/mapsforge/vtm/issues/140)
 - LWJGL desktop libGDX backend [#129](https://github.com/mapsforge/vtm/issues/129)
-- Available on [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.mapsforge%22)
+- Available on [Maven Central](https://search.maven.org/search?q=g:org.mapsforge)
 - SNAPSHOT builds publish to Sonatype OSSRH [#165](https://github.com/mapsforge/vtm/issues/165)
 - libGDX 1.9.4 [#164](https://github.com/mapsforge/vtm/issues/164)
 - Internal render themes various improvements [#41](https://github.com/mapsforge/vtm/issues/41)
