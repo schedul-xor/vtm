@@ -18,6 +18,7 @@ package org.oscim.android.gl;
 
 import android.annotation.SuppressLint;
 import android.opengl.GLES20;
+import android.opengl.GLES31;
 
 import org.oscim.backend.GL;
 
@@ -141,6 +142,11 @@ public class AndroidGL implements GL {
     @Override
     public void drawElements(int mode, int count, int type, int offset) {
         GLES20.glDrawElements(mode, count, type, offset);
+    }
+
+    @Override
+    public void drawElementsInstanced(int mode, int count, int type, int offset, int primCount) {
+        GLES31.glDrawElementsInstanced(mode, count, type, offset, primCount);
     }
 
     @Override
@@ -603,6 +609,11 @@ public class AndroidGL implements GL {
         // FIXME check implementation!
         GLES20.glVertexAttribPointer(indx, size, type, normalized, stride, offset);
         //throw new UnsupportedOperationException("missing implementation");
+    }
+
+    @Override
+    public void vertexAttribDivisor(int indx, int divisor) {
+        GLES31.glVertexAttribDivisor(indx, divisor);
     }
 
     @Override

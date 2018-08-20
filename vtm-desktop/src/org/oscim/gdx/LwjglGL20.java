@@ -25,6 +25,8 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GL33;
 import org.oscim.backend.GL;
 
 import java.nio.Buffer;
@@ -842,8 +844,18 @@ public class LwjglGL20 implements GL {
         GL11.glDrawElements(mode, count, type, indices);
     }
 
+    @Override
+    public void drawElementsInstanced(int mode, int count, int type, int offset, int primCount) {
+        GL31.glDrawElementsInstanced(mode, count, type, offset, primCount);
+    }
+
     public void vertexAttribPointer(int indx, int size, int type, boolean normalized, int stride, int ptr) {
         GL20.glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
+    }
+
+    @Override
+    public void vertexAttribDivisor(int indx, int divisor) {
+        GL33.glVertexAttribDivisor(indx, divisor);
     }
 
     public void getShaderSource(int shader, int bufsize, Buffer length, String source) {

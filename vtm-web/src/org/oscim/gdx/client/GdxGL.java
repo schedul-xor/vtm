@@ -18,6 +18,7 @@ package org.oscim.gdx.client;
 
 import com.badlogic.gdx.backends.gwt.GwtGL20;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.typedarrays.client.Uint8ArrayNative;
 import com.google.gwt.webgl.client.WebGLRenderingContext;
 
@@ -30,11 +31,13 @@ import java.nio.IntBuffer;
 public class GdxGL extends GwtGL20 implements GL {
 
     protected final WebGLRenderingContext gl;
+    JavaScriptObject angleInstancedArraysExtension = null;
 
     public GdxGL(WebGLRenderingContext gl) {
         super(gl);
         gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
         this.gl = gl;
+        this.angleInstancedArraysExtension = this.gl.getExtension("ANGLE_instanced_arrays");
     }
 
     //    @Override
@@ -343,6 +346,15 @@ public class GdxGL extends GwtGL20 implements GL {
     public void drawElements(int mode, int count, int type, int indices) {
         glDrawElements(mode, count, type, indices);
     }
+
+    @Override
+    public void drawElementsInstanced(int mode, int count, int type, int offset, int primCount) {
+        drawElementsInstancedNative(this.angleInstancedArraysExtension, mode, count, type, offset, primCount);
+    }
+
+    private native void drawElementsInstancedNative(JavaScriptObject ext, int mode, int count, int type, int offset, int primCount)/*-{
+    ext.drawElementsInstancedANGLE(mode, count, type, offset, primCount);
+    }-*/;
 
     public void attachShader(int program, int shader) {
         glAttachShader(program, shader);
@@ -716,4 +728,13 @@ public class GdxGL extends GwtGL20 implements GL {
                                     int ptr) {
         glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
     }
+
+    @Override
+    public void vertexAttribDivisor(int indx, int divisor) {
+        vertexAttribDivisorNative(this.angleInstancedArraysExtension, indx, divisor);
+    }
+
+    private native void vertexAttribDivisorNative(JavaScriptObject ext, int indx, int divisor)/*-{
+    ext.vertexAttribDivisorANGLE(indx,divisor);
+    }-*/;
 }

@@ -14,7 +14,7 @@
  */
 package org.oscim.ios.backend;
 
-import com.badlogic.gdx.backends.iosrobovm.IOSGLES20;
+import com.badlogic.gdx.backends.iosrobovm.IOSGLES30;
 
 import org.oscim.backend.GL;
 
@@ -27,7 +27,7 @@ import java.nio.IntBuffer;
  */
 public class IosGL implements GL {
 
-    private static final IOSGLES20 iOSGL = new IOSGLES20();
+    private static final IOSGLES30 iOSGL = new IOSGLES30();
 
     public void activeTexture(int texture) {
         iOSGL.glActiveTexture(texture);
@@ -324,6 +324,11 @@ public class IosGL implements GL {
 
     public void drawElements(int mode, int count, int type, int indices) {
         iOSGL.glDrawElements(mode, count, type, indices);
+    }
+
+    @Override
+    public void drawElementsInstanced(int mode, int count, int type, int offset, int primCount) {
+        iOSGL.glDrawElementsInstanced(mode, count, type, offset, primCount);
     }
 
     public void attachShader(int program, int shader) {
@@ -739,5 +744,10 @@ public class IosGL implements GL {
     public void vertexAttribPointer(int indx, int size, int type, boolean normalized, int stride,
                                     int ptr) {
         iOSGL.glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
+    }
+
+    @Override
+    public void vertexAttribDivisor(int indx, int divisor) {
+        iOSGL.glVertexAttribDivisor(indx, divisor);
     }
 }

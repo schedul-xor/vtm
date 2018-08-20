@@ -397,6 +397,8 @@ public interface GL {
 
     public void drawElements(int mode, int count, int type, int offset);
 
+    public void drawElementsInstanced(int mode, int count, int type, int offset, int primCount);
+
     public void enableVertexAttribArray(int index);
 
     public void framebufferRenderbuffer(int target, int attachment, int renderbuffertarget,
@@ -570,6 +572,8 @@ public interface GL {
      */
     public void vertexAttribPointer(int indx, int size, int type, boolean normalized, int stride,
                                     int offset);
+
+    public void vertexAttribDivisor(int indx, int divisor);
 
     //------------------------
 
