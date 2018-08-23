@@ -1,9 +1,5 @@
 package org.oscim.renderer;
 
-import org.oscim.renderer.GLShader;
-import org.oscim.renderer.GLState;
-import org.oscim.renderer.GLViewport;
-
 /**
  * Created by xor on 15/08/23.
  */
