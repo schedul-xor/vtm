@@ -1,6 +1,12 @@
 # Changelog
 
-## New since 0.9.2
+## New since 0.10.0
+
+- vtm-models module [#580](https://github.com/mapsforge/vtm/issues/580)
+- Many other minor improvements and bug fixes
+- [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.11.0)
+
+## Version 0.10.0 (2018-08-28)
 
 - Map overzoom [#393](https://github.com/mapsforge/vtm/issues/393)
 - Buildings overzoom [#503](https://github.com/mapsforge/vtm/issues/503)
@@ -22,7 +28,7 @@
   - `Parameters.POLY_SYMBOL = true;`
 - Map fractional zoom [#487](https://github.com/mapsforge/vtm/issues/487)
 - Render theme fallback internal resources [#477](https://github.com/mapsforge/vtm/issues/477)
-- Fix ItemizedLayer synchronization [#507](https://github.com/mapsforge/vtm/issues/507)
+- Fix layers synchronization [#507](https://github.com/mapsforge/vtm/issues/507)
 - Fix Mapsforge clipping on small zooms [#264](https://github.com/mapsforge/vtm/issues/264)
 - Fix PathLayer (vtm) reverse segments [#220](https://github.com/mapsforge/vtm/issues/220)
 - Fix FadeStep alpha interpolation [#486](https://github.com/mapsforge/vtm/issues/486)

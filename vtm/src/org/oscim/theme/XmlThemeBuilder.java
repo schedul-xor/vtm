@@ -707,10 +707,11 @@ public class XmlThemeBuilder extends DefaultHandler {
             else if ("use".equals(name))
                 ;// ignore
 
-            else if ("src".equals(name))
+            else if ("src".equals(name)) {
+                log.info("Found src {} in {}",value,elementName);
                 src = value;
 
-            else if ("fill".equals(name))
+            }else if ("fill".equals(name))
                 b.color(value);
 
             else if ("stroke".equals(name))
