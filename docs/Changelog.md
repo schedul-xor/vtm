@@ -1,6 +1,12 @@
 # Changelog
 
-## New since 0.9.2
+## New since 0.10.0
+
+- vtm-models module [#580](https://github.com/mapsforge/vtm/issues/580)
+- Many other minor improvements and bug fixes
+- [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.11.0)
+
+## Version 0.10.0 (2018-08-28)
 
 - Map overzoom [#393](https://github.com/mapsforge/vtm/issues/393)
 - Buildings overzoom [#503](https://github.com/mapsforge/vtm/issues/503)
@@ -22,7 +28,7 @@
   - `Parameters.POLY_SYMBOL = true;`
 - Map fractional zoom [#487](https://github.com/mapsforge/vtm/issues/487)
 - Render theme fallback internal resources [#477](https://github.com/mapsforge/vtm/issues/477)
-- Fix ItemizedLayer synchronization [#507](https://github.com/mapsforge/vtm/issues/507)
+- Fix layers synchronization [#507](https://github.com/mapsforge/vtm/issues/507)
 - Fix Mapsforge clipping on small zooms [#264](https://github.com/mapsforge/vtm/issues/264)
 - Fix PathLayer (vtm) reverse segments [#220](https://github.com/mapsforge/vtm/issues/220)
 - Fix FadeStep alpha interpolation [#486](https://github.com/mapsforge/vtm/issues/486)
@@ -32,6 +38,7 @@
   - `ViewController.setMapScreenCenter` renamed to `setMapViewCenter`
 - Android 9 compatibility [#550](https://github.com/mapsforge/vtm/issues/550)
 - JTS (LocationTech) [#484](https://github.com/mapsforge/vtm/issues/484)
+- SVG Salamander (JitPack) [#560](https://github.com/mapsforge/vtm/issues/560)
 - Many other minor improvements and bug fixes
 - [Solved issues](https://github.com/mapsforge/vtm/issues?q=is%3Aclosed+milestone%3A0.10.0)
 
@@ -50,7 +57,7 @@
 
 ## Version 0.9.0 (2017-12-03)
 
-- Mapsforge maps **v5 beta** support [#429](https://github.com/mapsforge/vtm/issues/429)
+- Mapsforge maps **v5** support [#429](https://github.com/mapsforge/vtm/issues/429)
 - Mapsforge themes compatibility [#100](https://github.com/mapsforge/vtm/issues/100)
 - Render themes: line symbol [#124](https://github.com/mapsforge/vtm/issues/124)
 - Render themes: stroke dash array [#131](https://github.com/mapsforge/vtm/issues/131)
@@ -152,7 +159,7 @@
 - vtm-jts module [#53](https://github.com/mapsforge/vtm/issues/53)
 - vtm-http module [#140](https://github.com/mapsforge/vtm/issues/140)
 - LWJGL desktop libGDX backend [#129](https://github.com/mapsforge/vtm/issues/129)
-- Available on [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.mapsforge%22)
+- Available on [Maven Central](https://search.maven.org/search?q=g:org.mapsforge)
 - SNAPSHOT builds publish to Sonatype OSSRH [#165](https://github.com/mapsforge/vtm/issues/165)
 - libGDX 1.9.4 [#164](https://github.com/mapsforge/vtm/issues/164)
 - Internal render themes various improvements [#41](https://github.com/mapsforge/vtm/issues/41)
