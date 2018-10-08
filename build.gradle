@@ -5,7 +5,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.0'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
 
@@ -14,7 +14,7 @@ allprojects {
     version = '0.0.6'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-    ext.androidBuildVersionTools = "28.0.2"
+    ext.androidBuildVersionTools = "28.0.3"
     ext.gdxVersion = "1.9.8"
     ext.gwtVersion = "2.8.0"
     ext.slf4jVersion = "1.7.25"

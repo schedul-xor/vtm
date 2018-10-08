@@ -1,6 +1,6 @@
 /*
  * Copyright 2014 Hannes Janetzek
- * Copyright 2016-2017 devemux86
+ * Copyright 2016-2018 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -64,6 +64,8 @@ import static org.oscim.core.MercatorProjection.longitudeToX;
 public class VectorLayer extends AbstractVectorLayer<Drawable> implements GestureListener {
 
     public static final Logger log = LoggerFactory.getLogger(VectorLayer.class);
+
+    private static final int STROKE_MIN_ZOOM = 12;
 
     //private final SpatialIndex<Drawable> mDrawables = new RTree<Drawable>();
     protected final SpatialIndex<Drawable> mDrawables = new QuadTree<Drawable>(1 << 30, 18);
@@ -263,6 +265,7 @@ public class VectorLayer extends AbstractVectorLayer<Drawable> implements Gestur
         if (ll.line == null) {
             ll.line = LineStyle.builder()
                     .reset()
+                    .blur(style.blur)
                     .cap(style.cap)
                     .color(style.strokeColor)
                     .fixed(style.fixed)
@@ -272,10 +275,14 @@ public class VectorLayer extends AbstractVectorLayer<Drawable> implements Gestur
                     .stipple(style.stipple)
                     .stippleColor(style.stippleColor)
                     .stippleWidth(style.stippleWidth)
+                    .strokeIncrease(style.strokeIncrease)
                     .strokeWidth(style.strokeWidth)
                     .texture(style.texture)
                     .build();
         }
+
+        if (!style.fixed && style.strokeIncrease > 1)
+            ll.scale = (float) Math.pow(style.strokeIncrease, Math.max(t.position.getZoom() - STROKE_MIN_ZOOM, 0));
 
         if (style.generalization != Style.GENERALIZATION_NONE) {
             line = DouglasPeuckerSimplifier.simplify(line, mMinX * style.generalization);
