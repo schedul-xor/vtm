@@ -4,14 +4,14 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.0'
+        classpath 'com.android.tools.build:gradle:3.2.1'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
 
 allprojects {
     group = 'com.ogiqvo'
-    version = '0.0.8.r2'
+    version = '0.0.8.r3'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     ext.androidBuildVersionTools = "28.0.3"
