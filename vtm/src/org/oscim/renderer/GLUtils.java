@@ -59,7 +59,27 @@ public class GLUtils {
         }
     }
 
+    public enum ColorBlendMode {
+        ADD,
+        MULTIPLY
+    }
+
     public static void setColorBlend(int location, int color1, int color2, float mix) {
+        setColorBlend(location, color1, color2, mix, ColorBlendMode.ADD);
+    }
+
+    public static void setColorBlend(int location, int color1, int color2, float mix, ColorBlendMode colorBlendMode) {
+        switch (colorBlendMode) {
+            case ADD:
+                setColorBlendAdd(location, color1, color2, mix);
+                break;
+            case MULTIPLY:
+                setColorBlendMultiply(location, color1, color2, mix);
+                break;
+        }
+    }
+
+    public static void setColorBlendAdd(int location, int color1, int color2, float mix) {
         float a1 = (((color1 >>> 24) & 0xff) / 255f) * (1 - mix);
         float a2 = (((color2 >>> 24) & 0xff) / 255f) * mix;
         gl.uniform4f(location,
@@ -70,6 +90,19 @@ public class GLUtils {
                 ((((color1 >>> 0) & 0xff) / 255f) * a1
                         + (((color2 >>> 0) & 0xff) / 255f) * a2),
                 (a1 + a2));
+    }
+
+    public static void setColorBlendMultiply(int location, int color1, int color2, float mix) {
+        float a1 = (((color1 >>> 24) & 0xff) / 255f) * (1 - mix);
+        float a2 = (((color2 >>> 24) & 0xff) / 255f) * mix;
+        gl.uniform4f(location,
+                ((((color1 >>> 16) & 0xff) / 255f) * a1
+                        * (((color2 >>> 16) & 0xff) / 255f) * a2),
+                ((((color1 >>> 8) & 0xff) / 255f) * a1
+                        * (((color2 >>> 8) & 0xff) / 255f) * a2),
+                ((((color1 >>> 0) & 0xff) / 255f) * a1
+                        * (((color2 >>> 0) & 0xff) / 255f) * a2),
+                (a1 * a2));
     }
 
     public static void setTextureParameter(int min_filter, int mag_filter, int wrap_s, int wrap_t) {

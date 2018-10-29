@@ -19,6 +19,7 @@
 package org.oscim.theme.styles;
 
 import org.oscim.backend.canvas.Color;
+import org.oscim.renderer.GLUtils;
 import org.oscim.renderer.bucket.TextureItem;
 import org.oscim.utils.FastMath;
 
@@ -78,6 +79,8 @@ public class AreaStyle extends RenderStyle<AreaStyle> {
      */
     public boolean mesh;
 
+    public final GLUtils.ColorBlendMode colorBlendMode;
+
     public final float heightOffset;
 
     public final int symbolWidth;
@@ -105,6 +108,7 @@ public class AreaStyle extends RenderStyle<AreaStyle> {
         this.symbolWidth = 0;
         this.symbolHeight = 0;
         this.symbolPercent = 100;
+        this.colorBlendMode = GLUtils.ColorBlendMode.ADD;
     }
 
     public AreaStyle(AreaBuilder<?> b) {
@@ -125,6 +129,8 @@ public class AreaStyle extends RenderStyle<AreaStyle> {
         this.symbolWidth = b.symbolWidth;
         this.symbolHeight = b.symbolHeight;
         this.symbolPercent = b.symbolPercent;
+
+        this.colorBlendMode = b.colorBlendMode;
     }
 
     @Override
@@ -189,6 +195,8 @@ public class AreaStyle extends RenderStyle<AreaStyle> {
         public int symbolHeight;
         public int symbolPercent;
 
+        public GLUtils.ColorBlendMode colorBlendMode;
+
         public AreaBuilder() {
         }
 
@@ -213,6 +221,8 @@ public class AreaStyle extends RenderStyle<AreaStyle> {
             this.symbolWidth = area.symbolWidth;
             this.symbolHeight = area.symbolHeight;
             this.symbolPercent = area.symbolPercent;
+
+            this.colorBlendMode = area.colorBlendMode;
 
             return self();
         }
@@ -267,6 +277,11 @@ public class AreaStyle extends RenderStyle<AreaStyle> {
             return self();
         }
 
+        public T colorBlendMode(GLUtils.ColorBlendMode colorBlendMode){
+            this.colorBlendMode = colorBlendMode;
+            return self();
+        }
+
         public T reset() {
             cat = null;
             level = -1;
@@ -285,6 +300,8 @@ public class AreaStyle extends RenderStyle<AreaStyle> {
             symbolWidth = 0;
             symbolHeight = 0;
             symbolPercent = 100;
+
+            this.colorBlendMode = GLUtils.ColorBlendMode.ADD;
 
             return self();
         }
