@@ -236,7 +236,7 @@ public class MeshBucket extends RenderBucket {
                     GLUtils.setColor(s.uColor, a.blendColor, 1);
                 else
                     GLUtils.setColorBlend(s.uColor, a.color,
-                            a.blendColor, blend);
+                            a.blendColor, blend, a.colorBlendMode);
             } else {
                 /* test if color contains alpha */
                 GLState.blend((a.color & OPAQUE) != OPAQUE);
