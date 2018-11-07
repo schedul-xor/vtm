@@ -38,6 +38,7 @@ import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.buildings.S3DBTileLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
+import org.oscim.model.poi3d.Poi3DLayer;
 import org.oscim.renderer.ExtrusionRenderer;
 import org.oscim.renderer.MapRenderer;
 import org.oscim.theme.StreamRenderTheme;
@@ -153,6 +154,8 @@ class GwtMap extends GdxMap {
                 ((ExtrusionRenderer) mBuildingLayer.getRenderer()).setZLimit((float) 65536 / 10);
                 mMap.layers().add(mBuildingLayer);
             }
+
+            mMap.layers().add(new Poi3DLayer(mMap, l));
 
             if (!nolabels)
                 mMap.layers().add(new LabelLayer(mMap, l));
