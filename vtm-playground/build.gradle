@@ -10,7 +10,7 @@ dependencies {
     implementation project(':vtm-json')
     implementation project(':vtm-jts')
     implementation project(':vtm-models')
-    implementation project(':vtm-gdx-models')
+    implementation project(':vtm-gdx-poi3d')
     implementation project(':vtm-mvt')
     implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     implementation "org.slf4j:slf4j-jdk14:$slf4jVersion"

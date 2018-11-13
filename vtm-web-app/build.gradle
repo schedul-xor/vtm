@@ -18,7 +18,7 @@ sourceSets {
 
 dependencies {
     providedCompile project(':vtm-web')
-    providedCompile project(':vtm-gdx-models')
+    providedCompile project(':vtm-gdx-poi3d')
     providedCompile 'ru.finam:slf4j-gwt:1.7.7.1'
 }
 
@@ -27,7 +27,7 @@ evaluationDependsOn(':vtm')
 evaluationDependsOn(':vtm-themes')
 evaluationDependsOn(':vtm-gdx')
 evaluationDependsOn(':vtm-models')
-evaluationDependsOn(':vtm-gdx-models')
+evaluationDependsOn(':vtm-gdx-poi3d')
 evaluationDependsOn(':vtm-web')
 
 gwt {
@@ -52,7 +52,7 @@ gwt {
     src += files(project(':vtm-themes').sourceSets.main.resources.srcDirs)
     src += files(project(':vtm-models').sourceSets.main.allJava.srcDirs)
     src += files(project(':vtm-models').sourceSets.main.resources.srcDirs)
-    src += files(project(':vtm-gdx-models').sourceSets.main.allJava.srcDirs)
+    src += files(project(':vtm-gdx-poi3d').sourceSets.main.allJava.srcDirs)
     src += files(project(':vtm-gdx').sourceSets.main.allJava.srcDirs)
     src += files(project(':vtm-web').sourceSets.main.allJava.srcDirs)
 }
