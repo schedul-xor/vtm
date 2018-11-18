@@ -19,9 +19,7 @@
  */
 package org.oscim.layers.tile.buildings;
 
-import org.oscim.core.GeoPoint;
-import org.oscim.core.MapElement;
-import org.oscim.core.Tag;
+import org.oscim.core.*;
 import org.oscim.layers.Layer;
 import org.oscim.layers.tile.MapTile;
 import org.oscim.layers.tile.ZoomLimiter;
@@ -35,8 +33,7 @@ import org.oscim.renderer.bucket.RenderBuckets;
 import org.oscim.theme.IRenderTheme;
 import org.oscim.theme.styles.ExtrusionStyle;
 import org.oscim.theme.styles.RenderStyle;
-import org.oscim.utils.RTree;
-import org.oscim.utils.SpatialIndex;
+import org.oscim.utils.geom.GeometryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +42,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.oscim.core.MercatorProjection.latitudeToY;
+import static org.oscim.core.MercatorProjection.longitudeToX;
 
 public class BuildingLayer extends Layer implements TileLoaderThemeHook, ZoomLimiter.IZoomLimiter {
     private static final Logger log = LoggerFactory.getLogger(BuildingLayer.class);
@@ -75,7 +75,7 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook, ZoomLim
 
     protected final IRenderTheme mRenderTheme;
 
-    public SpatialIndex<GeoPoint> eraserPoints = new RTree<>();
+    public Set<GeoPoint> eraserPoints = new HashSet<>();
 
     class BuildingElement {
         MapElement element;
@@ -145,16 +145,33 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook, ZoomLim
 
         // Filter all building elements
         // TODO #TagFromTheme: load from theme or decode tags to generalize mapsforge tags
+        boolean isErased = false;
         if (element.isBuilding() || element.isBuildingPart()) {
-            List<BuildingElement> buildingElements = mBuildings.get(tile.hashCode());
-            if (buildingElements == null) {
-                buildingElements = new ArrayList<>();
-                mBuildings.put(tile.hashCode(), buildingElements);
+            double mTileScale = 1 << tile.zoomLevel;
+            double mTileX = tile.tileX / mTileScale;
+            double mTileY = tile.tileY / mTileScale;
+            for (GeoPoint gp : eraserPoints) {
+                double longitude = gp.getLongitude();
+                double latitude = gp.getLatitude();
+                double x = (longitudeToX(longitude) - mTileX) * mTileScale * Tile.SIZE;
+                double y = (latitudeToY(latitude) - mTileY) * mTileScale * Tile.SIZE;
+                isErased = GeometryUtils.pointInPoly((float) x, (float) y, element.points, element.index[0], 0);
+                if (isErased) {
+                    return true;
+                }
             }
 
-            element = new MapElement(element); // Deep copy, because element will be cleared
-            buildingElements.add(new BuildingElement(element, extrusion));
-            return true;
+            if (!isErased) {
+                List<BuildingElement> buildingElements = mBuildings.get(tile.hashCode());
+                if (buildingElements == null) {
+                    buildingElements = new ArrayList<>();
+                    mBuildings.put(tile.hashCode(), buildingElements);
+                }
+
+                element = new MapElement(element); // Deep copy, because element will be cleared
+                buildingElements.add(new BuildingElement(element, extrusion));
+                return true;
+            }
         }
 
         // Process other elements immediately
