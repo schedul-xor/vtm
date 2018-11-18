@@ -19,7 +19,7 @@ package org.oscim.tiling.source.geojson;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Feature extends GeoJsonObject {
+public class Feature extends GeojsonObject {
 
     protected Feature() {
 

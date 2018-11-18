@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public abstract class GeoJsonTileSource extends UrlTileSource {
-    static final Logger log = LoggerFactory.getLogger(GeoJsonTileSource.class);
+public abstract class GeojsonTileSource extends UrlTileSource {
+    static final Logger log = LoggerFactory.getLogger(GeojsonTileSource.class);
 
-    public GeoJsonTileSource(String url) {
+    public GeojsonTileSource(String url) {
         super(url, "/{Z}/{X}/{Y}.json");
     }
 

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class OsmRoadLineJsonTileSource extends GeoJsonTileSource {
+public class OsmRoadLineJsonTileSource extends GeojsonTileSource {
 
     static final Logger log = LoggerFactory.getLogger(OsmRoadLineJsonTileSource.class);
 

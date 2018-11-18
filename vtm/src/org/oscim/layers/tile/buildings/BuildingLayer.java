@@ -19,6 +19,7 @@
  */
 package org.oscim.layers.tile.buildings;
 
+import org.oscim.core.GeoPoint;
 import org.oscim.core.MapElement;
 import org.oscim.core.Tag;
 import org.oscim.layers.Layer;
@@ -34,6 +35,10 @@ import org.oscim.renderer.bucket.RenderBuckets;
 import org.oscim.theme.IRenderTheme;
 import org.oscim.theme.styles.ExtrusionStyle;
 import org.oscim.theme.styles.RenderStyle;
+import org.oscim.utils.RTree;
+import org.oscim.utils.SpatialIndex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 
 public class BuildingLayer extends Layer implements TileLoaderThemeHook, ZoomLimiter.IZoomLimiter {
+    private static final Logger log = LoggerFactory.getLogger(BuildingLayer.class);
 
     protected final static int BUILDING_LEVEL_HEIGHT = 280; // cm
 
@@ -68,6 +74,8 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook, ZoomLim
     private final ZoomLimiter mZoomLimiter;
 
     protected final IRenderTheme mRenderTheme;
+
+    public SpatialIndex<GeoPoint> eraserPoints = new RTree<>();
 
     class BuildingElement {
         MapElement element;
@@ -143,6 +151,7 @@ public class BuildingLayer extends Layer implements TileLoaderThemeHook, ZoomLim
                 buildingElements = new ArrayList<>();
                 mBuildings.put(tile.hashCode(), buildingElements);
             }
+
             element = new MapElement(element); // Deep copy, because element will be cleared
             buildingElements.add(new BuildingElement(element, extrusion));
             return true;

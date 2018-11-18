@@ -1,6 +1,5 @@
 /*
  * Copyright 2014 Hannes Janetzek
- * Copyright 2017 devemux86
  *
  * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
  *
@@ -18,16 +17,18 @@
 package org.oscim.tiling.source.geojson;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 import org.oscim.core.GeometryBuffer.GeometryType;
 import org.oscim.core.MapElement;
-import org.oscim.core.Tag;
 import org.oscim.core.Tile;
 import org.oscim.tiling.ITileDataSink;
 import org.oscim.tiling.source.ITileDecoder;
 import org.oscim.utils.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +46,8 @@ import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
 import static org.oscim.core.MercatorProjection.latitudeToY;
 import static org.oscim.core.MercatorProjection.longitudeToX;
 
-public class TileDecoder implements ITileDecoder {
+public class GeojsonTileDecoder implements ITileDecoder {
+    static final Logger log = LoggerFactory.getLogger(GeojsonTileDecoder.class);
 
     private final MapElement mMapElement;
     private final GeojsonTileSource mTileSource;
@@ -58,7 +60,7 @@ public class TileDecoder implements ITileDecoder {
     private final static char[] FIELD_COORDINATES = "coordinates".toCharArray();
     private final static char[] FIELD_TYPE = "type".toCharArray();
 
-    private final static char[] LINESTRING = "LineString".toCharArray();
+    private final static char[] LINETRING = "LineString".toCharArray();
     private final static char[] POLYGON = "Polygon".toCharArray();
     private final static char[] POINT = "Point".toCharArray();
     private final static char[] MULTI_LINESTRING = "MultiLineString".toCharArray();
@@ -69,9 +71,9 @@ public class TileDecoder implements ITileDecoder {
 
     private double mTileY, mTileX, mTileScale;
 
-    public TileDecoder(GeojsonTileSource tileSource) {
+    public GeojsonTileDecoder(GeojsonTileSource tileSource) {
         mTileSource = tileSource;
-        mTagMap = new LinkedHashMap<>();
+        mTagMap = new LinkedHashMap<String, Object>();
         mJsonFactory = new JsonFactory();
 
         mMapElement = new MapElement();
@@ -88,18 +90,15 @@ public class TileDecoder implements ITileDecoder {
 
         JsonParser jp = mJsonFactory.createParser(new InputStreamReader(is));
 
-        Tag layerTag = null;
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
             if (t == FIELD_NAME) {
-                if (!match(jp, FIELD_FEATURES) && !match(jp, FIELD_TYPE))
-                    layerTag = new Tag("layer", jp.getCurrentName());
                 if (match(jp, FIELD_FEATURES)) {
                     if (jp.nextToken() != START_ARRAY)
                         continue;
 
                     while ((t = jp.nextToken()) != null) {
                         if (t == START_OBJECT)
-                            parseFeature(jp, layerTag);
+                            parseFeature(jp);
 
                         if (t == END_ARRAY)
                             break;
@@ -110,12 +109,11 @@ public class TileDecoder implements ITileDecoder {
         return true;
     }
 
-    private void parseFeature(JsonParser jp, Tag layerTag) throws IOException {
+    private void parseFeature(JsonParser jp)
+            throws JsonParseException, IOException {
 
         mMapElement.clear();
         mMapElement.tags.clear();
-        if (layerTag != null)
-            mMapElement.tags.add(layerTag);
         mTagMap.clear();
 
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
@@ -149,7 +147,8 @@ public class TileDecoder implements ITileDecoder {
         mTileDataSink.process(mMapElement);
     }
 
-    private void parseProperties(JsonParser jp) throws IOException {
+    private void parseProperties(JsonParser jp)
+            throws JsonParseException, IOException {
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
             if (t == FIELD_NAME) {
                 String text = jp.getCurrentName();
@@ -167,7 +166,8 @@ public class TileDecoder implements ITileDecoder {
         }
     }
 
-    private void parseGeometry(JsonParser jp) throws IOException {
+    private void parseGeometry(JsonParser jp)
+            throws JsonParseException, IOException {
 
         boolean multi = false;
         GeometryType type = GeometryType.NONE;
@@ -195,7 +195,7 @@ public class TileDecoder implements ITileDecoder {
 
                     jp.nextToken();
 
-                    if (match(jp, LINESTRING))
+                    if (match(jp, LINETRING))
                         type = GeometryType.LINE;
                     else if (match(jp, POLYGON))
                         type = GeometryType.POLY;
@@ -222,7 +222,8 @@ public class TileDecoder implements ITileDecoder {
         }
     }
 
-    private void parseMulti(JsonParser jp, GeometryType type) throws IOException {
+    private void parseMulti(JsonParser jp, GeometryType type)
+            throws JsonParseException, IOException {
 
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
             if (t == END_ARRAY)
@@ -237,6 +238,7 @@ public class TileDecoder implements ITileDecoder {
 
                 else if (type == GeometryType.POINT)
                     parseCoordinate(jp);
+                ;
 
             } else {
                 //....
@@ -244,7 +246,8 @@ public class TileDecoder implements ITileDecoder {
         }
     }
 
-    private void parsePolygon(JsonParser jp) throws IOException {
+    private void parsePolygon(JsonParser jp)
+            throws JsonParseException, IOException {
         int ring = 0;
 
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
@@ -270,12 +273,14 @@ public class TileDecoder implements ITileDecoder {
         mMapElement.index[mMapElement.indexCurrentPos] -= 2;
     }
 
-    private void parseLineString(JsonParser jp) throws IOException {
+    private void parseLineString(JsonParser jp)
+            throws JsonParseException, IOException {
         mMapElement.startLine();
         parseCoordSequence(jp);
     }
 
-    private void parseCoordSequence(JsonParser jp) throws IOException {
+    private void parseCoordSequence(JsonParser jp)
+            throws JsonParseException, IOException {
 
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
 
@@ -290,7 +295,8 @@ public class TileDecoder implements ITileDecoder {
         }
     }
 
-    private void parseCoordinate(JsonParser jp) throws IOException {
+    private void parseCoordinate(JsonParser jp)
+            throws JsonParseException, IOException {
         int pos = 0;
         double x = 0, y = 0; //, z = 0;
 
@@ -323,7 +329,8 @@ public class TileDecoder implements ITileDecoder {
 
     }
 
-    private static boolean match(JsonParser jp, char[] fieldName) throws IOException {
+    private final static boolean match(JsonParser jp, char[] fieldName)
+            throws JsonParseException, IOException {
 
         int length = jp.getTextLength();
         if (length != fieldName.length)

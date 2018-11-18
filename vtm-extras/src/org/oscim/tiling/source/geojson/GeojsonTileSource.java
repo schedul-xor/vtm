@@ -25,16 +25,16 @@ import org.oscim.tiling.source.UrlTileSource;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class GeoJsonTileSource extends UrlTileSource {
+public abstract class GeojsonTileSource extends UrlTileSource {
 
-    public GeoJsonTileSource(String url) {
+    public GeojsonTileSource(String url) {
         super(url, "/{Z}/{X}/{Y}.json");
         Map<String, String> opt = new HashMap<String, String>();
         opt.put("Accept-Encoding", "gzip");
         setHttpRequestHeaders(opt);
     }
 
-    public GeoJsonTileSource(String url, int zoomMin, int zoomMax) {
+    public GeojsonTileSource(String url, int zoomMin, int zoomMax) {
         super(url, "/{Z}/{X}/{Y}.json", zoomMin, zoomMax);
         Map<String, String> opt = new HashMap<String, String>();
         opt.put("Accept-Encoding", "gzip");
@@ -44,7 +44,7 @@ public abstract class GeoJsonTileSource extends UrlTileSource {
     @Override
     public ITileDataSource getDataSource() {
 
-        return new UrlTileDataSource(this, new GeoJsonTileDecoder(this), getHttpEngine());
+        return new UrlTileDataSource(this, new GeojsonTileDecoder(this), getHttpEngine());
     }
 
     public Tag getFeatureTag() {

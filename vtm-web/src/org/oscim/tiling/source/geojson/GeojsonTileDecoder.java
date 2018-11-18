@@ -33,15 +33,15 @@ import java.util.LinkedHashMap;
 import static org.oscim.core.MercatorProjection.latitudeToY;
 import static org.oscim.core.MercatorProjection.longitudeToX;
 
-public class GeoJsonTileDecoder implements ITileDecoder {
-    static final Logger log = LoggerFactory.getLogger(GeoJsonTileDecoder.class);
+public class GeojsonTileDecoder implements ITileDecoder {
+    static final Logger log = LoggerFactory.getLogger(GeojsonTileDecoder.class);
 
     private final MapElement mapElement;
-    private final GeoJsonTileSource mTileSource;
+    private final GeojsonTileSource mTileSource;
 
     private ITileDataSink mTileDataSink;
 
-    public GeoJsonTileDecoder(GeoJsonTileSource tileSource) {
+    public GeojsonTileDecoder(GeojsonTileSource tileSource) {
         mTileSource = tileSource;
         mapElement = new MapElement();
         mapElement.layer = 5;

@@ -5,7 +5,7 @@ import org.oscim.core.Tag;
 
 import java.util.Map;
 
-public class RiverJsonTileSource extends GeoJsonTileSource {
+public class RiverJsonTileSource extends GeojsonTileSource {
 
     public RiverJsonTileSource() {
         super("http://www.somebits.com:8001/rivers");
