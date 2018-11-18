@@ -64,6 +64,12 @@ public class VectorTileLayer extends TileLayer {
         initLoader(getNumLoaders());
     }
 
+    private VectorTileLayer erasingLayer = null;
+
+    public void setErasingLayer(VectorTileLayer erasingLayer) {
+        this.erasingLayer = erasingLayer;
+    }
+
     @Override
     protected TileLoader createLoader() {
         return new VectorTileLoader(this);

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class OsmLanduseJsonTileSource extends GeoJsonTileSource {
+public class OsmLanduseJsonTileSource extends GeojsonTileSource {
     static final Logger log = LoggerFactory.getLogger(OsmLanduseJsonTileSource.class);
 
     public OsmLanduseJsonTileSource() {

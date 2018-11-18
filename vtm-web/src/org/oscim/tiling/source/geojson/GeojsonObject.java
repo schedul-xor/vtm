@@ -18,9 +18,9 @@ package org.oscim.tiling.source.geojson;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-public abstract class GeoJsonObject extends JavaScriptObject {
+public abstract class GeojsonObject extends JavaScriptObject {
 
-    protected GeoJsonObject() {
+    protected GeojsonObject() {
 
     }
 

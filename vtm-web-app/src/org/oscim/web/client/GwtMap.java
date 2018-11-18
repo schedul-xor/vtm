@@ -22,10 +22,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtGraphics;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONValue;
 import org.oscim.backend.AssetAdapter;
 import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.GL;
 import org.oscim.backend.GLAdapter;
+import org.oscim.core.GeoPoint;
+import org.oscim.core.MapElement;
 import org.oscim.core.MapPosition;
 import org.oscim.core.Tile;
 import org.oscim.gdx.GdxAssets;
@@ -46,9 +52,14 @@ import org.oscim.theme.VtmThemes;
 import org.oscim.tiling.TileSource;
 import org.oscim.tiling.source.bitmap.BitmapTileSource;
 import org.oscim.tiling.source.bitmap.DefaultSources;
+import org.oscim.tiling.source.geojson.GeojsonDecoder;
 import org.oscim.tiling.source.oscimap4.OSciMap4TileSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 class GwtMap extends GdxMap {
     static final Logger log = LoggerFactory.getLogger(GwtMap.class);
@@ -118,7 +129,7 @@ class GwtMap extends GdxMap {
 
             mMap.setBaseMap(new BitmapTileLayer(mMap, ts));
         } else {
-            TileSource ts = new OSciMap4TileSource("http://oscimproxy0.ogiqvo.com/tiles/vtm");
+            TileSource ts = new OSciMap4TileSource();
             l = mMap.setBaseMap(ts);
 
             if (themeName == null) {
@@ -151,6 +162,33 @@ class GwtMap extends GdxMap {
 
             if (!nobuildings && !s3db) {
                 mBuildingLayer = new BuildingLayer(mMap, l);
+                GeojsonDecoder gjd = new GeojsonDecoder() {
+                    @Override
+                    protected void decodeTags(MapElement mapElement, java.util.Map<String, Object> properties) {
+                    }
+
+                    @Override
+                    public void postGeomHook(MapElement mapElement) {
+
+                    }
+
+                    @Override
+                    public void process(MapElement mapElement) {
+
+                    }
+
+                    @Override
+                    protected void addPoint(double lon, double lat, MapElement mapElement) {
+                        log.info("{} {}", lon, lat);
+                        GeoPoint gp = new GeoPoint(lat, lon);
+                        mBuildingLayer.eraserPoints.add(gp);
+                    }
+                };
+
+                String eraserJsonstr = AssetAdapter.readTextFile("eraser.geojson");
+                JavaScriptObject jso = JsonUtils.safeEval(eraserJsonstr);
+                gjd.decode(jso);
+
                 ((ExtrusionRenderer) mBuildingLayer.getRenderer()).setZLimit((float) 65536 / 10);
                 mMap.layers().add(mBuildingLayer);
             }

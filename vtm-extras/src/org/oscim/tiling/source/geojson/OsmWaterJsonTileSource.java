@@ -21,7 +21,7 @@ import org.oscim.core.Tag;
 
 import java.util.Map;
 
-public class OsmWaterJsonTileSource extends GeoJsonTileSource {
+public class OsmWaterJsonTileSource extends GeojsonTileSource {
 
     public OsmWaterJsonTileSource() {
         super("http://tile.openstreetmap.us/vectiles-water-areas");

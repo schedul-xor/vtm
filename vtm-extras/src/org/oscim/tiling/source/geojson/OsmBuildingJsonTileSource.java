@@ -21,7 +21,7 @@ import org.oscim.core.Tag;
 
 import java.util.Map;
 
-public class OsmBuildingJsonTileSource extends GeoJsonTileSource {
+public class OsmBuildingJsonTileSource extends GeojsonTileSource {
 
     public OsmBuildingJsonTileSource() {
         super("http://tile.openstreetmap.us/vectiles-buildings");

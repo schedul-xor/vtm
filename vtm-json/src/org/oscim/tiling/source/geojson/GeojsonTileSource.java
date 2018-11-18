@@ -42,7 +42,7 @@ public abstract class GeojsonTileSource extends UrlTileSource {
 
     @Override
     public ITileDataSource getDataSource() {
-        return new OverzoomTileDataSource(new UrlTileDataSource(this, new TileDecoder(this), getHttpEngine()), mOverZoom);
+        return new OverzoomTileDataSource(new UrlTileDataSource(this, new GeojsonTileDecoder(this), getHttpEngine()), mOverZoom);
     }
 
     public Tag getFeatureTag() {
