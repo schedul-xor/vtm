@@ -1,13 +1,18 @@
 package org.oscim.tiling.source.geojson;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import org.oscim.core.GeometryBuffer;
 import org.oscim.core.MapElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 abstract public class GeojsonDecoder {
+    static final Logger log = LoggerFactory.getLogger(GeojsonDecoder.class);
+
     private final MapElement mapElement;
 
     final static LinkedHashMap<String, Object> mProperties = new LinkedHashMap<String, Object>(10);
@@ -27,8 +32,6 @@ abstract public class GeojsonDecoder {
 
             /* add tag information */
             decodeTags(mapElement, f.getProperties(mProperties));
-            if (mapElement.tags.size() == 0)
-                continue;
 
             /* add geometry information */
             decodeGeometry(f.getGeometry());
@@ -65,6 +68,11 @@ abstract public class GeojsonDecoder {
             MultiLineString ml = (MultiLineString) geometry.getCoordinates();
             for (int k = 0, n = ml.getNumGeometries(); k < n; k++)
                 decodeLineString(ml.getGeometryN(k));
+        } else if ("Point".equals(type)) {
+            JsArray points = geometry.getCoordinates();
+            double lon = Double.parseDouble(points.get(0).toString());
+            double lat = Double.parseDouble(points.get(1).toString());
+            addPoint(lon,lat,mapElement);
         }
     }
 
