@@ -40,6 +40,7 @@ import org.oscim.gdx.client.GwtGdxGraphics;
 import org.oscim.gdx.client.MapConfig;
 import org.oscim.gdx.client.MapUrl;
 import org.oscim.layers.Layer;
+import org.oscim.gdx.poi3d.Poi3DLayer;
 import org.oscim.layers.tile.bitmap.BitmapTileLayer;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.buildings.S3DBTileLayer;
@@ -179,7 +180,6 @@ class GwtMap extends GdxMap {
 
                     @Override
                     protected void addPoint(double lon, double lat, MapElement mapElement) {
-                        log.info("{} {}", lon, lat);
                         GeoPoint gp = new GeoPoint(lat, lon);
                         mBuildingLayer.eraserPoints.add(gp);
                     }
@@ -192,6 +192,8 @@ class GwtMap extends GdxMap {
                 ((ExtrusionRenderer) mBuildingLayer.getRenderer()).setZLimit((float) 65536 / 10);
                 mMap.layers().add(mBuildingLayer);
             }
+
+            mMap.layers().add(new Poi3DLayer(mMap, l));
 
             if (!nolabels)
                 mMap.layers().add(new LabelLayer(mMap, l));

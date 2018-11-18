@@ -1,28 +1,16 @@
-/*
- * Copyright 2014 Hannes Janetzek
- * Copyright 2018 Gustl22
- *
- * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
- *
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
-package org.oscim.test.gdx.poi3d;
+package org.oscim.gdx.poi3d;
 
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
+import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
@@ -33,17 +21,13 @@ import org.oscim.map.Viewport;
 import org.oscim.renderer.GLState;
 import org.oscim.renderer.GLViewport;
 import org.oscim.renderer.LayerRenderer;
-import org.oscim.utils.geom.GeometryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.oscim.backend.GLAdapter.gl;
 
-/**
- * Gdx renderer for more complex 3D models.
- */
-public class GdxRenderer3D2 extends LayerRenderer {
-    static final Logger log = LoggerFactory.getLogger(GdxRenderer3D2.class);
+public class GdxModelRenderer extends LayerRenderer {
+    static final Logger log = LoggerFactory.getLogger(GdxModelRenderer.class);
 
     ModelBatch modelBatch;
     public MapCamera cam;
@@ -55,7 +39,12 @@ public class GdxRenderer3D2 extends LayerRenderer {
 
     public Array<ModelInstance> instances = new Array<>();
 
-    public GdxRenderer3D2(Map map) {
+    public Shader shader;
+    public RenderContext renderContext;
+    public Model model;
+    private ModelBatch mBatch = new ModelBatch();
+
+    public GdxModelRenderer(Map map) {
         mMap = map;
     }
 
@@ -65,11 +54,17 @@ public class GdxRenderer3D2 extends LayerRenderer {
         modelBatch = new ModelBatch(new DefaultShaderProvider());
 
         lights = new Environment();
-
-        lights.add(new DirectionalLight().set(0.7f, 0.7f, 0.7f, 0, 1, -0.2f));
-        lights.set(new ColorAttribute(ColorAttribute.AmbientLight, 1f, 1f, 1f, 1f));
+        lights.set(new ColorAttribute(ColorAttribute.AmbientLight, 1.0f, 1.0f, 1.0f, 1.f));
+        lights.add(new DirectionalLight().set(0.3f, 0.3f, 0.3f, 0, 1, -0.2f));
 
         cam = new MapCamera(mMap);
+
+        renderContext =
+                new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.WEIGHTED, 1));
+
+        // shader = new DefaultShader(renderable.material,
+        // renderable.mesh.getVertexAttributes(), true, false, 1, 0, 0, 0);
+        // shader.init();
 
         return true;
     }
@@ -92,6 +87,8 @@ public class GdxRenderer3D2 extends LayerRenderer {
     Vector3 tempVector = new Vector3();
     float[] mBox = new float[8];
 
+    Renderable r = new Renderable();
+
     @Override
     public void render(GLViewport v) {
         if (instances.size == 0)
@@ -101,7 +98,7 @@ public class GdxRenderer3D2 extends LayerRenderer {
 
         gl.depthMask(true);
 
-        if (v.pos.zoomLevel < 17)
+        if (v.pos.zoomLevel < 16)
             gl.clear(GL.DEPTH_BUFFER_BIT);
 
         gl.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, 0);
@@ -114,14 +111,7 @@ public class GdxRenderer3D2 extends LayerRenderer {
         GLState.test(false, false);
         GLState.blend(false);
 
-        // GL.cullFace(GL20.BACK);
-        // GL.frontFace(GL20.CW);
-
         cam.update(v);
-        long time = System.currentTimeMillis();
-
-        int cnt = 0;
-        int rnd = 0;
 
         Viewport p = mMap.viewport();
         p.getMapExtents(mBox, 10);
@@ -139,31 +129,51 @@ public class GdxRenderer3D2 extends LayerRenderer {
             mBox[i + 1] -= dy;
         }
 
+        //int w = mMap.getWidth() / 2;
+        //int h = mMap.getHeight() / 2;
+        //float sqRadius = (w * w + h * h) / scale;
+
         synchronized (this) {
-            modelBatch.begin(cam);
-            cnt = instances.size;
+            if (instances.size == 0)
+                return;
+
+            //renderContext.begin();
+
+            //            if (shader == null) {
+            //                r = instances.get(0).getRenderable(r);
+            //                DefaultShader.Config c = new DefaultShader.Config();
+            //                c.numBones = 0;
+            //                c.numDirectionalLights = 1;
+            //                r.environment = lights;
+            //
+            //                shader = new DefaultShader(r, c);
+            //                shader.init();
+            //            }
+            mBatch.begin(cam);
+            //shader.begin(cam, renderContext);
 
             for (ModelInstance instance : instances) {
                 instance.transform.getTranslation(tempVector);
-                tempVector.scl(0.9f, 0.9f, 1);
-                if (!GeometryUtils.pointInPoly(tempVector.x, tempVector.y, mBox, 8, 0))
-                    continue;
+                //instance.getRenderables(renderables, pool);
+                //    if (tempVector.x * tempVector.x + tempVector.y * tempVector.y > sqRadius)
+                //     continue;
+                //    tempVector.scl(0.8f, 0.8f, 1);
+                //    if (!GeometryUtils.pointInPoly(tempVector.x, tempVector.y, mBox, 8, 0))
+                //    continue;
 
-                modelBatch.render(instance, lights);
-                rnd++;
+                mBatch.render(instance);
+
+                //shader.render(r);
             }
-            modelBatch.end();
-        }
-        log.debug(">>> " + (System.currentTimeMillis() - time) + " " + cnt + "/" + rnd);
+            mBatch.end();
 
-        // GLUtils.checkGlError("<" + TAG);
+            //shader.end();
+            //renderContext.end();
+        }
 
         gl.depthMask(false);
         gl.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, 0);
         gl.bindBuffer(GL.ARRAY_BUFFER, 0);
-
-        // GLState.bindTex2D(-1);
-        // GLState.useProgram(-1);
     }
 
     // @Override

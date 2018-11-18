@@ -11,7 +11,7 @@ buildscript {
 
 allprojects {
     group = 'com.ogiqvo'
-    version = '0.0.8.r6'
+    version = '0.0.8.r7'
     ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
     ext.androidBuildVersionTools = "28.0.3"

@@ -22,6 +22,7 @@ import org.oscim.gdx.GdxMapApp;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
+import org.oscim.gdx.poi3d.Poi3DLayer;
 import org.oscim.renderer.MapRenderer;
 import org.oscim.test.MapPreferences;
 import org.oscim.theme.VtmThemes;
