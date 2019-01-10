@@ -37,6 +37,7 @@ import org.oscim.gdx.GdxMap;
 import org.oscim.gdx.client.GwtGdxGraphics;
 import org.oscim.gdx.client.MapConfig;
 import org.oscim.gdx.client.MapUrl;
+import org.oscim.gdx.poi3d.GdxModelLayer;
 import org.oscim.layers.Layer;
 import org.oscim.gdx.poi3d.Poi3DLayer;
 import org.oscim.layers.tile.bitmap.BitmapTileLayer;
@@ -184,6 +185,10 @@ class GwtMap extends GdxMap {
                 String eraserJsonstr = AssetAdapter.readTextFile("eraser.geojson");
                 JavaScriptObject jso = JsonUtils.safeEval(eraserJsonstr);
                 gjd.decode(jso);
+
+                GdxModelLayer gdxModelLayer = new GdxModelLayer(mMap);
+                mMap.layers().add(gdxModelLayer);
+                gdxModelLayer.addModel(GdxAssets.getAssetPath("models/buildings/tokyo_tower.g3db"),35.6595298, 139.7462639,33f,-90f);
 
                 ((ExtrusionRenderer) mBuildingLayer.getRenderer()).setZLimit((float) 65536 / 10);
                 mMap.layers().add(mBuildingLayer);
