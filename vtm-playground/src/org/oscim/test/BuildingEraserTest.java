@@ -2,7 +2,9 @@ package org.oscim.test;
 
 import com.badlogic.gdx.assets.AssetManager;
 import org.oscim.core.*;
+import org.oscim.gdx.GdxAssets;
 import org.oscim.gdx.GdxMapApp;
+import org.oscim.gdx.poi3d.GdxModelLayer;
 import org.oscim.layers.GroupLayer;
 import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
@@ -62,6 +64,11 @@ public class BuildingEraserTest extends GdxMapApp {
 
         GroupLayer groupLayer = new GroupLayer(mMap);
         groupLayer.layers.add(buildingLayer);
+
+        GdxModelLayer gdxModelLayer = new GdxModelLayer(mMap);
+        mMap.layers().add(gdxModelLayer);
+        gdxModelLayer.addModel(GdxAssets.getAssetPath("models/buildings/tokyo_tower.g3db"),35.6595298, 139.7462639,33f,-90f);
+
         groupLayer.layers.add(new LabelLayer(map, l));
         map.layers().add(groupLayer);
 
