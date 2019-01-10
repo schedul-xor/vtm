@@ -1,76 +1,40 @@
-/*
- * Copyright 2014 Hannes Janetzek
- * Copyright 2017 devemux86
- *
- * This file is part of the OpenScienceMap project (http://www.opensciencemap.org).
- *
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package org.oscim.tiling.source.geojson;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-
-import org.oscim.core.GeometryBuffer.GeometryType;
+import org.oscim.core.GeometryBuffer;
 import org.oscim.core.MapElement;
 import org.oscim.core.Tag;
-import org.oscim.core.Tile;
-import org.oscim.tiling.ITileDataSink;
-import org.oscim.tiling.source.ITileDecoder;
 import org.oscim.utils.ArrayUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
-import static com.fasterxml.jackson.core.JsonToken.END_ARRAY;
-import static com.fasterxml.jackson.core.JsonToken.END_OBJECT;
-import static com.fasterxml.jackson.core.JsonToken.FIELD_NAME;
-import static com.fasterxml.jackson.core.JsonToken.START_ARRAY;
-import static com.fasterxml.jackson.core.JsonToken.START_OBJECT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_FLOAT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_NUMBER_INT;
-import static com.fasterxml.jackson.core.JsonToken.VALUE_STRING;
-import static org.oscim.core.MercatorProjection.latitudeToY;
-import static org.oscim.core.MercatorProjection.longitudeToX;
+import static com.fasterxml.jackson.core.JsonToken.*;
 
-public class TileDecoder implements ITileDecoder {
-
-    private final MapElement mMapElement;
-    private final GeojsonTileSource mTileSource;
+abstract public class GeojsonDecoder {
     private final LinkedHashMap<String, Object> mTagMap;
     private final JsonFactory mJsonFactory;
+    protected final MapElement mMapElement;
 
-    private static final char[] FIELD_FEATURES = "features".toCharArray();
-    private static final char[] FIELD_GEOMETRY = "geometry".toCharArray();
-    private static final char[] FIELD_PROPERTIES = "properties".toCharArray();
-    private static final char[] FIELD_COORDINATES = "coordinates".toCharArray();
-    private static final char[] FIELD_TYPE = "type".toCharArray();
+    private final static char[] FIELD_FEATURES = "features".toCharArray();
+    private final static char[] FIELD_GEOMETRY = "geometry".toCharArray();
+    private final static char[] FIELD_PROPERTIES = "properties".toCharArray();
+    private final static char[] FIELD_COORDINATES = "coordinates".toCharArray();
+    private final static char[] FIELD_TYPE = "type".toCharArray();
 
-    private static final char[] LINESTRING = "LineString".toCharArray();
-    private static final char[] POLYGON = "Polygon".toCharArray();
-    private static final char[] POINT = "Point".toCharArray();
-    private static final char[] MULTI_LINESTRING = "MultiLineString".toCharArray();
-    private static final char[] MULTI_POLYGON = "MultiPolygon".toCharArray();
-    private static final char[] MULTI_POINT = "MultiPoint".toCharArray();
+    private final static char[] LINESTRING = "LineString".toCharArray();
+    private final static char[] POLYGON = "Polygon".toCharArray();
+    private final static char[] POINT = "Point".toCharArray();
+    private final static char[] MULTI_LINESTRING = "MultiLineString".toCharArray();
+    private final static char[] MULTI_POLYGON = "MultiPolygon".toCharArray();
+    private final static char[] MULTI_POINT = "MultiPoint".toCharArray();
 
-    private ITileDataSink mTileDataSink;
-
-    private double mTileY, mTileX, mTileScale;
-
-    public TileDecoder(GeojsonTileSource tileSource) {
-        mTileSource = tileSource;
+    public GeojsonDecoder() {
         mTagMap = new LinkedHashMap<>();
         mJsonFactory = new JsonFactory();
 
@@ -78,13 +42,7 @@ public class TileDecoder implements ITileDecoder {
         mMapElement.layer = 5;
     }
 
-    @Override
-    public boolean decode(Tile tile, ITileDataSink sink, InputStream is) throws IOException {
-        mTileDataSink = sink;
-        mTileScale = 1 << tile.zoomLevel;
-        mTileX = tile.tileX / mTileScale;
-        mTileY = tile.tileY / mTileScale;
-        mTileScale *= Tile.SIZE;
+    public void decode(InputStream is) throws IOException {
 
         JsonParser jp = mJsonFactory.createParser(new InputStreamReader(is));
 
@@ -107,7 +65,6 @@ public class TileDecoder implements ITileDecoder {
                 }
             }
         }
-        return true;
     }
 
     private void parseFeature(JsonParser jp, Tag layerTag) throws IOException {
@@ -136,18 +93,24 @@ public class TileDecoder implements ITileDecoder {
         }
 
         //add tag information
-        mTileSource.decodeTags(mMapElement, mTagMap);
+        decodeTags(mMapElement, mTagMap);
         if (mMapElement.tags.size() == 0)
             return;
 
-        mTileSource.postGeomHook(mMapElement);
+        postGeomHook(mMapElement);
 
-        if (mMapElement.type == GeometryType.NONE)
+        if (mMapElement.type == GeometryBuffer.GeometryType.NONE)
             return;
 
         //process this element
-        mTileDataSink.process(mMapElement);
+        process(mMapElement);
     }
+
+    abstract protected void decodeTags(MapElement mapElement, Map<String, Object> properties);
+
+    abstract public void postGeomHook(MapElement mapElement);
+
+    abstract public void process(MapElement mapElement);
 
     private void parseProperties(JsonParser jp) throws IOException {
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
@@ -170,7 +133,7 @@ public class TileDecoder implements ITileDecoder {
     private void parseGeometry(JsonParser jp) throws IOException {
 
         boolean multi = false;
-        GeometryType type = GeometryType.NONE;
+        GeometryBuffer.GeometryType type = GeometryBuffer.GeometryType.NONE;
 
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
             if (t == FIELD_NAME) {
@@ -180,13 +143,13 @@ public class TileDecoder implements ITileDecoder {
                     if (multi) {
                         parseMulti(jp, type);
                     } else {
-                        if (type == GeometryType.POLY)
+                        if (type == GeometryBuffer.GeometryType.POLY)
                             parsePolygon(jp);
 
-                        if (type == GeometryType.LINE)
+                        if (type == GeometryBuffer.GeometryType.LINE)
                             parseLineString(jp);
 
-                        if (type == GeometryType.POINT)
+                        if (type == GeometryBuffer.GeometryType.POINT)
                             parseCoordinate(jp);
 
                     }
@@ -196,23 +159,23 @@ public class TileDecoder implements ITileDecoder {
                     jp.nextToken();
 
                     if (match(jp, LINESTRING))
-                        type = GeometryType.LINE;
+                        type = GeometryBuffer.GeometryType.LINE;
                     else if (match(jp, POLYGON))
-                        type = GeometryType.POLY;
+                        type = GeometryBuffer.GeometryType.POLY;
                     else if (match(jp, POINT))
-                        type = GeometryType.POINT;
+                        type = GeometryBuffer.GeometryType.POINT;
                     else if (match(jp, MULTI_LINESTRING)) {
-                        type = GeometryType.LINE;
+                        type = GeometryBuffer.GeometryType.LINE;
                         multi = true;
                     } else if (match(jp, MULTI_POLYGON)) {
-                        type = GeometryType.POLY;
+                        type = GeometryBuffer.GeometryType.POLY;
                         multi = true;
                     } else if (match(jp, MULTI_POINT)) {
-                        type = GeometryType.POINT;
+                        type = GeometryBuffer.GeometryType.POINT;
                         multi = true;
                     }
 
-                    if (type == GeometryType.POINT)
+                    if (type == GeometryBuffer.GeometryType.POINT)
                         mMapElement.startPoints();
                 }
                 continue;
@@ -222,20 +185,20 @@ public class TileDecoder implements ITileDecoder {
         }
     }
 
-    private void parseMulti(JsonParser jp, GeometryType type) throws IOException {
+    private void parseMulti(JsonParser jp, GeometryBuffer.GeometryType type) throws IOException {
 
         for (JsonToken t; (t = jp.nextToken()) != null; ) {
             if (t == END_ARRAY)
                 break;
 
             if (t == START_ARRAY) {
-                if (type == GeometryType.POLY)
+                if (type == GeometryBuffer.GeometryType.POLY)
                     parsePolygon(jp);
 
-                else if (type == GeometryType.LINE)
+                else if (type == GeometryBuffer.GeometryType.LINE)
                     parseLineString(jp);
 
-                else if (type == GeometryType.POINT)
+                else if (type == GeometryBuffer.GeometryType.POINT)
                     parseCoordinate(jp);
 
             } else {
@@ -318,10 +281,10 @@ public class TileDecoder implements ITileDecoder {
                 break;
         }
 
-        mMapElement.addPoint((float) ((longitudeToX(x) - mTileX) * mTileScale),
-                (float) ((latitudeToY(y) - mTileY) * mTileScale));
-
+        addPoint(x, y, mMapElement);
     }
+
+    abstract protected void addPoint(double x, double y, MapElement mapElement);
 
     private static boolean match(JsonParser jp, char[] fieldName) throws IOException {
 

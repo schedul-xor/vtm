@@ -25,7 +25,7 @@ import org.oscim.layers.tile.MapTile;
 import org.oscim.layers.tile.MapTile.State;
 import org.oscim.tiling.ITileDataSink;
 import org.oscim.tiling.ITileDataSource;
-import org.oscim.tiling.source.geojson.GeoJsonTileDecoder;
+import org.oscim.tiling.source.geojson.GeojsonTileDecoder;
 import org.oscim.tiling.source.geojson.GeoJsonTileSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +38,12 @@ import static org.oscim.tiling.QueryResult.SUCCESS;
 public class JsonTileDataSource implements ITileDataSource {
     static final Logger log = LoggerFactory.getLogger(JsonTileDataSource.class);
 
-    protected final GeoJsonTileDecoder mTileDecoder;
+    protected final GeojsonTileDecoder mTileDecoder;
     protected final UrlTileSource mTileSource;
 
     public JsonTileDataSource(GeoJsonTileSource tileSource) {
         mTileSource = tileSource;
-        mTileDecoder = new GeoJsonTileDecoder(tileSource);
+        mTileDecoder = new GeojsonTileDecoder(tileSource);
     }
 
     UrlTileSource getTileSource() {

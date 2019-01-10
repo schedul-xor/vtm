@@ -120,7 +120,7 @@ class GwtMap extends GdxMap {
 
             mMap.setBaseMap(new BitmapTileLayer(mMap, ts));
         } else {
-            TileSource ts = new OSciMap4TileSource("https://oscimproxy0.ogiqvo.com/tiles/vtm");
+            TileSource ts = OSciMap4TileSource.builder().url("https://oscimproxy0.ogiqvo.com/tiles/vtm").zoomMax(17).build();
             l = mMap.setBaseMap(ts);
 
             if (themeName == null) {
