@@ -150,11 +150,12 @@ public class MapTile extends Tile {
      */
     public MapTile holder;
 
-    public static abstract class TileData extends Inlist<TileData> {
+    public abstract static class TileData extends Inlist<TileData> {
         Object id;
 
         protected abstract void dispose();
 
+        @Override
         public TileData next() {
             return (TileData) next;
         }
