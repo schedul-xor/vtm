@@ -45,10 +45,10 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
 
     static final Logger log = LoggerFactory.getLogger(RTree.class);
 
-    final static int MAXNODES = 8;
-    final static int MINNODES = 4;
+    static final int MAXNODES = 8;
+    static final int MINNODES = 4;
 
-    final static int NUMDIMS = 2;
+    static final int NUMDIMS = 2;
 
     static final boolean DEBUG = true;
 
@@ -57,7 +57,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
      * The parents level determines this.
      * If the parents level is 0, then this is data
      */
-    final static class Branch<E> extends Rect {
+    static final class Branch<E> extends Rect {
         /**
          * Child node or data item
          */
@@ -72,7 +72,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
     /**
      * Node for each branch level
      */
-    final static class Node {
+    static final class Node {
 
         /**
          * Leaf is zero, others positive
@@ -290,6 +290,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
         releaseRect(r);
     }
 
+    @Override
     public void insert(Box box, T item) {
         Rect r = getRect();
         r.set(box);
@@ -312,6 +313,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
         return removed;
     }
 
+    @Override
     public boolean remove(Box box, T item) {
         Rect r = getRect();
         r.set(box);
@@ -342,6 +344,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
         return true;
     }
 
+    @Override
     public boolean search(Box bbox, SearchCb<T> cb, Object context) {
         Rect r = getRect();
         r.set(bbox);
@@ -352,6 +355,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
         return true;
     }
 
+    @Override
     public List<T> search(Box bbox, List<T> results) {
         if (results == null)
             results = new ArrayList<T>(16);
@@ -370,6 +374,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
      * Count the data elements in this container. This is slow as no internal
      * counter is maintained.
      */
+    @Override
     public int size() {
         int[] count = {0};
         countRec(mRoot, count);
@@ -393,6 +398,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
     /**
      * Remove all entries from tree.
      */
+    @Override
     public void clear() {
         /* Delete all existing nodes */
         reset();
@@ -492,7 +498,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
         return null;
     }
 
-    final static double mergedArea(Rect a, Rect b) {
+    static final double mergedArea(Rect a, Rect b) {
         return ((a.xmax > b.xmax ? a.xmax : b.xmax) - (a.xmin < b.xmin ? a.xmin : b.xmin)
                 * ((a.ymax > b.ymax ? a.ymax : b.ymax) - (a.ymin < b.ymin ? a.ymin : b.ymin)));
     }
@@ -898,7 +904,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
 
     /* Max stack size. Allows almost n^32 where n is number of branches in
      * node */
-    final static int MAX_STACK = 32;
+    static final int MAX_STACK = 32;
 
     static class StackElement {
         Node node;
@@ -913,6 +919,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
             return new Stack();
         }
 
+        @Override
         protected boolean clearItem(Stack item) {
             if (item.tos != 0) {
                 item.tos = 0;
@@ -1007,6 +1014,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
 
         /* Find the next data element */
         @SuppressWarnings("unchecked")
+        @Override
         public T next() {
             assert (isNotNull());
             StackElement curTos = stack[tos - 1];

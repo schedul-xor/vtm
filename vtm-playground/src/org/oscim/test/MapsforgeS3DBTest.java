@@ -21,7 +21,7 @@ import java.io.File;
 public class MapsforgeS3DBTest extends MapsforgeTest {
 
     private MapsforgeS3DBTest(File mapFile) {
-        super(mapFile, true);
+        super(mapFile, true, false);
     }
 
     public static void main(String[] args) {

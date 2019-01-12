@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class MapLayers {
 
-    final static Logger log = LoggerFactory.getLogger(MapLayers.class);
+    static final Logger log = LoggerFactory.getLogger(MapLayers.class);
 
     abstract static class Config {
         final String name;
@@ -56,15 +56,18 @@ public class MapLayers {
     }
 
     static Config[] configs = new Config[]{new Config("OPENSCIENCEMAP4") {
+        @Override
         TileSource init() {
             return new OSciMap4TileSource();
         }
     }, new Config("MAPSFORGE") {
+        @Override
         TileSource init() {
             return new MapFileTileSource().setOption("file",
                     "/storage/sdcard0/germany.map");
         }
     }, new Config("MAPNIK_VECTOR") {
+        @Override
         TileSource init() {
             return new MapnikVectorTileSource();
         }

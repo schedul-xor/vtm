@@ -83,6 +83,7 @@ public class Samples extends Activity {
         linearLayout.addView(createLabel(null));
         linearLayout.addView(createButton(SimpleMapActivity.class));
         linearLayout.addView(createButton(MapsforgeActivity.class));
+        linearLayout.addView(createButton(MapilionMvtActivity.class));
         /*linearLayout.addView(createButton(MapzenMvtActivity.class));
         linearLayout.addView(createButton(MapzenGeojsonActivity.class));*/
         linearLayout.addView(createButton(NextzenMvtActivity.class));
@@ -134,5 +135,6 @@ public class Samples extends Activity {
         linearLayout.addView(createButton(OSciMapS3DBActivity.class));
         linearLayout.addView(createButton(ThemeStylerActivity.class));
         linearLayout.addView(createButton(JeoIndoorActivity.class));
+        linearLayout.addView(createButton(GdxPoi3DActivity.class));
     }
 }

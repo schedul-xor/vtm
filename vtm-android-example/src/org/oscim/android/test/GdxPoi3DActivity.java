@@ -12,27 +12,11 @@
  * You should have received a copy of the GNU Lesser General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.oscim.test.gdx.poi3d;
+package org.oscim.android.test;
 
-import com.badlogic.gdx.graphics.g3d.Model;
+public class GdxPoi3DActivity extends GdxActivity {
 
-class ModelHolder {
-    Model mModel;
-    String mPath;
-
-    ModelHolder(String path) {
-        mPath = path;
-    }
-
-    public Model getModel() {
-        return mModel;
-    }
-
-    public String getPath() {
-        return mPath;
-    }
-
-    public void setModel(Model model) {
-        mModel = model;
+    public GdxPoi3DActivity() {
+        super(false, true);
     }
 }
