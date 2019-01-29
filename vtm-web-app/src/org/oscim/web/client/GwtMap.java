@@ -45,7 +45,6 @@ import org.oscim.layers.tile.buildings.BuildingLayer;
 import org.oscim.layers.tile.buildings.S3DBTileLayer;
 import org.oscim.layers.tile.vector.VectorTileLayer;
 import org.oscim.layers.tile.vector.labeling.LabelLayer;
-import org.oscim.renderer.ExtrusionRenderer;
 import org.oscim.renderer.MapRenderer;
 import org.oscim.theme.StreamRenderTheme;
 import org.oscim.theme.VtmThemes;
@@ -185,16 +184,17 @@ class GwtMap extends GdxMap {
                 String eraserJsonstr = AssetAdapter.readTextFile("eraser.geojson");
                 JavaScriptObject jso = JsonUtils.safeEval(eraserJsonstr);
                 gjd.decode(jso);
+//
+//                GdxModelLayer gdxModelLayer = new GdxModelLayer(mMap);
+//                mMap.layers().add(gdxModelLayer);
+//                gdxModelLayer.addModel(GdxAssets.getAssetPath("models/buildings/tokyo_tower.g3db"),35.6595298, 139.7462639,33f,-90f);
 
-                GdxModelLayer gdxModelLayer = new GdxModelLayer(mMap);
-                mMap.layers().add(gdxModelLayer);
-                gdxModelLayer.addModel(GdxAssets.getAssetPath("models/buildings/tokyo_tower.g3db"),35.6595298, 139.7462639,33f,-90f);
+                mBuildingLayer.getExtrusionRenderer().setZLimit((float) 65536 / 10);
 
-                ((ExtrusionRenderer) mBuildingLayer.getRenderer()).setZLimit((float) 65536 / 10);
                 mMap.layers().add(mBuildingLayer);
             }
 
-//            mMap.layers().add(new Poi3DLayer(mMap, l));
+            mMap.layers().add(new Poi3DLayer(mMap, l));
 
             if (!nolabels)
                 mMap.layers().add(new LabelLayer(mMap, l));
@@ -219,7 +219,7 @@ class GwtMap extends GdxMap {
                     return;
                 }
 
-                ((ExtrusionRenderer) mBuildingLayer.getRenderer()).setZLimit((float) val / 10);
+                mBuildingLayer.getExtrusionRenderer().setZLimit((float) val / 10);
 
                 mMap.updateMap(true);
             }

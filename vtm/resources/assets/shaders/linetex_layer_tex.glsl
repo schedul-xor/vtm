@@ -11,8 +11,8 @@ attribute vec2 a_len0; // x:lineLength, y:unused
 attribute vec2 a_len1;
 attribute float a_flip; // flip state
 varying vec2 v_st;
-void
-main(){
+
+void main() {
   vec4 pos;
   if (a_flip == 0.0) {
     //    vec2 dir = u_width * a_pos0.zw;
@@ -40,13 +40,13 @@ uniform vec4 u_bgcolor;
 uniform float u_pwidth;
 varying vec2 v_st;
 uniform sampler2D tex;
-uniform float u_mode;
-void
-main(){
-  if (u_mode >= 1.0) {
+uniform int u_mode;
+
+void main() {
+  if (u_mode >= 1) {
     /* Dash array or texture */
     float step = 2.0;
-    if (u_mode == 2.0) { // dashed texture
+    if (u_mode == 2) { // dashed texture
       step = 1.0;
     }
     // use lineLength mod texture step (mod is always positive)
