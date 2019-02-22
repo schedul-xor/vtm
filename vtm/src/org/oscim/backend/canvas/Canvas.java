@@ -53,6 +53,8 @@ public interface Canvas {
 
     void drawLine(float x1, float y1, float x2, float y2, Paint paint);
 
+    void drawRectangle(float x0, float y0, float x1, float y1, Paint paint, boolean isFill);
+
     void fillColor(int color);
 
     void fillRectangle(float x, float y, float width, float height, int color);
