@@ -84,5 +84,10 @@ public class OsmTileLayer extends VectorTileLayer {
 
             return mFilteredTags;
         }
+
+        @Override
+        public void setWildCardObject(Object obj) {
+
+        }
     }
 }

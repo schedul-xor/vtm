@@ -41,6 +41,11 @@ public class TileDataSink implements ITileDataSink {
     }
 
     @Override
+    public void setWildCardObject(Object obj) {
+        sink.setWildCardObject(obj);
+    }
+
+    @Override
     public void completed(QueryResult result) {
         this.result = result;
     }

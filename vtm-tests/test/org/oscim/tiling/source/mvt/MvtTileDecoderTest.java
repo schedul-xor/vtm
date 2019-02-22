@@ -44,6 +44,11 @@ public class MvtTileDecoderTest {
             }
 
             @Override
+            public void setWildCardObject(Object obj) {
+
+            }
+
+            @Override
             public void completed(QueryResult result) {
             }
         };

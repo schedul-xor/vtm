@@ -36,6 +36,8 @@ public interface ITileDataSink {
      */
     void setTileImage(Bitmap bitmap);
 
+    void setWildCardObject(Object obj);
+
     /**
      * Notify loader that tile loading is completed.
      */

@@ -158,6 +158,11 @@ class S3DBTileLoader extends TileLoader {
     }
 
     @Override
+    public void setWildCardObject(Object obj) {
+
+    }
+
+    @Override
     public void completed(QueryResult result) {
 
         mParts = null;

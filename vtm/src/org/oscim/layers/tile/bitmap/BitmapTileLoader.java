@@ -69,6 +69,11 @@ public class BitmapTileLoader extends TileLoader {
     }
 
     @Override
+    public void setWildCardObject(Object obj) {
+
+    }
+
+    @Override
     public void dispose() {
         mTileDataSource.cancel();
     }

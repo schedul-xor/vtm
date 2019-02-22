@@ -90,5 +90,9 @@ public class TestTileLayer extends TileLayer {
         public void cancel() {
         }
 
+        @Override
+        public void setWildCardObject(Object obj) {
+
+        }
     }
 }
