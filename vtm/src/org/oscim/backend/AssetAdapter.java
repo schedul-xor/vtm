@@ -16,10 +16,7 @@
  */
 package org.oscim.backend;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 /**
  * The Class AssetAdapter.
@@ -35,6 +32,8 @@ public abstract class AssetAdapter {
      * Open file from asset path as stream.
      */
     protected abstract InputStream openFileAsStream(String file);
+
+    protected abstract boolean openFileExists(String file);
 
     public static InputStream readFileAsStream(String file) {
         return g.openFileAsStream(file);
@@ -59,6 +58,21 @@ public abstract class AssetAdapter {
 
         return sb.toString();
 
+    }
+
+    public static byte[] readFileAsByteArray(String fileName) throws IOException {
+        InputStream is = readFileAsStream(fileName);
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        while (true) {
+            int len = 0;
+            len = is.read(buffer);
+            if (len < 0) {
+                break;
+            }
+            bout.write(buffer, 0, len);
+        }
+        return bout.toByteArray();
     }
 
     public static void init(AssetAdapter adapter) {

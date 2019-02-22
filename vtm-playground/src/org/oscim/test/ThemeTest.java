@@ -29,6 +29,11 @@ public class ThemeTest {
                     return null;
                 }
             }
+
+            @Override
+            protected boolean openFileExists(String file) {
+                return false;
+            }
         });
 
         IRenderTheme t = ThemeLoader.load(VtmThemes.DEFAULT);
