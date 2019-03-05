@@ -24,6 +24,8 @@ import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtGraphics;
 import com.badlogic.gdx.graphics.glutils.GLVersion;
 
+import com.badlogic.gdx.utils.Timer;
+import com.google.gwt.core.client.JsDate;
 import org.oscim.backend.AssetAdapter;
 import org.oscim.backend.CanvasAdapter;
 import org.oscim.backend.DateTimeAdapter;
@@ -61,6 +63,7 @@ class GwtMap extends GdxMap {
     BuildingSolutionControl mBuildingSolutionControl;
     CameraRollControl mCameraRollControl;
     SearchBox mSearchBox;
+    JsDate dateTime;
 
     @Override
     public void create() {
@@ -76,7 +79,10 @@ class GwtMap extends GdxMap {
 
         GwtGdxGraphics.init();
         GdxAssets.init("");
-        DateTimeAdapter.init(new GwtDateTime());
+        dateTime = JsDate.create();
+        final GwtDateTime gwtDateTime = new GwtDateTime();
+        gwtDateTime.setDate(dateTime);
+        DateTimeAdapter.init(gwtDateTime);
         CanvasAdapter.textScale = 0.7f;
         CanvasAdapter.dpi = (int) (GwtGraphics.getDevicePixelRatioJSNI() * CanvasAdapter.DEFAULT_DPI);
         Tile.SIZE = Tile.calculateTileSize();
@@ -154,7 +160,8 @@ class GwtMap extends GdxMap {
             boolean nobuildings = mapUrl.params.containsKey("nobuildings");
 
             if (!nobuildings && !s3db) {
-                mBuildingLayer = new BuildingLayer(mMap, l);
+                mBuildingLayer = new BuildingLayer(mMap, l, false, true);
+                mBuildingLayer.getExtrusionRenderer().enableCurrentSunPos(true);
                 mBuildingLayer.getExtrusionRenderer().setZLimit((float) 65536 / 10);
                 mMap.layers().add(mBuildingLayer);
             }
@@ -166,6 +173,16 @@ class GwtMap extends GdxMap {
         }
 
         mSearchBox = new SearchBox(mMap);
+
+        Timer timer = new Timer();
+        timer.scheduleTask(new Timer.Task() {
+            @Override
+            public void run() {
+                double t = dateTime.getTime();
+                dateTime.setTime(t + 600000); // 600000ms = 10 minutes
+                gwtDateTime.setDate(dateTime);
+            }
+        }, 0, 1);
     }
 
     @Override

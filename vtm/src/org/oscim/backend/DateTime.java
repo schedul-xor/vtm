@@ -17,30 +17,38 @@ package org.oscim.backend;
 import java.util.Calendar;
 
 public class DateTime extends DateTimeAdapter {
+    private Calendar cal;
+
+    public DateTime() {
+        cal = Calendar.getInstance();
+    }
+
+    public void setCalendar(Calendar cal) {
+        this.cal = cal;
+    }
 
     @Override
     public int getHour() {
-        return Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        return cal.get(Calendar.HOUR_OF_DAY);
     }
 
     @Override
     public int getMinute() {
-        return Calendar.getInstance().get(Calendar.MINUTE);
+        return cal.get(Calendar.MINUTE);
     }
 
     @Override
     public int getSecond() {
-        return Calendar.getInstance().get(Calendar.SECOND);
+        return cal.get(Calendar.SECOND);
     }
 
     @Override
     public int getDayOfYear() {
-        return Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+        return cal.get(Calendar.DAY_OF_YEAR);
     }
 
     @Override
     public int getTimeZoneOffset() {
-        Calendar calendar = Calendar.getInstance();
-        return calendar.getTimeZone().getOffset(calendar.getTimeInMillis());
+        return cal.getTimeZone().getOffset(cal.getTimeInMillis());
     }
 }

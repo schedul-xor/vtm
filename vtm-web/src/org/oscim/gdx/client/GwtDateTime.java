@@ -19,33 +19,40 @@ import com.google.gwt.core.client.JsDate;
 import org.oscim.backend.DateTimeAdapter;
 
 public class GwtDateTime extends DateTimeAdapter {
+    private JsDate date;
+
+    public GwtDateTime() {
+        date = JsDate.create();
+    }
+
+    public void setDate(JsDate date) {
+        this.date = date;
+    }
 
     @Override
     public int getHour() {
-        return JsDate.create().getHours();
+        return date.getHours();
     }
 
     @Override
     public int getMinute() {
-        return JsDate.create().getMinutes();
+        return date.getMinutes();
     }
 
     @Override
     public int getSecond() {
-        return JsDate.create().getSeconds();
+        return date.getSeconds();
     }
 
     @Override
     public int getDayOfYear() {
-        JsDate year = JsDate.create();
-        JsDate start = JsDate.create(year.getFullYear(), 0);
-        double diff = year.getTime() - start.getTime();
+        JsDate start = JsDate.create(date.getFullYear(), 0);
+        double diff = date.getTime() - start.getTime();
         return (int) (diff / (DateTimeAdapter.MILLIS_PER_DAY)) + 1;
     }
 
     @Override
     public int getTimeZoneOffset() {
-        JsDate date = JsDate.create();
         return -date.getTimezoneOffset() * 60 * 1000;
     }
 }
