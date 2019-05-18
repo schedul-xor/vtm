@@ -421,7 +421,7 @@ public class RTree<T> implements SpatialIndex<T>, Iterable<T> {
                 KnnItem knnItem = queue.poll();
                 T obj = (T) (knnItem.branch.node);
                 results.add(obj);
-                if (results.size() >= k)
+                if (results.size() == k)
                     return results;
             }
 
