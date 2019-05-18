@@ -468,8 +468,6 @@ public class RTreeTest {
         List<Item> result = t.searchKNearestNeighbors(new Point(40, 40), 10, Double.POSITIVE_INFINITY, null);
         Assert.assertEquals(10, result.size());
 
-        Object firstItem = result.get(0);
-
         result = t.searchKNearestNeighbors(new Point(40, 40), 10, 17, null);
         Assert.assertEquals(10, result.size());
 
